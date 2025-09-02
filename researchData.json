@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "title": "Dummy Research Project",
+    "description": "This is a placeholder research project.",
+    "image": "/assets/img/research.png",
+    "team": [
+      "Researcher A",
+      "Researcher B"
+    ]
+  }
+]

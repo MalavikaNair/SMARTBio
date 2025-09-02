@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "title": "Dummy News Item",
+    "date": "2025-01-01",
+    "description": "This is a placeholder news article.",
+    "image": "/assets/img/news.png"
+  }
+]

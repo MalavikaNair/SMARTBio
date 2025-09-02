@@ -1,0 +1,13 @@
+[
+  {
+    "title": "Dummy Outreach Talk",
+    "date": "2025-01-01",
+    "description": "Placeholder outreach talk.",
+    "speakers": [
+      "Speaker A",
+      "Speaker B"
+    ],
+    "link": "#",
+    "image": "/assets/img/outreach.png"
+  }
+]

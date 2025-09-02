@@ -1,0 +1,252 @@
+/* Base body styles, font, and custom cursor */
+body {
+    background-color: #1f1f1f;
+    color: #f3f4f6;
+    font-family: 'Exo 2', sans-serif;
+    /* Custom cursor - ensure good usability and doesn't obscure content */
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="%2310b981" fill-opacity="0.7" d="M12 2L2 8.5V15.5L12 22L22 15.5V8.5L12 2Z"/></svg>') 12 12, auto;
+}
+/* Glassmorphism effect for header */
+.header-glass {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+/* Navigation link styling with hover and active states */
+.nav-link {
+    transition: all 0.3s ease;
+    position: relative;
+    font-weight: 500;
+}
+.nav-link.active, .nav-link:hover {
+    color: #10b981;
+    text-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+}
+.nav-link.active::after, .nav-link:hover::after {
+    width: 100%;
+}
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #10b981;
+    transition: width 0.3s ease;
+}
+/* Hero section height */
+.hero-section {
+    height: 100vh;
+}
+/* Hero title animation */
+.hero-title {
+     text-shadow: 0 0 8px rgba(255, 255, 255, 0.3), 0 0 20px rgba(16, 185, 129, 0.8);
+     animation: breathe 5s ease-in-out infinite;
+}
+/* Section title underline */
+.section-title {
+    border-bottom: 3px solid #10b981;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+/* Card styling with hover effects */
+.card {
+    background-color: var(--card-bg, rgba(20, 20, 20, 0.7));
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.15), 0 0 15px rgba(16, 185, 129, 0.1);
+}
+/* Particles.js canvas positioning */
+#particles-js {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+/* Page section display logic */
+.page-section {
+    display: none;
+    min-height: 100vh;
+}
+.page-section.active {
+    display: block;
+}
+/* Fade-in animation for section content */
+.fade-in-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-in-section.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+/* Modal overlay styles */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.modal-overlay.active { opacity: 1; visibility: visible; }
+/* Modal content styles */
+.modal-content {
+    background: #111827; padding: 2rem; border-radius: 0.5rem;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    width: 90%; max-width: 60rem; max-height: 90vh;
+    overflow-y: auto; position: relative;
+    transform: scale(0.95); transition: transform 0.3s ease;
+}
+.modal-overlay.active .modal-content { transform: scale(1); }
+/* Modal close button */
+.modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    cursor: pointer; font-size: 1.5rem; color: #9ca3af;
+    transition: color 0.3s ease;
+}
+.modal-close:hover { color: #f3f4f6; }
+/* Carousel specific styles */
+.carousel-container {
+    overflow: hidden;
+    position: relative;
+}
+.carousel-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+.carousel-slide {
+    min-width: 100%;
+    padding: 1rem;
+}
+/* Carousel dot indicators */
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    gap: 0.5rem;
+}
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(16, 185, 129, 0.3);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.carousel-dot.active {
+    background-color: #10b981;
+    transform: scale(1.2);
+}
+/* 3D Hub Styles */
+#research-hub-container {
+    position: relative;
+}
+#research-canvas {
+    width: 100%;
+    height: 600px;
+    cursor: grab;
+}
+#research-canvas:active {
+    cursor: grabbing;
+}
+#dynamic-content-panel {
+    max-height: 600px;
+    overflow-y: auto;
+}
+/* Keyframe animation for hero title */
+@keyframes breathe {
+    0%, 100% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.3), 0 0 20px rgba(16, 185, 129, 0.8); }
+    50% { text-shadow: 0 0 12px rgba(255, 255, 255, 0.4), 0 0 30px rgba(16, 185, 129, 1); }
+}
+/* Loading spinner styles */
+.loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #10b981;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/* Scroll to top button styles */
+#scroll-to-top-btn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99;
+    background-color: #10b981;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s, opacity 0.3s;
+}
+#scroll-to-top-btn:hover {
+    background-color: #047857;
+}
+
+/* Collapsible Section Styles */
+.collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 1rem;
+    background-color: rgba(20, 20, 20, 0.7); /* card-bg */
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    margin-bottom: 1rem; /* Space between headers */
+}
+.collapsible-header:hover {
+    background-color: rgba(30, 30, 30, 0.8);
+    border-color: rgba(16, 185, 129, 0.4);
+}
+.collapsible-header .section-title {
+    border-bottom: none; /* Remove underline from inner title */
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+.collapsible-header .chevron {
+    transition: transform 0.3s ease;
+}
+.collapsible-header.expanded .chevron {
+    transform: rotate(180deg);
+}
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out; /* Smooth transition for height */
+    padding: 0 1rem; /* Adjust padding as needed */
+    margin-top: -1rem; /* Overlap with header bottom margin */
+    margin-bottom: 1rem;
+}
+.collapsible-content.expanded {
+    max-height: 2000px; /* Large enough value to accommodate content */
+    padding: 1rem; /* Restore padding when expanded */
+    margin-top: 0;
+}
+.collapsible-content > *:first-child {
+    margin-top: 0;
+}

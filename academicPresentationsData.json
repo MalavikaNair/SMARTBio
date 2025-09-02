@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Dummy Academic Presentation",
+    "date": "2025-01-01",
+    "description": "Placeholder presentation description.",
+    "speakers": [
+      "Presenter A"
+    ],
+    "link": "#",
+    "image": "/assets/img/research.png"
+  }
+]
