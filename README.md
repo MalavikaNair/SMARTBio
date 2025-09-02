@@ -1,6 +1,6 @@
 # SMART Biomaterials Website
 
-- Static website for the SMART Biomaterials Group (IBME, University of Oxford).  
+- Static website for the SMART Biomaterials Group (IBME, University of Oxford).
 - Built with Tailwind CSS, hosted on GitHub Pages, GDPR-friendly (no third-party CDNs).
 
 ## 🔐 GDPR / Privacy
