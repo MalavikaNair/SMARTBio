@@ -46,8 +46,19 @@ try {
     throw new Error('particles.js not found.');
   }
 
-  // marked
-  copy(require.resolve('marked'), 'marked.min.js');
+  // marked — always copy the browser build
+  const markedRoot = path.dirname(require.resolve('marked/package.json'));
+  const markedCandidates = [
+    path.join(markedRoot, 'marked.min.js'),        // most packages ship this at root
+    path.join(markedRoot, 'dist', 'marked.min.js'),
+    path.join(markedRoot, 'lib', 'marked.umd.js'),
+  // explicit resolve to the browser file if available
+    (() => { try { return require.resolve('marked/marked.min.js'); } catch { return null; } })()
+  ].filter(Boolean);
+
+  if (!tryPaths(markedCandidates, 'marked.min.js')) {
+    throw new Error('Browser build of marked not found.');
+  }
 
   // Tone.js — search multiple known locations
   const toneRoot = path.dirname(require.resolve('tone/package.json'));
