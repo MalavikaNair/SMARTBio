@@ -1,0 +1,2207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
+  <link rel="stylesheet" href="./assets/css/fonts.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>body{font-family: var(--font-sans-exo);}</style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biological Network Sense Game</title>
+    <!-- Tailwind CSS CDN -->
+<style>
+        html, body {
+            height: 100%; /* Ensure html and body take full height */
+            margin: 0;
+            padding: 0;
+            /* Changed overflow-y to auto to allow vertical scrolling when content exceeds viewport */
+            /* Kept overflow-x hidden to prevent horizontal scrolling */
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #1a202c; /* Dark background */
+            color: #e2e8f0; /* Light text */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Align items to start, allowing content to push down */
+            min-height: 100vh;
+            /* Removed padding from body to allow fixed modals to cover fully */
+            box-sizing: border-box;
+        }
+        /* New container for main game content to apply padding */
+        #mainGameContainer {
+            width: 100%;
+            max-width: 800px;
+            padding: 1rem; /* Apply padding here instead of body */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            flex-grow: 1; /* Allow it to grow and take available space */
+        }
+
+        canvas {
+            background-color: #2d3748; /* Darker canvas background */
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: block;
+            touch-action: none; /* Disable default touch actions like scrolling/zooming on canvas itself */
+            margin-left: auto; /* Explicitly center */
+            margin-right: auto; /* Explicitly center */
+        }
+        .control-panel {
+            background-color: #2d3748;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 800px;
+            text-align: center; /* Center content within the panel */
+            margin-left: auto; /* Explicitly center */
+            margin-right: auto; /* Explicitly center */
+        }
+        .message-box { /* This will now be primarily for level objectives/status, not transient messages */
+            background-color: #2d3748;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 800px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.9rem;
+            margin-left: auto; /* Explicitly center */
+            margin-right: auto; /* Explicitly center */
+        }
+        .button-style {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background-image: linear-gradient(to right, #6366f1, #8b5cf6); /* Purple gradient */
+            color: white;
+            border: none;
+        }
+        .button-style:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.15), 0 3px 6px -1px rgba(0, 0, 0, 0.08);
+            background-image: linear-gradient(to right, #4f46e5, #7c3aed); /* Darker gradient on hover */
+        }
+        .button-style:active {
+            transform: translateY(0);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #4a5568;
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #8b5cf6;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #8b5cf6;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .label-value {
+            font-size: 0.875rem;
+            color: #a0aec0;
+        }
+        .sensor-type-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            justify-content: center;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        }
+        .sensor-type-selector label {
+            background-color: #4a5568;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap; /* Prevent text wrapping inside label */
+        }
+        .sensor-type-selector input[type="radio"]:checked + label {
+            background-color: #8b5cf6;
+            color: white;
+        }
+        .sensor-type-selector input[type="radio"] {
+            display: none;
+        }
+        .welcome-screen, .level-complete-modal, .pre-level-modal, .game-status-modal {
+            position: fixed; /* Changed to fixed for true viewport positioning */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh; /* Make it full viewport height */
+            background-color: rgba(45, 55, 72, 0.9); /* Darker, consistent with game-status-message */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+            padding: 2rem;
+            box-sizing: border-box; /* Include padding in the modal's total size */
+        }
+        .welcome-content, .level-complete-content, .pre-level-content, .game-status-content {
+            background-color: #2d3748; /* Added background color to make content visible */
+            border-radius: 0.75rem;
+            padding: 2rem 3rem; /* Consistent padding with game-status-message */
+            max-width: 600px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Added shadow back */
+            overflow-y: auto; /* Enable scrolling if content is too tall */
+            max-height: 90vh; /* Limit height to viewport height */
+            color: #e2e8f0; /* Ensure text is light */
+        }
+        .welcome-content h2, .level-complete-content h2, .pre-level-content h2, .game-status-content h2 {
+            font-size: 2.5rem; /* Larger font for title */
+            font-weight: bold;
+            color: #a78bfa; /* Purple-400 equivalent */
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Text shadow for title */
+        }
+        .welcome-content p, .level-complete-content p, .pre-level-content p, .game-status-content p {
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            color: #e2e8f0;
+        }
+        .welcome-content ul {
+            text-align: left;
+            margin-bottom: 1.5rem;
+            list-style-type: disc;
+            padding-left: 1.5rem;
+        }
+        .welcome-content li {
+            margin-bottom: 0.5rem;
+            color: #a0aec0;
+        }
+        /* Tutorial highlighting styles */
+        .tutorial-highlight {
+            box-shadow: 0 0 0 5px rgba(255, 255, 0, 0.7), 0 0 0 10px rgba(255, 255, 0, 0.3);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        .highlight-canvas-border {
+            border: 5px solid rgba(255, 255, 0, 0.7);
+            box-sizing: border-box;
+        }
+        .disabled-button {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        /* Tooltip styles */
+        #gameTooltip {
+            position: absolute;
+            background-color: rgba(30, 41, 59, 0.95); /* slate-800 with transparency */
+            border: 1px solid #475569; /* slate-600 */
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            color: #e2e8f0; /* light text */
+            font-size: 0.875rem;
+            pointer-events: none; /* Allows clicks to pass through to canvas */
+            z-index: 200;
+            display: none; /* Hidden by default */
+            max-width: 250px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        #gameTooltip p {
+            margin-bottom: 0.25rem;
+        }
+        #gameTooltip p:last-child {
+            margin-bottom: 0;
+        }
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.2rem;
+        }
+        .stat-label {
+            color: #a0aec0; /* gray-400 */
+        }
+        .stat-value {
+            font-weight: bold;
+        }
+        /* I/O Reader Data Display - ensure consistent width */
+        #ioReaderDataDisplay {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Flexible columns, min 150px wide */
+            gap: 1rem; /* Space between items */
+            justify-content: center; /* Center grid items horizontally */
+            margin-left: auto; /* Explicitly center */
+            margin-right: auto; /* Explicitly center */
+        }
+        #ioReaderDataDisplay > div {
+            width: 100%; /* Ensure each div takes full grid column width */
+            box-sizing: border-box; /* Include padding/border in width */
+        }
+
+        /* New styles for temporary game messages (toast-like) */
+        #temporaryGameMessage {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.9); /* Light background for contrast */
+            color: #1a202c; /* Dark text */
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: bold;
+            white-space: nowrap;
+            opacity: 0; /* Start hidden */
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            pointer-events: none; /* Allow clicks to pass through */
+            z-index: 201; /* Above tooltips */
+            transform: translateY(10px); /* Start slightly below */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        #temporaryGameMessage.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcomeScreen" class="welcome-screen">
+        <div class="welcome-content">
+            <h2 class="text-purple-400">Welcome to Biological Network Sense!</h2>
+            <p>Design and manage a network of biological sensors to accurately read environmental values at specific target concentration zones, while managing energy costs.</p>
+            <h3>How to Play:</h3>
+            <ul>
+                <li><strong>Add Sensors:</strong> Click anywhere on the canvas to place a new sensor. Use the radio buttons to select the sensor type.</li>
+                <li><strong>Remove Sensors:</strong> Right-click on a sensor to remove it.</li>
+                <li><strong>Target Concentration Zones & I/O Readers:</strong> These will appear automatically on the canvas. Your goal is to wire sensors to the I/O Readers to read the target values. Right-click a target zone to remove both.</li>
+                <li><strong>Wire Sensors:</strong> Left-click a sensor to select it (it will glow cyan). Then, left-click an I/O Reader to connect/disconnect the selected sensor to/from that reader. **Note: Sensors can only connect to I/O Readers within their connection range.**</li>
+                <li><strong>Toggle Insulation:</strong> Select a sensor, then click "Toggle Insulation" to make it less affected by environmental stressors and *more* affected by connected sensors. Insulated sensors have a dashed border.</li>
+                <li><strong>Biological Medium:</strong> The background shows a gradient of biological concentration with persistent concentration fields (hot/cold spots). Environmental stressors (anomalies) will appear randomly.</li>
+                <li><strong>Energy & Budget:</strong> Track your total energy cost, which increases with sensor/I/O reader placement and recurring maintenance. Manage your energy budget with the slider.</li>
+                <li><strong>Network Redundancy:</strong> This measures how many sensors are covering the same area. Higher redundancy means your network is more robust against sensor failures and environmental noise, but it also increases cost.</li>
+                <li><strong>Win/Loss:</strong> Achieve high network accuracy and redundancy to win, or run out of energy/fail to meet performance targets to lose!</li>
+            </ul>
+            <div class="flex flex-wrap justify-center gap-4 mt-4">
+                <button id="startGameBtn" class="button-style">Start Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level Complete Modal -->
+    <div id="levelCompleteModal" class="level-complete-modal hidden">
+        <div class="level-complete-content">
+            <h2 id="levelCompleteTitle" class="text-purple-400">Level Complete!</h2>
+            <p id="levelCompleteMessage"></p>
+            <div class="flex flex-wrap justify-center gap-4 mt-4">
+                <button id="nextLevelBtn" class="button-style bg-green-600 hover:bg-green-700">Next Level</button>
+                <button id="restartCurrentLevelBtn" class="button-style bg-blue-500 hover:bg-blue-600">Restart Level</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pre-Level Objective Modal (New) -->
+    <div id="preLevelModal" class="pre-level-modal hidden">
+        <div class="pre-level-content">
+            <h2 id="preLevelTitle" class="text-purple-400">Level Objective</h2>
+            <p id="preLevelMessage"></p>
+            <button id="startLevelBtn" class="button-style bg-green-500 hover:bg-green-600 mt-4">Start Level</button>
+        </div>
+    </div>
+
+    <!-- Game Status Modal (for Game Over) -->
+    <div id="gameStatusModal" class="game-status-modal hidden">
+        <div class="game-status-content">
+            <h2 id="gameStatusTitle" class="text-purple-400">Game Over!</h2>
+            <p id="gameStatusText"></p>
+            <button id="restartGameFromStatusBtn" class="button-style bg-blue-500 hover:bg-blue-600 mt-4">Restart Game</button>
+        </div>
+    </div>
+
+    <div id="mainGameContainer" class="flex flex-col items-center">
+        <h1 class="text-3xl font-bold mb-6 text-purple-400">Biological Network Sense Game</h1>
+        <div class="message-box" id="messageBox">
+            <p>Welcome! Click "Start Game" to begin.</p>
+        </div>
+
+        <!-- I/O Reader Data Display -->
+        <div id="ioReaderDataDisplay" class="w-full max-w-4xl mt-4 p-4 bg-gray-700 rounded-lg shadow-md flex flex-wrap justify-center gap-4 text-sm">
+            <p class="text-gray-400 w-full text-center mb-2">I/O Reader Data:</p>
+            <!-- Dynamic content will go here -->
+        </div>
+
+        <canvas id="gameCanvas" class="w-full max-w-4xl h-[400px] md:h-[500px] lg:h-[600px] mt-4"></canvas>
+
+        <!-- Tooltip element -->
+        <div id="gameTooltip" class="absolute hidden"></div>
+
+        <!-- Temporary Game Message (Toast-like) -->
+        <div id="temporaryGameMessage" class="absolute"></div>
+
+        <div id="gameControls" class="control-panel w-full max-w-4xl mt-6 hidden">
+            <div class="grid grid-cols-1 gap-4 mb-6">
+                <div class="flex flex-col items-center col-span-full mx-auto w-full md:w-1/2 lg:w-1/3">
+                    <label for="budgetSlider" class="mb-2 text-sm text-gray-400">Energy Budget: <span id="budgetDisplay">1000</span></label>
+                    <input type="range" id="budgetSlider" min="500" max="5000" value="1000" step="50" class="w-full">
+                </div>
+            </div>
+
+            <div class="sensor-type-selector">
+                <input type="radio" id="sensorTypePolymer" name="sensorType" value="polymer" checked>
+                <label for="sensorTypePolymer">Polymer Sensor</label>
+                <input type="radio" id="sensorTypeMetal" name="sensorType" value="metal">
+                <label for="sensorTypeMetal">Metal Sensor</label>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4">
+                <button id="addSensorBtn" class="button-style">Add Sensor</button>
+                <button id="removeSensorBtn" class="button-style bg-red-500 hover:bg-red-600">Remove Sensor</button>
+                <button id="toggleInsulationBtn" class="button-style bg-teal-500 hover:bg-teal-600">Toggle Insulation</button>
+                <button id="undoBtn" class="button-style bg-gray-500 hover:bg-gray-600">Undo</button>
+                <button id="redoBtn" class="button-style bg-gray-500 hover:bg-gray-600">Redo</button>
+                <button id="resetGameBtn" class="button-style bg-blue-500 hover:bg-blue-600">Reset Game</button>
+            </div>
+
+            <div class="mt-6 text-center text-sm text-gray-400">
+                <p>Score: <span id="scoreDisplay" class="font-bold text-blue-300">0</span></p>
+                <p>Network Average Reading: <span id="networkAvgReading" class="font-bold text-green-300">N/A</span></p>
+                <p>Network Accuracy: <span id="networkAccuracy" class="font-bold text-yellow-300">N/A</span>%</p>
+                <p>Recent Avg Accuracy: <span id="recentAvgAccuracy" class="font-bold text-purple-300">N/A</span>%</p>
+                <p>Network Redundancy: <span id="networkRedundancy" class="font-bold text-orange-300">N/A</span></p>
+                <p class="mt-2">Total Cost: <span id="costDisplay" class="font-bold text-red-400">0</span></p>
+                <button id="resetCostBtn" class="button-style bg-gray-700 hover:bg-gray-800 text-xs px-3 py-1 mt-2">Reset Cost</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get canvas and context
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Get UI elements
+        const budgetSlider = document.getElementById('budgetSlider');
+        const budgetDisplay = document.getElementById('budgetDisplay');
+
+        const addSensorBtn = document.getElementById('addSensorBtn');
+        const removeSensorBtn = document.getElementById('removeSensorBtn');
+        const toggleInsulationBtn = document.getElementById('toggleInsulationBtn');
+        const resetGameBtn = document.getElementById('resetGameBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+
+        const sensorTypeRadios = document.querySelectorAll('input[name="sensorType"]');
+        const sensorTypePolymerRadio = document.getElementById('sensorTypePolymer');
+        const sensorTypeMetalRadio = document.getElementById('sensorTypeMetal');
+
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const networkAvgReadingSpan = document.getElementById('networkAvgReading');
+        const networkAccuracySpan = document.getElementById('networkAccuracy');
+        const recentAvgAccuracySpan = document.getElementById('recentAvgAccuracy');
+        const networkRedundancySpan = document.getElementById('networkRedundancy'); 
+        const messageBox = document.getElementById('messageBox'); // Still used for level objectives
+        const costDisplay = document.getElementById('costDisplay');
+        const resetCostBtn = document.getElementById('resetCostBtn');
+
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const gameControls = document.getElementById('gameControls');
+        const ioReaderDataDisplay = document.getElementById('ioReaderDataDisplay');
+        const gameTooltip = document.getElementById('gameTooltip');
+        const temporaryGameMessage = document.getElementById('temporaryGameMessage'); // New element for temporary messages
+
+        // Level Complete Modal Elements
+        const levelCompleteModal = document.getElementById('levelCompleteModal');
+        const levelCompleteTitle = document.getElementById('levelCompleteTitle');
+        const levelCompleteMessage = document.getElementById('levelCompleteMessage');
+        const nextLevelBtn = document.getElementById('nextLevelBtn');
+        const restartCurrentLevelBtn = document.getElementById('restartCurrentLevelBtn');
+
+        // Pre-Level Objective Modal (New)
+        const preLevelModal = document.getElementById('preLevelModal');
+        const preLevelTitle = document.getElementById('preLevelTitle');
+        const preLevelMessage = document.getElementById('preLevelMessage');
+        const startLevelBtn = document.getElementById('startLevelBtn');
+
+        // Game Status Modal (for Game Over)
+        const gameStatusModal = document.getElementById('gameStatusModal');
+        const gameStatusTitle = document.getElementById('gameStatusTitle');
+        const gameStatusText = document.getElementById('gameStatusText');
+        const restartGameFromStatusBtn = document.getElementById('restartGameFromStatusBtn');
+
+
+        // Game parameters
+        let sensors = [];
+        let ioReaders = [];
+        let flowField;
+        const BASE_CONNECTION_RANGE = 100;
+        const BASE_ADAPTATION_SPEED = 0.02; // Increased for faster accuracy rise
+        const SENSOR_RADIUS = 12;
+        const SENSOR_CLICK_RADIUS = SENSOR_RADIUS + 20;
+        const MAX_SENSORS = 50;
+        let gameStarted = false;
+        let gameActive = true;
+        let currentSensorType = 'polymer';
+
+        // Global state for interaction modes
+        let selectedSensorForWiring = null;
+
+        // Cost and Budget parameters
+        let totalCost = 0;
+        let currentBudget = parseFloat(budgetSlider.value);
+        const SENSOR_PLACEMENT_COST = 10;
+        const IO_READER_PLACEMENT_COST = 50;
+        const SENSOR_COST_PER_FRAME = 0.005;
+        const IO_READER_COST_PER_FRAME = 0.05;
+        const TARGET_BLOB_RADIUS = 20;
+        const IO_READER_WIDTH = 100; // Made thinner
+        const IO_READER_HEIGHT = 20; // Made shorter
+        const IO_READER_EDGE_PADDING = 5;
+        const MIN_DISTANCE_BETWEEN_IOREADERS = IO_READER_WIDTH + 40; // Increased distance for clarity
+
+        // New constant for the "skin layer"
+        const SKIN_LAYER_THICKNESS = 20; // Made smaller
+
+        // Anomaly Generation Parameters (Difficulty)
+        const ENVIRONMENTAL_ANOMALY_CHANCE_PER_FRAME = 0.001;
+        const SENSOR_ANOMALY_CHANCE_PER_FRAME = 0.0001;
+        const TEMPORARY_ANOMALY_DURATION = 300;
+
+        // Automated Target Generation Parameters
+        const MAX_AUTO_TARGETS = 3; // Max number of auto-generated targets at once
+        const AUTO_TARGET_GEN_INTERVAL = 3000; // Frames between checks for new targets (approx 50 seconds)
+        let autoTargetTimer = AUTO_TARGET_GEN_INTERVAL;
+
+        // Scoring and Win/Loss Conditions
+        let score = 0;
+        const WIN_THRESHOLD_ACCURACY = 80;
+        const WIN_THRESHOLD_REDUNDANCY = 1.5;
+        const WIN_DURATION_FRAMES = 3000;
+        let winTimer = 0;
+
+        const LOSS_THRESHOLD_ACCURACY = 30;
+        const LOSS_DURATION_FRAMES = 600;
+        let lossAccuracyTimer = 0;
+        let lossRedundancyTimer = 0;
+
+        // Sensor Types and their properties
+        const SENSOR_TYPES_PROPS = {
+            polymer: {
+                connectionMultiplier: 2.0,
+                adaptationMultiplier: 0.1,
+                noiseReduction: 0.1,
+                displayName: "Polymer",
+                cost: SENSOR_PLACEMENT_COST,
+                maintenance: SENSOR_COST_PER_FRAME
+            },
+            metal: {
+                connectionMultiplier: 0.5,
+                adaptationMultiplier: 5.0,
+                noiseReduction: 0.0,
+                displayName: "Metal",
+                cost: SENSOR_PLACEMENT_COST * 1.5, // Metal sensors are a bit more expensive
+                maintenance: SENSOR_COST_PER_FRAME * 1.2
+            }
+        };
+
+        // --- Undo/Redo System Variables ---
+        const MAX_HISTORY_STATES = 10; // Store last 10 game states
+        let gameStateHistory = [];
+        let historyPointer = -1; // Points to the current state in history
+
+        // --- In-Game Stats History ---
+        const ACCURACY_HISTORY_LENGTH = 120; // Store accuracy for 2 seconds (60 frames/sec)
+        let networkAccuracyHistory = [];
+
+        // --- Level System Variables ---
+        let currentLevelIndex = 0;
+        let pendingLevelIndex = 0; // New: To hold the index of the level to be loaded next
+
+        const levels = [
+            {
+                id: "level1",
+                title: "First Connection", // Changed title
+                message: "Place a Polymer Sensor and wire it to the I/O Reader. Achieve 80% accuracy for 5 seconds.",
+                initialBudget: 1500,
+                winConditions: {
+                    minAccuracy: 80,
+                    minRedundancy: 0.5,
+                    targetCount: 1,
+                    durationFrames: 300 // Sustain for 5 seconds
+                },
+                spawnNewTargets: false,
+                allowEnvironmentalAnomalies: false,
+                allowSensorAnomalies: false,
+                initialTargetPlacement: "bottom_center_io_and_target" // New strategy for Level 1
+            },
+            {
+                id: "level2",
+                title: "Distant Connection", // Changed title
+                message: "A new I/O Reader has appeared far away! Place a sensor and connect it to this distant I/O Reader. Achieve 70% accuracy for 5 seconds.",
+                initialBudget: 2000,
+                winConditions: {
+                    minAccuracy: 70,
+                    minRedundancy: 0.5,
+                    targetCount: 1,
+                    durationFrames: 300
+                },
+                spawnNewTargets: false,
+                allowEnvironmentalAnomalies: false,
+                allowSensorAnomalies: false,
+                initialTargetPlacement: "top_left_io_random_bottom_target" // New placement strategy for distant connection
+            },
+            {
+                id: "level3",
+                title: "Redundancy Basics", // Changed title
+                message: "Now, build a redundant network around the single target. Achieve a network redundancy of 1.5 and maintain 85% accuracy for 10 seconds. Environmental stressors will now appear!",
+                initialBudget: 2500,
+                winConditions: {
+                    minAccuracy: 85,
+                    minRedundancy: 1.5,
+                    targetCount: 1, // Key change: Redundancy with one target
+                    durationFrames: 600
+                },
+                spawnNewTargets: false,
+                allowEnvironmentalAnomalies: true,
+                allowSensorAnomalies: false,
+                initialTargetPlacement: "random"
+            },
+            {
+                id: "level4", // This was original level 3
+                title: "Adapting to Change", // Changed title
+                message: "New targets will appear! Use Metal Sensors and Insulation to maintain 90% accuracy and 2.0 redundancy across at least 2 targets for 15 seconds. Sensors may now fail!",
+                initialBudget: 3000,
+                winConditions: {
+                    minAccuracy: 90,
+                    minRedundancy: 2.0,
+                    targetCount: 2, // Keep 2 targets for this level
+                    durationFrames: 900
+                },
+                spawnNewTargets: true,
+                allowEnvironmentalAnomalies: true,
+                allowSensorAnomalies: true,
+                initialTargetPlacement: "random"
+            },
+            {
+                id: "level5", // This was original level 4
+                title: "Advanced Network", // Changed title
+                message: "Maintain 95% accuracy and 2.5 redundancy across all targets for 20 seconds. Manage your budget carefully!",
+                initialBudget: 4000,
+                winConditions: {
+                    minAccuracy: 95,
+                    minRedundancy: 2.5,
+                    targetCount: MAX_AUTO_TARGETS, // All targets must be active
+                    durationFrames: 1200
+                },
+                spawnNewTargets: true,
+                allowEnvironmentalAnomalies: true,
+                allowSensorAnomalies: true,
+                initialTargetPlacement: "random"
+            },
+            {
+                id: "level_final",
+                title: "Congratulations!",
+                message: "You have mastered Biological Network Sense! You can now continue playing freely or reset the game.",
+                initialBudget: 5000,
+                winConditions: {
+                    minAccuracy: 0,
+                    minRedundancy: 0,
+                    targetCount: 0,
+                    durationFrames: Infinity
+                },
+                spawnNewTargets: true,
+                allowEnvironmentalAnomalies: true,
+                allowSensorAnomalies: true,
+                initialTargetPlacement: "random"
+            }
+        ];
+
+        // Global tutorial state
+        let currentTutorialStepIndex = -1;
+        let tutorialActive = false;
+        let currentHighlightedElement = null; // For DOM elements
+        let highlightedSensorId = null; // For canvas-drawn sensors
+        let highlightedIOReaderId = null; // For canvas-drawn IO Readers
+
+        const tutorialSteps = [
+            { id: "start_level", message: "Welcome to Level 1! Your first task is to place a Polymer Sensor. Click on the canvas, *close to the I/O Reader* (the black rectangle at the bottom), to place it.", highlight: "gameCanvas" },
+            { id: "sensor_placed", message: "Great! Now, left-click on the sensor you just placed to select it for wiring (it will glow cyan).", highlight: "lastSensor" },
+            { id: "sensor_selected", message: "Sensor selected! Now, left-click on the I/O Reader (the black rectangle) to wire your sensor to it.", highlight: "firstIOReader" },
+            { id: "wired", message: "Excellent! Your sensor is now wired. Observe the 'Network Accuracy' display below. Maintain 80% accuracy for 5 seconds to complete the level.", highlight: "networkAccuracy" },
+            { id: "level_complete", message: "You completed the tutorial level!" }
+        ];
+
+        // --- IOReader Class ---
+        class IOReader {
+            constructor(x, y, width, height) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.wiredSensors = new Set();
+                this.id = `ioReader_${Date.now()}_${Math.random().toFixed(4)}`; // Unique ID for tooltip
+            }
+
+            isClicked(mouseX, mouseY) {
+                const clickableX1 = Math.min(this.x, this.x + this.width);
+                const clickableX2 = Math.max(this.x, this.x + this.width);
+                const clickableY1 = Math.min(this.y, this.y + this.height);
+                const clickableY2 = Math.max(this.y, this.y + this.height);
+
+                return mouseX >= clickableX1 && mouseX <= clickableX2 &&
+                       mouseY >= clickableY1 && mouseY <= clickableY2;
+            }
+
+            toggleSensorWiring(sensor) {
+                const sensorCenterX = sensor.x;
+                const sensorCenterY = sensor.y;
+                const ioReaderCenterX = this.x + this.width / 2;
+                const ioReaderCenterY = this.y + this.height / 2;
+
+                const dist = Math.sqrt(
+                    Math.pow(sensorCenterX - ioReaderCenterX, 2) +
+                    Math.pow(sensorCenterY - ioReaderCenterY, 2)
+                );
+
+                let effectiveConnectionRange = BASE_CONNECTION_RANGE * sensor.connectionMultiplier;
+                
+                if (dist > effectiveConnectionRange) {
+                    // Use new temporary message system for "sensor too far"
+                    showTemporaryGameMessage(`Sensor is too far (${dist.toFixed(0)} units). Max range: ${effectiveConnectionRange.toFixed(0)} units.`, this.x + this.width / 2, this.y);
+                    return false;
+                }
+
+                if (this.wiredSensors.has(sensor)) {
+                    this.wiredSensors.delete(sensor);
+                    sensor.wiredToReaders = sensor.wiredToReaders.filter(reader => reader !== this);
+                    displayGameMessage(`Sensor disconnected from I/O Reader at (${this.x.toFixed(0)}, ${this.y.toFixed(0)}).`);
+                    saveGameState();
+                    return true;
+                } else {
+                    this.wiredSensors.add(sensor);
+                    sensor.wiredToReaders.push(this);
+                    displayGameMessage(`Sensor connected to I/O Reader at (${this.x.toFixed(0)}, ${this.y.toFixed(0)}).`);
+                    saveGameState();
+                    return true;
+                }
+            }
+
+            draw(ctx) {
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.strokeStyle = '#a0aec0';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x, this.y, this.width, this.height);
+
+                // Tutorial highlight for IOReader
+                if (this.id === highlightedIOReaderId && tutorialActive) {
+                    ctx.strokeStyle = 'rgba(255, 255, 0, 1)'; // Yellow highlight
+                    ctx.lineWidth = 5;
+                    ctx.strokeRect(this.x, this.y, this.width, this.height);
+                }
+            }
+        }
+        // --- End IOReader Class ---
+
+        // --- FlowField Class for Dynamic Environment ---
+        class FlowField {
+            constructor(width, height) {
+                this.width = width;
+                this.height = height;
+                this.anomalies = [];
+                this.persistentFeatures = [];
+                this.gradientStartValue = 0;
+                this.gradientEndValue = 100;
+                this.targetBlobs = [];
+                this.setRandomGradient();
+                this.generatePersistentFeatures();
+            }
+
+            setRandomGradient() {
+                this.gradientStartValue = Math.random() * 100;
+                this.gradientEndValue = Math.random() * 100;
+            }
+
+            generatePersistentFeatures() {
+                this.persistentFeatures = [];
+                const numFeatures = 3 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < numFeatures; i++) {
+                    const x = Math.random() * this.width;
+                    const y = Math.random() * this.height;
+                    const value = Math.random() * 100;
+                    const radius = 50 + Math.random() * 100;
+                    this.persistentFeatures.push({ x, y, value, radius });
+                }
+            }
+
+            addTargetBlob(x, y, value, radius, ioReaderInstance) {
+                this.targetBlobs.push({ x, y, value, radius, associatedIOReader: ioReaderInstance });
+            }
+
+            clearTargetBlobs() {
+                this.targetBlobs.forEach(target => {
+                    if (target.associatedIOReader) {
+                        const readerToRemove = target.associatedIOReader;
+                        ioReaders = ioReaders.filter(reader => reader !== readerToRemove);
+                        sensors.forEach(sensor => {
+                            sensor.wiredToReaders = sensor.wiredToReaders.filter(reader => reader !== readerToRemove);
+                        });
+                    }
+                });
+                this.targetBlobs = [];
+            }
+
+            addAnomaly(x, y, value, radius, duration = 300) {
+                this.anomalies.push({
+                    x, y, value, radius,
+                    timer: duration,
+                    initialRadius: radius
+                });
+            }
+
+            update() {
+                this.anomalies = this.anomalies.filter(anomaly => {
+                    anomaly.timer--;
+                    anomaly.radius = anomaly.initialRadius * (anomaly.timer / 300);
+                    return anomaly.timer > 0;
+                });
+            }
+
+            draw(ctx) {
+                // Draw the main background gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, this.height);
+                const hueStart = 120 - (this.gradientStartValue / 100) * 120;
+                const hueEnd = 120 - (this.gradientEndValue / 100) * 120;
+
+                gradient.addColorStop(0, `hsl(${hueStart}, 70%, 50%)`);
+                gradient.addColorStop(1, `hsl(${hueEnd}, 70%, 50%)`);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, this.width, this.height);
+
+                // Draw the "skin layer" fill
+                ctx.fillStyle = 'rgba(167, 139, 250, 0.15)'; // Semi-transparent light purple fill
+                ctx.fillRect(0, 0, this.width, SKIN_LAYER_THICKNESS); // Top
+                ctx.fillRect(0, this.height - SKIN_LAYER_THICKNESS, this.width, SKIN_LAYER_THICKNESS); // Bottom
+                ctx.fillRect(0, SKIN_LAYER_THICKNESS, SKIN_LAYER_THICKNESS, this.height - 2 * SKIN_LAYER_THICKNESS); // Left
+                ctx.fillRect(this.width - SKIN_LAYER_THICKNESS, SKIN_LAYER_THICKNESS, SKIN_LAYER_THICKNESS, this.height - 2 * SKIN_LAYER_THICKNESS); // Right
+
+
+                // Draw the "skin layer" border with a different color
+                ctx.strokeStyle = '#6366f1'; // Purple color for the skin layer
+                ctx.lineWidth = 2; // Thin border
+                ctx.strokeRect(0, 0, this.width, this.height); // Outer border of the canvas
+                ctx.strokeRect(SKIN_LAYER_THICKNESS, SKIN_LAYER_THICKNESS, this.width - 2 * SKIN_LAYER_THICKNESS, this.height - 2 * SKIN_LAYER_THICKNESS); // Inner border
+
+                this.persistentFeatures.forEach(feature => {
+                    ctx.beginPath();
+                    ctx.arc(feature.x, feature.y, feature.radius, 0, Math.PI * 2);
+                    const hue = 120 - (feature.value / 100) * 120;
+                    ctx.fillStyle = `hsla(${hue}, 80%, 40%, 0.4)`;
+                    ctx.fill();
+                });
+
+                this.anomalies.forEach(anomaly => {
+                    ctx.beginPath();
+                    ctx.arc(anomaly.x, anomaly.y, anomaly.radius, 0, Math.PI * 2);
+                    const hue = 120 - (anomaly.value / 100) * 120;
+                    ctx.fillStyle = `hsla(${hue}, 100%, 60%, ${anomaly.timer / 300 * 0.8})`;
+                    ctx.fill();
+                    ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${anomaly.timer / 300})`;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                });
+
+                this.targetBlobs.forEach(target => {
+                    ctx.beginPath();
+                    ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0, 200, 0, 0.7)`;
+                    ctx.fill();
+                    ctx.strokeStyle = `rgba(0, 255, 0, 1)`;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    ctx.fillStyle = 'white';
+                    ctx.font = '14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(`Target: ${target.value.toFixed(0)}`, target.x, target.y);
+                });
+            }
+
+            // Updated getValueAt to reflect insulation's effect on environmental reading
+            getValueAt(px, py, isSensorInsulated = false) {
+                const gradientRatio = py / this.height;
+                let baseValue = this.gradientStartValue + (this.gradientEndValue - this.gradientStartValue) * gradientRatio;
+
+                let totalInfluenceValue = 0;
+                let totalInfluenceWeight = 0;
+
+                this.persistentFeatures.forEach(feature => {
+                    const dist = Math.sqrt(Math.pow(px - feature.x, 2) + Math.pow(py - feature.y, 2));
+                    if (dist < feature.radius * 2) {
+                        let weight = 1 - (dist / (feature.radius * 2));
+                        if (isSensorInsulated) {
+                            // Insulated sensors are less affected by persistent features
+                            weight *= 0.2; // Further reduce environmental influence (was 0.5)
+                        }
+                        totalInfluenceValue += feature.value * weight;
+                        totalInfluenceWeight += weight;
+                    }
+                });
+
+                this.anomalies.forEach(anomaly => {
+                    const dist = Math.sqrt(Math.pow(px - anomaly.x, 2) + Math.pow(py - anomaly.y, 2));
+                    if (dist < anomaly.radius * 2) {
+                        let weight = 1 - (dist / (anomaly.radius * 2));
+                        if (isSensorInsulated) {
+                            // Insulated sensors are less affected by anomalies
+                            weight *= 0.1; // Further reduce environmental influence (was 0.2)
+                        }
+                        totalInfluenceValue += anomaly.value * weight;
+                        totalInfluenceWeight += weight;
+                    }
+                });
+
+                this.targetBlobs.forEach(target => {
+                    const distToTarget = Math.sqrt(Math.pow(px - target.x, 2) + Math.pow(py - target.y, 2));
+                    if (distToTarget < target.radius * 2) {
+                        const weight = 1 - (distToTarget / (target.radius * 2));
+                        // Targets are a form of environmental value, so insulation reduces their direct impact
+                        if (isSensorInsulated) {
+                            totalInfluenceValue += target.value * weight * 1; // Reduced from *2 to *1 for insulated
+                        } else {
+                            totalInfluenceValue += target.value * weight * 2;
+                        }
+                        totalInfluenceWeight += weight * 2; // Weight remains the same for calculation
+                    }
+                });
+
+                if (totalInfluenceWeight > 0) {
+                    const influence = Math.min(1, totalInfluenceWeight);
+                    return baseValue * (1 - influence) + (totalInfluenceValue / totalInfluenceWeight) * influence;
+                } else {
+                    return baseValue;
+                }
+            }
+        }
+        // --- End FlowField Class ---
+
+
+        // Sensor class
+        class Sensor {
+            constructor(x, y, type = 'polymer') {
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                this.reading = Math.random() * 100;
+                this.connectedNeighbors = 0;
+                this.accuracyFactor = 0;
+                this.currentLocalAccuracy = 0;
+                this.wiredToReaders = [];
+                this.isInsulated = false;
+                this.id = `sensor_${Date.now()}_${Math.random().toFixed(4)}`; // Unique ID for tooltip
+
+                const props = SENSOR_TYPES_PROPS[type];
+                this.connectionMultiplier = props.connectionMultiplier;
+                this.adaptationMultiplier = props.adaptationMultiplier;
+                this.noiseReduction = props.noiseReduction;
+                this.cost = props.cost;
+                this.maintenance = props.maintenance;
+            }
+
+            update(flowField, neighbors) {
+                this.connectedNeighbors = neighbors.length;
+                
+                let envInfluence = flowField.getValueAt(this.x, this.y, this.isInsulated);
+
+                let neighborInfluenceSum = 0;
+                let neighborWeightSum = 0;
+                neighbors.forEach(neighbor => {
+                    const dist = Math.sqrt(Math.pow(this.x - neighbor.x, 2) + Math.pow(this.y - neighbor.y, 2));
+                    let effectiveConnectionRange = BASE_CONNECTION_RANGE * this.connectionMultiplier;
+                    if (dist < effectiveConnectionRange) {
+                        let weight = 1 - (dist / effectiveConnectionRange);
+
+                        // If the *neighbor* is insulated, reduce its influence on *this* sensor
+                        if (neighbor.isInsulated) {
+                            weight *= 0.3; // Insulated neighbors transmit less influence (e.g., 30% of normal)
+                        }
+                        
+                        neighborInfluenceSum += neighbor.reading * weight;
+                        neighborWeightSum += weight;
+                    }
+                });
+
+                let combinedReading;
+                if (neighborWeightSum > 0) {
+                    const neighborAvg = neighborInfluenceSum / neighborWeightSum;
+                    if (this.isInsulated) {
+                        // For insulated sensors, blend more heavily towards neighbor average
+                        combinedReading = (envInfluence * 0.1) + (neighborAvg * 0.9); // 90% neighbor influence
+                    } else {
+                        // Normal sensors blend with less neighbor influence
+                        combinedReading = (envInfluence * 0.7) + (neighborAvg * 0.3); // 30% neighbor influence
+                    }
+                } else {
+                    // No neighbors
+                    if (this.isInsulated) {
+                        // If insulated and no neighbors, it's primarily influenced by its (reduced) environment.
+                        // Its reading will appear "preserved" but still slowly affected by environmental changes.
+                        combinedReading = envInfluence; 
+                    } else {
+                        combinedReading = envInfluence; // No neighbors, only environmental influence
+                    }
+                }
+
+                let noise = (1 - this.accuracyFactor) * (Math.random() * 20 - 10);
+                if (this.isInsulated) {
+                    noise *= (1 - this.noiseReduction);
+                }
+
+                const targetReading = combinedReading + noise;
+
+                let effectiveAdaptationSpeed = BASE_ADAPTATION_SPEED * this.adaptationMultiplier;
+                // NEW: Boost adaptation speed if insulated
+                if (this.isInsulated) {
+                    effectiveAdaptationSpeed *= 5.0; // Further increase adaptation speed when insulated
+                }
+
+                this.reading += (targetReading - this.reading) * effectiveAdaptationSpeed;
+                this.currentLocalAccuracy = 100 - Math.abs(flowField.getValueAt(this.x, this.y) - this.reading);
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, SENSOR_RADIUS, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${this.reading}, 70%, 50%)`;
+                ctx.fill();
+                
+                if (this.isInsulated) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([5, 3]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                } else {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                // Enhanced accuracy glow: more prominent based on accuracy
+                if (this.currentLocalAccuracy > 0) {
+                    const glowAlpha = Math.min(0.8, this.currentLocalAccuracy / 100);
+                    const glowRadius = SENSOR_RADIUS + 3 + (this.currentLocalAccuracy / 100) * 5; // Glow expands with accuracy
+                    const glowColor = `rgba(0, 255, 0, ${glowAlpha})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, glowRadius, 0, Math.PI * 2);
+                    ctx.strokeStyle = glowColor;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+
+                if (selectedSensorForWiring === this) {
+                    ctx.strokeStyle = 'cyan';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+
+                    // Draw connection range for selected sensor
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, BASE_CONNECTION_RANGE * this.connectionMultiplier, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)'; // Transparent cyan
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                // Tutorial highlight for sensor
+                if (this.id === highlightedSensorId && tutorialActive) {
+                    ctx.strokeStyle = 'rgba(255, 255, 0, 1)'; // Yellow highlight
+                    ctx.lineWidth = 5;
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.reading.toFixed(0), this.x, this.y);
+            }
+        }
+
+        // --- Control Button State Update Function ---
+        function updateControlButtonsState() {
+            const buttons = [addSensorBtn, removeSensorBtn, toggleInsulationBtn, resetCostBtn, resetGameBtn, undoBtn, redoBtn];
+            const radios = [sensorTypePolymerRadio, sensorTypeMetalRadio];
+
+            // Determine if any modal is currently visible
+            const isModalOpen = !welcomeScreen.classList.contains('hidden') ||
+                                !levelCompleteModal.classList.contains('hidden') ||
+                                !preLevelModal.classList.contains('hidden') || // Check for pre-level modal
+                                !gameStatusModal.classList.contains('hidden'); // Check for game status modal (game over)
+
+            if (gameActive && !isModalOpen) {
+                // Game is active and no modal is shown, enable all controls
+                buttons.forEach(btn => btn.classList.remove('disabled-button'));
+                radios.forEach(radio => radio.disabled = false);
+                canvas.style.pointerEvents = 'auto'; // Enable canvas interactions
+                updateUndoRedoButtons(); // Re-enable undo/redo based on history
+            } else {
+                // Game is not active or a modal is shown, disable most controls
+                buttons.forEach(btn => btn.classList.add('disabled-button'));
+                radios.forEach(radio => radio.disabled = true);
+                canvas.style.pointerEvents = 'none'; // Disable canvas interactions
+            }
+        }
+
+        // Function to display messages in the message box (now for level objectives)
+        function displayLevelObjective(message) {
+            messageBox.innerHTML = `<p>${message}</p>`;
+        }
+
+        // Function to display general game messages in the info box at the top
+        function displayGameMessage(message) {
+            if (!tutorialActive) { // Only update if tutorial is not active
+                messageBox.innerHTML = `<p>${message}</p>`;
+            }
+        }
+
+        // --- New function for temporary, toast-like messages ---
+        let tempMessageTimeout;
+        function showTemporaryGameMessage(message, x, y) {
+            // Clear any existing timeout to prevent multiple messages overlapping
+            clearTimeout(tempMessageTimeout);
+
+            temporaryGameMessage.textContent = message;
+            
+            // Convert canvas coordinates to screen coordinates
+            const canvasRect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            const screenX = canvasRect.left + (x * (canvasRect.width / (canvas.width / dpr)));
+            const screenY = canvasRect.top + (y * (canvasRect.height / (canvas.height / dpr)));
+
+            // Position the message relative to the canvas
+            temporaryGameMessage.style.left = `${screenX}px`;
+            temporaryGameMessage.style.top = `${screenY - 30}px`; // Position slightly above the point
+            temporaryGameMessage.style.transform = 'translateX(-50%) translateY(10px)'; // Center horizontally, slight initial offset
+
+            temporaryGameMessage.classList.add('show');
+
+            tempMessageTimeout = setTimeout(() => {
+                temporaryGameMessage.classList.remove('show');
+            }, 2000); // Message visible for 2 seconds
+        }
+
+        // New function to display pre-level objectives as modals
+        function showPreLevelModal(levelTitle, levelMessage) {
+            preLevelTitle.textContent = `Level ${pendingLevelIndex + 1}: ${levelTitle}`; // Prepend "Level X:" here
+            preLevelMessage.textContent = levelMessage;
+            preLevelModal.classList.remove('hidden');
+            updateControlButtonsState(); // Disable controls while modal is open
+        }
+
+        function endGame(isWin, title, message) {
+            gameActive = false;
+            gameStatusTitle.textContent = title;
+            gameStatusText.textContent = message;
+            gameStatusModal.classList.remove('hidden');
+            messageBox.innerHTML = `<p>${message}</p>`; // Directly update message box
+            updateControlButtonsState(); // Disable controls when game ends
+            tutorialActive = false; // End tutorial if game over
+            clearHighlights();
+        }
+
+        // --- Tutorial System Functions ---
+        function clearHighlights() {
+            if (currentHighlightedElement) {
+                currentHighlightedElement.classList.remove('tutorial-highlight');
+                if (currentHighlightedElement === canvas) {
+                    canvas.classList.remove('highlight-canvas-border');
+                }
+                currentHighlightedElement = null;
+            }
+            highlightedSensorId = null;
+            highlightedIOReaderId = null;
+        }
+
+        function showTutorialStep(stepIndex) {
+            if (stepIndex >= tutorialSteps.length) {
+                tutorialActive = false;
+                clearHighlights();
+                displayGameMessage("Tutorial complete! Good luck!");
+                return;
+            }
+
+            currentTutorialStepIndex = stepIndex;
+            tutorialActive = true;
+            const step = tutorialSteps[stepIndex];
+            messageBox.innerHTML = `<p>${step.message}</p>`;
+            
+            clearHighlights(); // Clear previous highlights
+
+            let elementToHighlight = null;
+            if (step.highlight === "gameCanvas") {
+                elementToHighlight = canvas;
+                canvas.classList.add('highlight-canvas-border');
+            } else if (step.highlight === "lastSensor" && sensors.length > 0) {
+                highlightedSensorId = sensors[sensors.length - 1].id;
+            } else if (step.highlight === "firstIOReader" && ioReaders.length > 0) {
+                highlightedIOReaderId = ioReaders[0].id;
+            } else if (step.highlight === "networkAccuracy") {
+                elementToHighlight = networkAccuracySpan.parentElement; // Parent div for better highlight
+            }
+
+            if (elementToHighlight) {
+                elementToHighlight.classList.add('tutorial-highlight');
+                currentHighlightedElement = elementToHighlight;
+            }
+        }
+
+        // --- Undo/Redo System Functions ---
+        function saveGameState() {
+            if (historyPointer < gameStateHistory.length - 1) {
+                gameStateHistory = gameStateHistory.slice(0, historyPointer + 1);
+            }
+
+            if (gameStateHistory.length >= MAX_HISTORY_STATES) {
+                gameStateHistory.shift();
+            }
+
+            const state = {
+                sensors: sensors.map(s => ({ ...s, wiredToReaders: s.wiredToReaders.map(r => ioReaders.indexOf(r)) })),
+                ioReaders: ioReaders.map(r => ({ ...r, wiredSensors: Array.from(r.wiredSensors).map(s => sensors.indexOf(s)) })),
+                targetBlobs: flowField.targetBlobs.map(t => ({ ...t, associatedIOReader: ioReaders.indexOf(t.associatedIOReader) })),
+                totalCost: totalCost,
+                score: score,
+                selectedSensorForWiring: selectedSensorForWiring ? sensors.indexOf(selectedSensorForWiring) : null,
+                currentLevelIndex: currentLevelIndex,
+                gameActive: gameActive,
+                gameStarted: gameStarted,
+                // Tutorial state
+                currentTutorialStepIndex: currentTutorialStepIndex,
+                tutorialActive: tutorialActive,
+                highlightedSensorId: highlightedSensorId,
+                highlightedIOReaderId: highlightedIOReaderId
+            };
+            gameStateHistory.push(state);
+            historyPointer = gameStateHistory.length - 1;
+            updateUndoRedoButtons();
+        }
+
+        function restoreGameState(state) {
+            totalCost = state.totalCost;
+            score = state.score;
+            currentLevelIndex = state.currentLevelIndex;
+            gameActive = state.gameActive;
+            gameStarted = state.gameStarted;
+
+            // Restore tutorial state
+            currentTutorialStepIndex = state.currentTutorialStepIndex;
+            tutorialActive = state.tutorialActive;
+            highlightedSensorId = state.highlightedSensorId;
+            highlightedIOReaderId = state.highlightedIOReaderId;
+
+
+            sensors = state.sensors.map(s => {
+                const newSensor = new Sensor(s.x, s.y, s.type);
+                Object.assign(newSensor, s);
+                newSensor.wiredToReaders = [];
+                return newSensor;
+            });
+
+            ioReaders = state.ioReaders.map(r => {
+                const newIOReader = new IOReader(r.x, r.y, r.width, r.height);
+                Object.assign(newIOReader, r);
+                newIOReader.wiredSensors = new Set();
+                return newIOReader;
+            });
+
+            sensors.forEach(s => {
+                s.wiredToReaders = s.wiredToReaders.map(readerIndex => ioReaders[readerIndex]);
+            });
+            ioReaders.forEach(r => {
+                r.wiredSensors = new Set(Array.from(r.wiredSensors).map(sensorIndex => sensors[sensorIndex]));
+            });
+
+            flowField.targetBlobs = state.targetBlobs.map(t => {
+                const newTarget = { ...t };
+                newTarget.associatedIOReader = ioReaders[t.associatedIOReader];
+                return newTarget;
+            });
+
+            selectedSensorForWiring = state.selectedSensorForWiring !== null ? sensors[state.selectedSensorForWiring] : null;
+
+            budgetDisplay.textContent = currentBudget.toFixed(0);
+            scoreDisplay.textContent = score.toFixed(0);
+            costDisplay.textContent = totalCost.toFixed(2);
+            updateControlButtonsState();
+            
+            welcomeScreen.classList.add('hidden');
+            gameControls.classList.remove('hidden');
+            levelCompleteModal.classList.add('hidden');
+            preLevelModal.classList.add('hidden'); // Ensure pre-level modal is hidden
+            gameStatusModal.classList.add('hidden'); // Ensure game status modal is hidden
+            
+            // Re-apply tutorial highlights and messages if tutorial is active after restore
+            if (tutorialActive && currentTutorialStepIndex !== -1) {
+                const step = tutorialSteps[currentTutorialStepIndex];
+                messageBox.innerHTML = `<p>${step.message}</p>`; // Restore tutorial message
+                clearHighlights(); // Clear any old highlights first
+                let elementToHighlight = null;
+                if (step.highlight === "gameCanvas") {
+                    elementToHighlight = canvas;
+                    canvas.classList.add('highlight-canvas-border');
+                } else if (step.highlight === "networkAccuracy") {
+                    elementToHighlight = networkAccuracySpan.parentElement;
+                }
+                if (elementToHighlight) {
+                    elementToHighlight.classList.add('tutorial-highlight');
+                    currentHighlightedElement = elementToHighlight;
+                }
+                // Canvas elements (sensors/ioReaders) will be highlighted in their draw methods
+            } else {
+                // If tutorial is not active, ensure message box shows normal level objective
+                displayLevelObjective(`Current Level: ${currentLevelIndex + 1}: ${levels[currentLevelIndex].title}. Goal: ${levels[currentLevelIndex].message}`);
+            }
+        }
+
+        function undo() {
+            if (historyPointer > 0) {
+                historyPointer--;
+                restoreGameState(gameStateHistory[historyPointer]);
+                updateUndoRedoButtons();
+            }
+        }
+
+        function redo() {
+            if (historyPointer < gameStateHistory.length - 1) {
+                historyPointer++;
+                restoreGameState(gameStateHistory[historyPointer]);
+                updateUndoRedoButtons();
+            }
+        }
+
+        function updateUndoRedoButtons() {
+            undoBtn.disabled = historyPointer <= 0;
+            redoBtn.disabled = historyPointer >= gameStateHistory.length - 1;
+
+            if (undoBtn.disabled) undoBtn.classList.add('disabled-button'); else undoBtn.classList.remove('disabled-button');
+            if (redoBtn.disabled) redoBtn.classList.add('disabled-button'); else redoBtn.classList.remove('disabled-button');
+        }
+
+        function initializeGame() {
+            const logicalWidth = canvas.width / (window.devicePixelRatio || 1);
+            const logicalHeight = canvas.height / (window.devicePixelRatio || 1);
+
+            sensors = [];
+            ioReaders = [];
+            flowField = new FlowField(logicalWidth, logicalHeight);
+            totalCost = 0;
+            score = 0;
+            winTimer = 0;
+            lossAccuracyTimer = 0;
+            lossRedundancyTimer = 0;
+            gameActive = true;
+            selectedSensorForWiring = null;
+            networkAccuracyHistory = [];
+            gameStateHistory = [];
+            historyPointer = -1;
+            currentTutorialStepIndex = -1; // Reset tutorial state
+            tutorialActive = false; // Reset tutorial state
+            clearHighlights(); // Clear any lingering highlights
+
+            sensorTypePolymerRadio.checked = true;
+            currentSensorType = 'polymer';
+
+            networkAvgReadingSpan.textContent = "N/A";
+            networkAccuracySpan.textContent = "N/A";
+            recentAvgAccuracySpan.textContent = "N/A";
+            networkRedundancySpan.textContent = "N/A";
+            costDisplay.textContent = totalCost.toFixed(2);
+            ioReaderDataDisplay.innerHTML = '<p class="text-gray-400 w-full text-center mb-2">I/O Reader Data:</p>';
+            
+            // Hide all modals except welcome screen initially
+            levelCompleteModal.classList.add('hidden');
+            preLevelModal.classList.add('hidden');
+            gameStatusModal.classList.add('hidden');
+            
+            displayLevelObjective(`Welcome! Click "Start Game" to begin.`);
+            updateControlButtonsState(); 
+        }
+
+        function startGame() {
+            initializeGame(); // This will reset game state and hide other modals
+            welcomeScreen.classList.add('hidden'); // Now hide the welcome screen
+            gameControls.classList.remove('hidden');
+            gameStarted = true;
+            pendingLevelIndex = 0; // Start at level 1
+            // Show pre-level modal for the first level
+            showPreLevelModal(levels[pendingLevelIndex].title, levels[pendingLevelIndex].message);
+        }
+
+        function proceedToLevel(levelIndex) {
+            // This function is called when "Start Level" is clicked in the pre-level modal
+            preLevelModal.classList.add('hidden'); // Hide the pre-level modal
+            gameActive = true; // Ensure game is active
+
+            // --- Explicitly reset tutorial state for any new level start ---
+            currentTutorialStepIndex = -1;
+            tutorialActive = false;
+            clearHighlights();
+            // --- End explicit tutorial reset ---
+
+            currentLevelIndex = levelIndex; // Set current level to the pending level
+            const level = levels[currentLevelIndex];
+
+            // Reset game state for the new level
+            sensors = [];
+            ioReaders = [];
+            // Re-initialize flowField with correct logical dimensions
+            const logicalWidth = canvas.width / (window.devicePixelRatio || 1);
+            const logicalHeight = canvas.height / (window.devicePixelRatio || 1);
+            flowField = new FlowField(logicalWidth, logicalHeight); 
+            flowField.setRandomGradient(); // New environment for each level
+            flowField.generatePersistentFeatures();
+            flowField.anomalies = []; // Clear anomalies
+            flowField.targetBlobs = []; // Clear targets
+
+            totalCost = 0;
+            currentBudget = level.initialBudget;
+            budgetSlider.value = currentBudget; // Update slider
+            score = 0;
+            winTimer = 0;
+            lossAccuracyTimer = 0;
+            lossRedundancyTimer = 0;
+            selectedSensorForWiring = null;
+            networkAccuracyHistory = [];
+
+            budgetDisplay.textContent = currentBudget.toFixed(0);
+            scoreDisplay.textContent = score.toFixed(0);
+            costDisplay.textContent = totalCost.toFixed(2);
+            networkAvgReadingSpan.textContent = "N/A";
+            networkAccuracySpan.textContent = "N/A";
+            recentAvgAccuracySpan.textContent = "N/A";
+            networkRedundancySpan.textContent = "N/A";
+            ioReaderDataDisplay.innerHTML = '<p class="text-gray-400 w-full text-center mb-2">I/O Reader Data:</p>';
+            
+            // Auto-place initial target(s) for the level based on its configuration
+            if (level.initialTargetPlacement) {
+                autoPlaceTargetAndIOReader(level.initialTargetPlacement);
+            } else {
+                for (let i = 0; i < (level.winConditions.targetCount || 1); i++) {
+                    autoPlaceTargetAndIOReader("random");
+                }
+            }
+
+            if (level.id === "level1") {
+                showTutorialStep(0); // Start tutorial for level 1
+            } else {
+                displayLevelObjective(`Level ${currentLevelIndex + 1}: ${levels[currentLevelIndex].title}. Goal: ${levels[currentLevelIndex].message}`);
+            }
+
+            saveGameState(); // Save initial state of the new level
+            updateControlButtonsState(); // Ensure buttons are enabled
+        }
+
+
+        function addSensorAtPos(x, y, type) {
+            if (sensors.length >= MAX_SENSORS) {
+                displayGameMessage(`Maximum ${MAX_SENSORS} sensors reached!`);
+                return false;
+            }
+            const sensorCost = SENSOR_TYPES_PROPS[type].cost;
+            if (totalCost + sensorCost > currentBudget) {
+                displayGameMessage(`Not enough budget to add a sensor! Current Budget: ${currentBudget.toFixed(0)}, Cost: ${sensorCost}`);
+                return false;
+            }
+
+            const newSensor = new Sensor(x, y, type);
+            sensors.push(newSensor);
+            totalCost += sensorCost;
+            displayGameMessage(`Sensor added (${SENSOR_TYPES_PROPS[type].displayName}). Total sensors: ${sensors.length}. Cost: ${totalCost.toFixed(2)}`);
+            saveGameState();
+            return true;
+        }
+
+        function autoPlaceTargetAndIOReader(placementStrategy = "random") {
+            const logicalWidth = canvas.width / (window.devicePixelRatio || 1);
+            const logicalHeight = canvas.height / (window.devicePixelRatio || 1);
+
+            let newIoX, newIoY, newTargetX, newTargetY;
+            let placedSuccessfully = false;
+            let attempts = 0;
+            const MAX_ATTEMPTS = 100;
+
+            // Define the bounds for I/O Reader placement within the skin layer
+            const ioMinX = IO_READER_EDGE_PADDING;
+            const ioMaxX = logicalWidth - IO_READER_WIDTH - IO_READER_EDGE_PADDING;
+            const ioMinY = IO_READER_EDGE_PADDING;
+            const ioMaxY = logicalHeight - IO_READER_HEIGHT - IO_READER_EDGE_PADDING;
+
+            // Define the bounds for target placement within the main canvas area
+            const targetAreaMinX = SKIN_LAYER_THICKNESS + TARGET_BLOB_RADIUS;
+            const targetAreaMaxX = logicalWidth - SKIN_LAYER_THICKNESS - TARGET_BLOB_RADIUS;
+            const targetAreaMinY = SKIN_LAYER_THICKNESS + TARGET_BLOB_RADIUS;
+            const targetAreaMaxY = logicalHeight - SKIN_LAYER_THICKNESS - TARGET_BLOB_RADIUS;
+
+
+            if (placementStrategy === "bottom_center_io_and_target") { // New strategy for Level 1
+                newIoX = logicalWidth * 0.5 - IO_READER_WIDTH / 2;
+                newIoY = logicalHeight - IO_READER_HEIGHT - IO_READER_EDGE_PADDING; // Place at bottom edge of skin layer
+                
+                newTargetX = logicalWidth * 0.5; // Center target horizontally
+                newTargetY = newIoY - TARGET_BLOB_RADIUS - 10; // Place target just above the I/O reader
+                placedSuccessfully = true;
+            } else if (placementStrategy === "top_left_io_random_bottom_target") {
+                // I/O Reader at top-left corner of the skin layer
+                newIoX = ioMinX;
+                newIoY = ioMinY;
+
+                // Target at bottom-left or bottom-right, within the main canvas area
+                const targetCornerChoice = Math.random() < 0.5 ? "bottom_left" : "bottom_right";
+                if (targetCornerChoice === "bottom_left") {
+                    newTargetX = targetAreaMinX + Math.random() * (logicalWidth * 0.4 - targetAreaMinX); // Random in left-bottom quadrant
+                    newTargetY = targetAreaMaxY - Math.random() * (logicalHeight * 0.2); // Random in lower part
+                } else { // bottom_right
+                    newTargetX = logicalWidth * 0.6 + Math.random() * (targetAreaMaxX - logicalWidth * 0.6); // Random in right-bottom quadrant
+                    newTargetY = targetAreaMaxY - Math.random() * (logicalHeight * 0.2); // Random in lower part
+                }
+                placedSuccessfully = true;
+            } else { // "random" or default
+                while (!placedSuccessfully && attempts < MAX_ATTEMPTS) {
+                    // Randomly select an edge for the I/O Reader
+                    const edge = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+                    if (edge === 0) { // Top edge
+                        newIoX = ioMinX + Math.random() * (ioMaxX - ioMinX);
+                        newIoY = ioMinY;
+                    } else if (edge === 1) { // Right edge
+                        newIoX = ioMaxX;
+                        newIoY = ioMinY + Math.random() * (ioMaxY - ioMinY);
+                    } else if (edge === 2) { // Bottom edge
+                        newIoX = ioMinX + Math.random() * (ioMaxX - ioMinX);
+                        newIoY = ioMaxY;
+                    } else { // Left edge
+                        newIoX = ioMinX;
+                        newIoY = ioMinY + Math.random() * (ioMaxY - ioMinY);
+                    }
+
+                    // Place target randomly within the main canvas area
+                    newTargetX = targetAreaMinX + Math.random() * (targetAreaMaxX - targetAreaMinX);
+                    newTargetY = targetAreaMinY + Math.random() * (targetAreaMaxY - targetAreaMinY);
+
+                    let overlaps = false;
+                    for (const existingReader of ioReaders) {
+                        const existingReaderRight = existingReader.x + existingReader.width;
+                        const existingReaderBottom = existingReader.y + existingReader.height;
+                        const newReaderRight = newIoX + IO_READER_WIDTH;
+                        const newReaderBottom = newIoY + IO_READER_HEIGHT;
+
+                        if (newIoX < existingReaderRight + MIN_DISTANCE_BETWEEN_IOREADERS &&
+                            newReaderRight > existingReader.x - MIN_DISTANCE_BETWEEN_IOREADERS &&
+                            newIoY < existingReaderBottom + MIN_DISTANCE_BETWEEN_IOREADERS &&
+                            newReaderBottom > existingReader.y - MIN_DISTANCE_BETWEEN_IOREADERS) {
+                            overlaps = true;
+                            break;
+                        }
+                    }
+
+                    if (!overlaps) {
+                        placedSuccessfully = true;
+                    }
+                    attempts++;
+                }
+            }
+
+            if (placedSuccessfully) {
+                const newIOReader = new IOReader(newIoX, newIoY, IO_READER_WIDTH, IO_READER_HEIGHT);
+                ioReaders.push(newIOReader);
+                totalCost += IO_READER_PLACEMENT_COST;
+
+                flowField.addTargetBlob(newTargetX, newTargetY, Math.random() * 100, TARGET_BLOB_RADIUS, newIOReader);
+                displayGameMessage(`New target concentration zone and I/O Reader have appeared!`);
+                saveGameState();
+            } else {
+                console.warn("Could not find a non-overlapping position for new I/O Reader after multiple attempts.");
+                displayGameMessage("Could not place new I/O Reader. Try removing some existing elements.");
+            }
+        }
+
+
+        function removeSensor(sensorToRemove = null) {
+            if (!gameActive) {
+                displayGameMessage("Game is over. Please reset to play again.");
+                return;
+            }
+            let removedSensor = null;
+            if (sensorToRemove) {
+                const index = sensors.indexOf(sensorToRemove);
+                if (index > -1) {
+                    removedSensor = sensors.splice(index, 1)[0];
+                }
+            } else { // This else block is for when removeSensor() is called without an argument (e.g., by the button)
+                if (selectedSensorForWiring) { // If a sensor is selected, remove it
+                    const index = sensors.indexOf(selectedSensorForWiring);
+                    if (index > -1) {
+                        removedSensor = sensors.splice(index, 1)[0];
+                        selectedSensorForWiring = null; // Deselect after removing
+                    }
+                } else { // No sensor selected, cannot remove
+                    displayGameMessage("Select a sensor first (left-click it) to remove it, or right-click directly on a sensor.");
+                    return; // Exit function if no sensor to remove
+                }
+            }
+
+            if (removedSensor) {
+                // Ensure the removed sensor is no longer wired to any readers
+                ioReaders.forEach(reader => reader.wiredSensors.delete(removedSensor));
+
+                displayGameMessage(`Sensor removed. Total sensors: ${sensors.length}.`);
+                saveGameState();
+
+                // --- NEW LOGIC FOR TUTORIAL RESET ---
+                // If in Level 1 tutorial and the last sensor was removed, revert to step 0
+                if (tutorialActive && currentLevelIndex === 0 && sensors.length === 0) {
+                    showTutorialStep(0); // Go back to "place sensor" step
+                }
+                // --- END NEW LOGIC ---
+
+            } else {
+                // This else block would only be reached if sensorToRemove was provided but not found,
+                // or if the selectedSensorForWiring was somehow invalid.
+                displayGameMessage("No sensor found to remove!");
+            }
+        }
+
+        function resetGame() {
+            initializeGame();
+            welcomeScreen.classList.remove('hidden'); // Show welcome screen on full reset
+            gameControls.classList.add('hidden');
+            gameStarted = false;
+            saveGameState();
+        }
+
+        let actualRedundancy = 0; // Store the unrounded redundancy value
+
+        function calculateNetworkMetrics() {
+            if (sensors.length === 0) {
+                networkRedundancySpan.textContent = "0";
+                actualRedundancy = 0; // Reset actual redundancy
+                return;
+            }
+
+            const gridSize = 20;
+            let coveredPoints = 0;
+            let totalCoverageCount = 0;
+            const logicalWidth = canvas.width / (window.devicePixelRatio || 1);
+            const logicalHeight = canvas.height / (window.devicePixelRatio || 1);
+
+            // Calculate coverage only within the main playable area, not the skin layer
+            const playableMinX = SKIN_LAYER_THICKNESS;
+            const playableMaxX = logicalWidth - SKIN_LAYER_THICKNESS;
+            const playableMinY = SKIN_LAYER_THICKNESS;
+            const playableMaxY = logicalHeight - SKIN_LAYER_THICKNESS;
+
+            for (let x = playableMinX; x < playableMaxX; x += gridSize) {
+                for (let y = playableMinY; y < playableMaxY; y += gridSize) {
+                    let coveringSensors = 0;
+                    for (const sensor of sensors) {
+                        const dist = Math.sqrt(Math.pow(x - sensor.x, 2) + Math.pow(y - sensor.y, 2));
+                        
+                        let effectiveConnectionRange = BASE_CONNECTION_RANGE * sensor.connectionMultiplier;
+
+                        if (dist < effectiveConnectionRange) {
+                            coveringSensors++;
+                        }
+                    }
+                    if (coveringSensors > 0) {
+                        coveredPoints++;
+                        totalCoverageCount += coveringSensors;
+                    }
+                }
+            }
+            actualRedundancy = coveredPoints > 0 ? (totalCoverageCount / coveredPoints) : 0; // Store unrounded
+            networkRedundancySpan.textContent = actualRedundancy.toFixed(1); // Display rounded
+            // console.log(`Calculated Redundancy: ${actualRedundancy.toFixed(1)} (coveredPoints: ${coveredPoints}, totalCoverageCount: ${totalCoverageCount})`); // Removed debug log
+        }
+
+
+        function animate() {
+            // Ensure context transformation is reset at the start of each frame
+            ctx.resetTransform();
+            const dpr = window.devicePixelRatio || 1;
+            ctx.scale(dpr, dpr);
+
+            if (gameStarted && gameActive) {
+                const currentLevel = levels[currentLevelIndex];
+                // console.log(`Current Level Index in animate: ${currentLevelIndex}`); // Removed debug log
+
+                // Fix: Corrected the reduce function syntax
+                const recurringCostThisFrame = sensors.reduce((sum, s) => sum + s.maintenance, 0) + (ioReaders.length * IO_READER_COST_PER_FRAME);
+                totalCost += recurringCostThisFrame;
+                costDisplay.textContent = totalCost.toFixed(2);
+
+                let currentAccuracy = parseFloat(networkAccuracySpan.textContent) || 0;
+                // Use actualRedundancy for win condition check
+                let currentRedundancyForCheck = actualRedundancy; 
+
+                score += (currentAccuracy * 0.01) + (currentRedundancyForCheck * 0.1) - (recurringCostThisFrame * 0.1);
+                scoreDisplay.textContent = Math.max(0, score).toFixed(0);
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                flowField.update();
+                flowField.draw(ctx);
+
+                const logicalWidth = canvas.width / (window.devicePixelRatio || 1);
+                const logicalHeight = canvas.height / (window.devicePixelRatio || 1);
+
+                // Anomaly Generation based on current level
+                if (currentLevel.allowEnvironmentalAnomalies && Math.random() < ENVIRONMENTAL_ANOMALY_CHANCE_PER_FRAME) {
+                    const x = Math.random() * logicalWidth;
+                    const y = Math.random() * logicalHeight;
+                    const value = Math.random() * 100;
+                    const radius = 10 + Math.random() * 20;
+                    flowField.addAnomaly(x, y, value, radius, TEMPORARY_ANOMALY_DURATION * 2);
+                    displayGameMessage(`Environmental stressor appeared!`);
+                }
+
+                if (currentLevel.allowSensorAnomalies && Math.random() < SENSOR_ANOMALY_CHANCE_PER_FRAME && sensors.length > 0) {
+                    const randomSensorIndex = Math.floor(Math.random() * sensors.length);
+                    const affectedSensor = sensors[randomSensorIndex];
+                    
+                    removeSensor(affectedSensor);
+                    displayGameMessage(`Sensor ${randomSensorIndex + 1} (Type: ${affectedSensor.type}) experienced hardware failure and was removed!`);
+                }
+
+                // Auto-generate new targets based on current level
+                if (currentLevel.spawnNewTargets && ioReaders.length < MAX_AUTO_TARGETS) {
+                    autoTargetTimer--;
+                    if (autoTargetTimer <= 0) {
+                        autoPlaceTargetAndIOReader();
+                        autoTargetTimer = AUTO_TARGET_GEN_INTERVAL;
+                    }
+                }
+
+                let wiredTotalReading = 0;
+                let wiredSensorCount = 0;
+                let allWiredSensors = new Set();
+
+                sensors.forEach(sensor => {
+                    const neighbors = sensors.filter(otherSensor => {
+                        if (sensor === otherSensor) return false;
+                        const dist = Math.sqrt(Math.pow(sensor.x - otherSensor.x, 2) + Math.pow(sensor.y - otherSensor.y, 2));
+                        
+                        let effectiveConnectionRange = BASE_CONNECTION_RANGE * sensor.connectionMultiplier;
+
+                        return dist < effectiveConnectionRange;
+                    });
+
+                    sensor.update(flowField, neighbors);
+                    sensor.draw();
+
+                    if (sensor.wiredToReaders.length > 0) {
+                        allWiredSensors.add(sensor);
+                    }
+                });
+
+                for (let i = 0; i < sensors.length; i++) {
+                    for (let j = i + 1; j < sensors.length; j++) {
+                        const sensor1 = sensors[i];
+                        const sensor2 = sensors[j];
+                        const dist = Math.sqrt(Math.pow(sensor1.x - sensor2.x, 2) + Math.pow(sensor1.y - sensor2.y, 2));
+
+                        let effectiveConnectionRange1 = BASE_CONNECTION_RANGE * sensor1.connectionMultiplier;
+                        let effectiveConnectionRange2 = BASE_CONNECTION_RANGE * sensor2.connectionMultiplier;
+
+                        if (dist < effectiveConnectionRange1 && dist < effectiveConnectionRange2) {
+                            ctx.beginPath();
+                            ctx.moveTo(sensor1.x, sensor1.y);
+                            ctx.lineTo(sensor2.x, sensor2.y);
+                            const maxEffectiveRange = Math.max(effectiveConnectionRange1, effectiveConnectionRange2);
+                            const normalizedDist = dist / maxEffectiveRange;
+                            const opacity = 1 - (normalizedDist * 0.7);
+                            const lineWidth = 1 + (1 - normalizedDist) * 2;
+                            ctx.strokeStyle = `rgba(139, 92, 246, ${opacity})`;
+                            ctx.lineWidth = lineWidth;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                ioReaders.forEach(reader => {
+                    reader.draw(ctx);
+                    reader.wiredSensors.forEach(sensor => {
+                        ctx.beginPath();
+                        ctx.moveTo(sensor.x, sensor.y);
+                        ctx.lineTo(reader.x + reader.width / 2, reader.y + reader.height / 2);
+                        const dist = Math.sqrt(Math.pow(sensor.x - (reader.x + reader.width / 2), 2) + Math.pow(sensor.y - (reader.y + reader.height / 2), 2));
+                        const effectiveConnectionRange = BASE_CONNECTION_RANGE * sensor.connectionMultiplier;
+                        const normalizedDist = dist / effectiveConnectionRange;
+                        const opacity = 1 - (normalizedDist * 0.5);
+                        const lineWidth = 2 + (1 - normalizedDist) * 2;
+                        ctx.strokeStyle = `rgba(255, 255, 0, ${opacity})`;
+                        ctx.lineWidth = lineWidth;
+                        ctx.stroke();
+                    });
+                });
+
+                allWiredSensors.forEach(sensor => {
+                    wiredTotalReading += sensor.reading;
+                    wiredSensorCount++;
+                });
+
+                const wiredAverage = wiredSensorCount > 0 ? (wiredTotalReading / wiredSensorCount) : 0;
+                networkAvgReadingSpan.textContent = wiredAverage.toFixed(1);
+
+                ioReaderDataDisplay.innerHTML = '<p class="text-gray-400 w-full text-center mb-2">I/O Reader Data:</p>';
+                if (flowField.targetBlobs.length > 0) {
+                    const sortedTargets = [...flowField.targetBlobs].sort((a, b) => flowField.targetBlobs.indexOf(a) - flowField.targetBlobs.indexOf(b));
+
+                    let totalAccuracySum = 0;
+                    let targetsWithWiredSensors = 0;
+
+                    sortedTargets.forEach((target, index) => {
+                        const reader = target.associatedIOReader;
+                        let readerAvg = 0;
+                        let currentTargetAccuracy = 0;
+                        if (reader && reader.wiredSensors.size > 0) {
+                            let sum = 0;
+                            reader.wiredSensors.forEach(sensor => sum += sensor.reading);
+                            readerAvg = sum / reader.wiredSensors.size;
+                            currentTargetAccuracy = (100 - Math.abs(flowField.getValueAt(target.x, target.y) - readerAvg));
+                            totalAccuracySum += currentTargetAccuracy;
+                            targetsWithWiredSensors++;
+                        }
+
+                        const readerDiv = document.createElement('div');
+                        readerDiv.className = 'bg-gray-800 p-2 rounded-md shadow-sm';
+                        readerDiv.innerHTML = `
+                            <p class="font-bold text-white">Target ${index + 1}:</p>
+                            <p class="text-green-300">Avg: ${readerAvg.toFixed(1)}</p>
+                            <p class="text-purple-300">True Val: ${flowField.getValueAt(target.x, target.y).toFixed(1)}</p>
+                            <p class="text-yellow-300">Accuracy: ${Math.max(0, currentTargetAccuracy).toFixed(1)}%</p>
+                        `;
+                        ioReaderDataDisplay.appendChild(readerDiv);
+                    });
+
+                    const overallNetworkAccuracy = targetsWithWiredSensors > 0 ? (totalAccuracySum / targetsWithWiredSensors) : 0;
+                    networkAccuracySpan.textContent = Math.max(0, overallNetworkAccuracy).toFixed(1);
+
+                    networkAccuracyHistory.push(overallNetworkAccuracy);
+                    if (networkAccuracyHistory.length > ACCURACY_HISTORY_LENGTH) {
+                        networkAccuracyHistory.shift();
+                    }
+                    const recentAvgAccuracy = networkAccuracyHistory.reduce((a, b) => a + b, 0) / networkAccuracyHistory.length;
+                    recentAvgAccuracySpan.textContent = Math.max(0, recentAvgAccuracy).toFixed(1);
+
+                    if (wiredSensorCount > 0 && overallNetworkAccuracy > 0 && overallNetworkAccuracy < 95) {
+                        // This message will now appear in the info box
+                        // displayGameMessage("Network reading is off! This could be due to un-insulated sensors, or the network pathway not being fully connected to the I/O reader.");
+                    }
+
+                } else {
+                    networkAccuracySpan.textContent = "N/A";
+                    recentAvgAccuracySpan.textContent = "N/A";
+                    ioReaderDataDisplay.innerHTML += '<p class="text-gray-500 w-full text-center">No targets set.</p>';
+                }
+                
+                calculateNetworkMetrics();
+
+                // Check win/loss conditions for the current level
+                currentAccuracy = parseFloat(networkAccuracySpan.textContent) || 0;
+                // Use actualRedundancy directly for the win condition check
+                currentRedundancyForCheck = actualRedundancy; 
+                const activeTargets = flowField.targetBlobs.filter(target => target.associatedIOReader && target.associatedIOReader.wiredSensors.size > 0).length;
+
+                // console.log(`Level ${currentLevelIndex + 1} Win Check:`); // Removed debug log
+                // console.log(`  Accuracy: ${currentAccuracy} (Min: ${currentLevel.winConditions.minAccuracy})`); // Removed debug log
+                // console.log(`  Redundancy: ${currentRedundancyForCheck} (Min: ${currentLevel.winConditions.minRedundancy})`); // Removed debug log
+                // console.log(`  Active Targets: ${activeTargets} (Min: ${currentLevel.winConditions.targetCount})`); // Removed debug log
+                // console.log(`  Win Timer: ${winTimer} (Duration: ${currentLevel.winConditions.durationFrames})`); // Removed debug log
+
+                if (currentAccuracy >= currentLevel.winConditions.minAccuracy &&
+                    currentRedundancyForCheck >= currentLevel.winConditions.minRedundancy && // Use unrounded for check
+                    activeTargets >= currentLevel.winConditions.targetCount) {
+                    winTimer++;
+                    if (winTimer >= currentLevel.winConditions.durationFrames) {
+                        gameActive = false; // Pause game
+                        levelCompleteModal.classList.remove('hidden');
+                        levelCompleteTitle.textContent = "Level Complete!";
+                        levelCompleteMessage.textContent = `You successfully completed Level ${currentLevelIndex + 1}: ${currentLevel.title}!`;
+                        nextLevelBtn.classList.remove('hidden'); // Show next level button
+                        restartCurrentLevelBtn.textContent = "Restart This Level";
+                        messageBox.innerHTML = `<p>Level Complete!</p>`; // Directly update the message box
+                        updateControlButtonsState(); // Disable controls when level ends
+                        tutorialActive = false; // End tutorial if level complete
+                        clearHighlights();
+                    }
+                } else {
+                    winTimer = 0;
+                }
+
+                if (totalCost > currentBudget) {
+                    endGame(false, "Game Over!", "Energy Budget Exceeded!");
+                }
+
+                if (currentAccuracy < LOSS_THRESHOLD_ACCURACY && flowField.targetBlobs.length > 0 && wiredSensorCount > 0) {
+                    lossAccuracyTimer++;
+                    if (lossAccuracyTimer >= LOSS_DURATION_FRAMES) {
+                        endGame(false, "Game Over!", "Network Accuracy Too Low!");
+                    }
+                } else {
+                    lossAccuracyTimer = 0;
+                }
+
+                if (currentRedundancyForCheck === 0 && sensors.length > 0 && flowField.targetBlobs.length > 0) { // Use unrounded for check
+                    lossRedundancyTimer++;
+                    if (lossRedundancyTimer >= LOSS_DURATION_FRAMES) {
+                        endGame(false, "Game Over!", "No Network Redundancy!");
+                    }
+                } else {
+                    lossRedundancyTimer = 0;
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // --- Event Listeners ---
+        startGameBtn.addEventListener('click', startGame);
+        nextLevelBtn.addEventListener('click', () => {
+            levelCompleteModal.classList.add('hidden'); // Hide level complete modal
+            // Check if there's a next level before trying to show its modal
+            if (currentLevelIndex + 1 < levels.length) {
+                pendingLevelIndex = currentLevelIndex + 1; // Set the pending level
+                showPreLevelModal(levels[pendingLevelIndex].title, levels[pendingLevelIndex].message);
+            } else {
+                // If it's the last level, show a final congratulations or reset option
+                endGame(true, levels[levels.length - 1].title, levels[levels.length - 1].message);
+            }
+        });
+        restartCurrentLevelBtn.addEventListener('click', () => {
+            levelCompleteModal.classList.add('hidden'); // Hide level complete modal
+            pendingLevelIndex = currentLevelIndex; // Stay on the current level
+            showPreLevelModal(levels[pendingLevelIndex].title, levels[pendingLevelIndex].message);
+        });
+        restartGameFromStatusBtn.addEventListener('click', resetGame); // For Game Over modal
+
+        // Event listener for starting a level from the pre-level modal
+        startLevelBtn.addEventListener('click', () => {
+            proceedToLevel(pendingLevelIndex); // Use the pending level index
+        });
+
+
+        addSensorBtn.addEventListener('click', () => {
+            if (gameActive) {
+                displayGameMessage("Click on the canvas to place your sensor.");
+            } else {
+                displayGameMessage("Game is over. Please reset to play again.");
+            }
+        });
+
+        removeSensorBtn.addEventListener('click', () => {
+            removeSensor(); // Call without argument to remove selected sensor
+        });
+
+        resetGameBtn.addEventListener('click', resetGame);
+        resetCostBtn.addEventListener('click', () => {
+            totalCost = 0;
+            costDisplay.textContent = totalCost.toFixed(2);
+            displayGameMessage("Cost tracker reset.");
+            saveGameState();
+        });
+
+        toggleInsulationBtn.addEventListener('click', () => {
+            if (selectedSensorForWiring) {
+                selectedSensorForWiring.isInsulated = !selectedSensorForWiring.isInsulated;
+                displayGameMessage(`Sensor ${selectedSensorForWiring.isInsulated ? 'insulated' : 'uninsulated'}.`);
+                selectedSensorForWiring = null;
+                saveGameState();
+            } else {
+                displayGameMessage("Select a sensor first to toggle its insulation.");
+            }
+        });
+
+        undoBtn.addEventListener('click', undo);
+        redoBtn.addEventListener('click', redo);
+
+        sensorTypeRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                if (gameActive) {
+                    currentSensorType = event.target.value;
+                    displayGameMessage(`New sensors will be of type: ${SENSOR_TYPES_PROPS[currentSensorType].displayName} Sensor.`);
+                } else {
+                    displayGameMessage("Game is over. Please reset to play again.");
+                }
+            });
+        });
+
+        budgetSlider.addEventListener('input', (event) => {
+            currentBudget = parseFloat(event.target.value);
+            budgetDisplay.textContent = currentBudget.toFixed(0);
+            displayLevelObjective(`Budget set to ${currentBudget.toFixed(0)}. Current Level: ${currentLevelIndex + 1}: ${levels[currentLevelIndex].title}. Goal: ${levels[currentLevelIndex].message}`);
+        });
+
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const parentWidth = canvas.parentElement.clientWidth;
+            const desiredWidth = Math.min(800, parentWidth - 32);
+
+            canvas.width = desiredWidth * dpr;
+            canvas.height = (desiredWidth * (3/4)) * dpr;
+            
+            canvas.style.width = `${desiredWidth}px`;
+            canvas.style.height = `${desiredWidth * (3/4)}px`;
+
+            // Reset the canvas transformation before applying new scale
+            ctx.resetTransform(); 
+            ctx.scale(dpr, dpr);
+            
+            // Re-initialize flowField with correct logical dimensions after resize
+            // It's important to pass the logical width/height to FlowField constructor
+            flowField = new FlowField(canvas.width / dpr, canvas.height / dpr);
+            // Re-place targets/IO readers if game has started and not in a level-end state
+            if (gameStarted && gameActive) {
+                // This logic needs to be careful not to reset level state if just resizing
+                // The targets are part of the level's initial setup.
+            }
+        }
+
+        window.onload = function() {
+            resizeCanvas();
+            initializeGame();
+            animate();
+        };
+
+        window.addEventListener('resize', resizeCanvas);
+
+        let startClickX = 0;
+        let startClickY = 0;
+        let movedDuringClick = false;
+
+        function getScaledMouseCoordinates(event) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const mouseX = (event.clientX - rect.left) * scaleX / (window.devicePixelRatio || 1);
+            const mouseY = (event.clientY - rect.top) * scaleY / (window.devicePixelRatio || 1);
+            return { x: mouseX, y: mouseY };
+        }
+
+
+        canvas.addEventListener('mousedown', (event) => {
+            if (!gameStarted || !gameActive) return;
+
+            const { x: mouseX, y: mouseY } = getScaledMouseCoordinates(event);
+
+            if (event.button === 0) { // Left click
+                startClickX = mouseX;
+                startClickY = mouseY;
+                movedDuringClick = false;
+
+                const clickedSensor = sensors.find(s => {
+                    const dist = Math.sqrt(Math.pow(mouseX - s.x, 2) + Math.pow(mouseY - s.y, 2));
+                    return dist < SENSOR_CLICK_RADIUS;
+                });
+
+                const clickedIOReader = ioReaders.find(reader => reader.isClicked(mouseX, mouseY));
+
+                if (tutorialActive) {
+                    if (currentTutorialStepIndex === 0) { // Expecting sensor placement
+                        if (addSensorAtPos(mouseX, mouseY, currentSensorType)) {
+                            showTutorialStep(1); // Advance to select sensor
+                        } else {
+                            // If sensor placement failed (e.g., out of budget, though not likely in tutorial)
+                            // Reiterate the instruction
+                            messageBox.innerHTML = `<p>${tutorialSteps[0].message}</p>`;
+                        }
+                    } else if (currentTutorialStepIndex === 1) { // Expecting sensor selection
+                        if (clickedSensor) {
+                            if (selectedSensorForWiring === clickedSensor) {
+                                selectedSensorForWiring = null;
+                                // No tutorial advance, but keep the current message
+                                messageBox.innerHTML = `<p>Sensor deselected. Please re-select the sensor to continue the tutorial.</p>`; 
+                            } else {
+                                selectedSensorForWiring = clickedSensor;
+                                showTutorialStep(2); // Advance to wire to IO Reader
+                            }
+                        } else {
+                            messageBox.innerHTML = `<p>Please click on the sensor you just placed to select it.</p>`;
+                        }
+                    } else if (currentTutorialStepIndex === 2) { // Expecting wiring to IO Reader
+                        if (selectedSensorForWiring && clickedIOReader) {
+                            const wiringSuccessful = clickedIOReader.toggleSensorWiring(selectedSensorForWiring);
+                            if (wiringSuccessful) {
+                                selectedSensorForWiring = null;
+                                showTutorialStep(3); // Advance to monitor accuracy
+                            }
+                        } else if (!selectedSensorForWiring) {
+                            messageBox.innerHTML = `<p>Please select a sensor first (left-click it), then click the I/O Reader.</p>`;
+                        } else {
+                            messageBox.innerHTML = `<p>Please click on the I/O Reader to wire your selected sensor.</p>`;
+                        }
+                    } else { // For other tutorial steps, allow normal interaction but don't advance tutorial here
+                        // This else block is for tutorial steps > 2, not for when tutorialActive is false.
+                        // This logic is only entered if tutorialActive is true.
+                        if (clickedSensor) {
+                            if (selectedSensorForWiring === clickedSensor) {
+                                selectedSensorForWiring = null;
+                                displayGameMessage("Sensor deselected.");
+                            } else {
+                                selectedSensorForWiring = clickedSensor;
+                                displayGameMessage("Sensor selected for wiring. Click an I/O Reader to connect/disconnect.");
+                            }
+                        } else if (clickedIOReader) {
+                            if (selectedSensorForWiring) {
+                                const wiringSuccessful = clickedIOReader.toggleSensorWiring(selectedSensorForWiring);
+                                if (wiringSuccessful) {
+                                    selectedSensorForWiring = null;
+                                }
+                            } else {
+                                displayGameMessage("I/O Reader clicked. Select a sensor first to wire it.");
+                            }
+                        } else {
+                            if (addSensorAtPos(mouseX, mouseY, currentSensorType)) {
+                                // Sensor added
+                            }
+                        }
+                    }
+                } else { // Normal game flow (tutorial not active)
+                    if (clickedSensor) {
+                        if (selectedSensorForWiring === clickedSensor) {
+                            selectedSensorForWiring = null;
+                            displayGameMessage("Sensor deselected.");
+                        } else {
+                            selectedSensorForWiring = clickedSensor;
+                            displayGameMessage("Sensor selected for wiring. Click an I/O Reader to connect/disconnect.");
+                        }
+                    } else if (clickedIOReader) {
+                        if (selectedSensorForWiring) {
+                            const wiringSuccessful = clickedIOReader.toggleSensorWiring(selectedSensorForWiring);
+                            if (wiringSuccessful) {
+                                selectedSensorForWiring = null;
+                            }
+                        } else {
+                            displayGameMessage("I/O Reader clicked. Select a sensor first to wire it.");
+                        }
+                    } else {
+                        if (addSensorAtPos(mouseX, mouseY, currentSensorType)) {
+                            // Sensor added
+                        }
+                    }
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseup', (event) => {
+            if (!gameStarted || !gameActive) return;
+
+            const { x: mouseX, y: mouseY } = getScaledMouseCoordinates(event);
+
+            const clickThreshold = 5;
+            const isSimpleClick = Math.abs(mouseX - startClickX) < clickThreshold && Math.abs(mouseY - startClickY) < clickThreshold && !movedDuringClick;
+            
+            movedDuringClick = false;
+        });
+
+
+        canvas.addEventListener('contextmenu', (event) => {
+            if (!gameStarted || !gameActive) return;
+
+            event.preventDefault();
+            const { x: clickX, y: clickY } = getScaledMouseCoordinates(event);
+
+            let closestSensorIndex = -1;
+            let minDistance = Infinity;
+
+            for (let i = 0; i < sensors.length; i++) {
+                const sensor = sensors[i];
+                const dist = Math.sqrt(Math.pow(clickX - sensor.x, 2) + Math.pow(clickY - sensor.y, 2));
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestSensorIndex = i;
+                }
+            }
+
+            if (closestSensorIndex !== -1 && minDistance < SENSOR_CLICK_RADIUS) {
+                // Call the general removeSensor function with the specific sensor to remove
+                removeSensor(sensors[closestSensorIndex]); 
+            } else {
+                let clickedTargetIndex = -1;
+                for (let i = 0; i < flowField.targetBlobs.length; i++) {
+                    const target = flowField.targetBlobs[i];
+                    const dist = Math.sqrt(Math.pow(clickX - target.x, 2) + Math.pow(clickY - target.y, 2));
+                    if (dist < target.radius + 5) {
+                        clickedTargetIndex = i;
+                        break;
+                    }
+                }
+                if (clickedTargetIndex !== -1) {
+                    const removedTarget = flowField.targetBlobs.splice(clickedTargetIndex, 1)[0];
+                    if (removedTarget.associatedIOReader) {
+                        const readerToRemove = removedTarget.associatedIOReader;
+                        ioReaders = ioReaders.filter(reader => reader !== readerToRemove);
+                        sensors.forEach(sensor => {
+                            sensor.wiredToReaders = sensor.wiredToReaders.filter(reader => reader !== readerToRemove);
+                        });
+                    }
+                    displayGameMessage(`Target and its I/O Reader removed.`);
+                    if (flowField.targetBlobs.length === 0) {
+                        networkAccuracySpan.textContent = "N/A";
+                    }
+                    saveGameState();
+                } else {
+                    let clickedIOReaderIndex = -1;
+                    for (let i = 0; i < ioReaders.length; i++) {
+                        const isAssociated = flowField.targetBlobs.some(target => target.associatedIOReader === ioReaders[i]);
+                        if (!isAssociated && ioReaders[i].isClicked(clickX, clickY)) {
+                            clickedIOReaderIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (clickedIOReaderIndex !== -1) {
+                        const removedReader = ioReaders.splice(clickedIOReaderIndex, 1)[0];
+                        sensors.forEach(sensor => {
+                            sensor.wiredToReaders = sensor.wiredToReaders.filter(reader => reader !== removedReader);
+                        });
+                        displayGameMessage(`I/O Reader removed.`);
+                        saveGameState();
+                    } else {
+                        displayGameMessage("No sensor, I/O Reader, or target found to remove at that location.");
+                    }
+                }
+            }
+        });
+
+    </script>
+
+  <script src="./assets/js/marked.min.js"></script>
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js"></script>
+</body>
+</html>

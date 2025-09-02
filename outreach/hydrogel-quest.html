@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
+  <link rel="stylesheet" href="./assets/css/fonts.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>body{font-family: var(--font-sans-exo);}</style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydrogel Quest - SMART Biomaterials</title>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#10b981', // emerald-500
+                        'primary-dark': '#047857', // emerald-700
+                        'dark-bg': '#000000', // Black
+                        'card-bg': 'rgba(20, 20, 20, 0.7)', // Darker grey with alpha
+                        'light-text': '#f3f4f6', // slate-100
+                        'medium-text': '#9ca3af', // slate-400
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #000000;
+            color: #f3f4f6;
+            font-family: 'Exo 2', sans-serif;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="%2310b981" fill-opacity="0.7" d="M12 2L2 8.5V15.5L12 22L22 15.5V8.5L12 2Z"/></svg>') 12 12, auto;
+        }
+        .card {
+            background-color: var(--card-bg, rgba(20, 20, 20, 0.7));
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.15), 0 0 15px rgba(16, 185, 129, 0.1);
+        }
+        .section-title {
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: #111827; padding: 2rem; border-radius: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            width: 90%; max-width: 60rem; max-height: 90vh;
+            overflow-y: auto; position: relative;
+            transform: scale(0.95); transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-close {
+            position: absolute; top: 1rem; right: 1rem;
+            cursor: pointer; font-size: 1.5rem; color: #9ca3af;
+            transition: color 0.3s ease;
+        }
+        .modal-close:hover { color: #f3f4f6; }
+        /* Game Styles */
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+            border: 2px solid #10b981;
+        }
+        #game-canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background-color: #0a0a1a;
+        }
+        #game-inventory {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #10b981;
+            color: white;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="py-20">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl font-bold text-center mb-8 section-title">Hydrogel Quest</h2>
+            <p class="text-medium-text mb-8 max-w-2xl mx-auto">Explore the lab and collect the ingredients to synthesize a hydrogel! Use the arrow keys to move.</p>
+            <div id="game-container" class="card p-4">
+                <canvas id="game-canvas" width="800" height="600"></canvas>
+                <div id="game-inventory">
+                    <h3 class="font-bold mb-2">Inventory:</h3>
+                    <ul id="inventory-list">
+                        </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="modal-container">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Hydrogel Quest Game
+            const gameCanvas = document.getElementById('game-canvas');
+            if (gameCanvas) {
+                const ctx = gameCanvas.getContext('2d');
+                const TILE_SIZE = 40;
+                const player = { x: TILE_SIZE * 2, y: TILE_SIZE * 2, size: TILE_SIZE / 2 };
+                const ingredients = [
+                    { name: 'Polymer', x: TILE_SIZE * 5, y: TILE_SIZE * 10, collected: false, color: '#ff6347' },
+                    { name: 'Cross-linker', x: TILE_SIZE * 15, y: TILE_SIZE * 3, collected: false, color: '#4682b4' },
+                    { name: 'Photoinitiator', x: TILE_SIZE * 10, y: TILE_SIZE * 12, collected: false, color: '#32cd32' }
+                ];
+                const labObjects = [
+                    { x: 0, y: 0, width: TILE_SIZE * 20, height: TILE_SIZE }, // Top wall
+                    { x: 0, y: TILE_SIZE * 14, width: TILE_SIZE * 20, height: TILE_SIZE }, // Bottom wall
+                    { x: 0, y: 0, width: TILE_SIZE, height: TILE_SIZE * 15 }, // Left wall
+                    { x: TILE_SIZE * 19, y: 0, width: TILE_SIZE, height: TILE_SIZE * 15 }, // Right wall
+                    { x: TILE_SIZE * 3, y: TILE_SIZE * 3, width: TILE_SIZE * 4, height: TILE_SIZE * 2 }, // Bench 1
+                    { x: TILE_SIZE * 10, y: TILE_SIZE * 8, width: TILE_SIZE * 6, height: TILE_SIZE * 2 }, // Bench 2
+                ];
+                const inventoryList = document.getElementById('inventory-list');
+
+                function draw() {
+                    ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+                    for (let i = 0; i < gameCanvas.width / TILE_SIZE; i++) {
+                        for (let j = 0; j < gameCanvas.height / TILE_SIZE; j++) {
+                            ctx.fillStyle = (i + j) % 2 === 0 ? '#1f2937' : '#374151';
+                            ctx.fillRect(i * TILE_SIZE, j * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        }
+                    }
+                    ctx.fillStyle = '#10b981';
+                    ctx.beginPath();
+                    ctx.arc(player.x + player.size, player.y + player.size, player.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ingredients.forEach(ing => {
+                        if (!ing.collected) {
+                            ctx.fillStyle = ing.color;
+                            ctx.fillRect(ing.x, ing.y, TILE_SIZE, TILE_SIZE);
+                        }
+                    });
+                    ctx.fillStyle = '#4b5563';
+                    labObjects.forEach(obj => ctx.fillRect(obj.x, obj.y, obj.width, obj.height));
+                }
+
+                function updateInventory() {
+                    inventoryList.innerHTML = '';
+                    ingredients.filter(i => i.collected).forEach(ing => {
+                        const li = document.createElement('li');
+                        li.textContent = ing.name;
+                        inventoryList.appendChild(li);
+                    });
+                }
+                
+                function checkCollision(newX, newY) {
+                    for(const obj of labObjects) {
+                        if (newX < obj.x + obj.width && newX + player.size*2 > obj.x &&
+                            newY < obj.y + obj.height && newY + player.size*2 > obj.y) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                window.addEventListener('keydown', e => {
+                    let newX = player.x, newY = player.y;
+                    switch (e.key) {
+                        case 'ArrowUp': newY -= 5; break;
+                        case 'ArrowDown': newY += 5; break;
+                        case 'ArrowLeft': newX -= 5; break;
+                        case 'ArrowRight': newX += 5; break;
+                    }
+
+                    if (!checkCollision(newX, newY)) {
+                       player.x = newX;
+                       player.y = newY;
+                    }
+
+                    ingredients.forEach(ing => {
+                        if (!ing.collected && player.x < ing.x + TILE_SIZE && player.x + player.size > ing.x &&
+                            player.y < ing.y + TILE_SIZE && player.y + player.size > ing.y) {
+                            ing.collected = true;
+                            updateInventory();
+                            if (ingredients.every(i => i.collected)) {
+                                setTimeout(() => {
+                                   const successModal = document.createElement('div');
+                                   successModal.id = 'success-modal';
+                                   successModal.className = 'modal-overlay active';
+                                   successModal.innerHTML = `<div class="modal-content text-center"><span class="modal-close">&times;</span><h2 class="text-3xl font-bold text-primary mb-4">Hydrogel Synthesized!</h2><img src="https://placehold.co/600x400/10b981/ffffff?text=Hydrogel" alt="Hydrogel" class="mx-auto rounded-lg"><p class="mt-4 text-medium-text">Congratulations! You've collected all the ingredients.</p></div>`;
+                                   document.getElementById('modal-container').appendChild(successModal);
+                                }, 100);
+                            }
+                        }
+                    });
+                    draw();
+                });
+                draw();
+            }
+
+            // Modal functionality (copied from original index.html)
+            document.body.addEventListener('click', function(e) {
+                if (e.target.matches('.modal-close') || e.target.matches('.modal-overlay')) {
+                    const activeModal = document.querySelector('.modal-overlay.active');
+                    if(activeModal) activeModal.classList.remove('active');
+                }
+            });
+        });
+    </script>
+
+  <script src="./assets/js/marked.min.js"></script>
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js"></script>
+</body>
+</html>

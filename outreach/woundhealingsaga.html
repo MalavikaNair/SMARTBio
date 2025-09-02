@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
+  <link rel="stylesheet" href="./assets/css/fonts.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>body{font-family: var(--font-sans-exo);}</style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wound Healing Saga</title>
+    <!-- Tailwind CSS CDN -->
+<!-- Tone.js CDN for sound effects -->
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-grey background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 2rem; /* Increased padding */
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 1200px; /* Increased max-width to accommodate new panel */
+            width: 100%;
+            border: 1px solid #e2e8f0; /* Subtle border */
+        }
+        .game-content-area {
+            display: flex;
+            flex-direction: column; /* Default to column on small screens */
+            gap: 1.5rem;
+        }
+        canvas {
+            background-color: #fce2c4; /* Default skin-like colour for the internal body environment */
+            border-radius: 1rem;
+            border: 2px solid #d4b090; /* Border to define the "body" area */
+            display: block;
+            width: 100%; /* Make canvas responsive */
+            height: 400px; /* Fixed height for now, can be dynamic later */
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .game-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem; /* Consistent gap */
+            justify-content: center;
+        }
+        .game-controls {
+            display: grid; /* Use grid for better control layout */
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Flexible columns */
+            gap: 1rem; /* Consistent gap */
+            justify-content: center;
+        }
+        .info-card, .control-button, .patient-button {
+            background-color: #f8fafc; /* Lighter background for info/buttons */
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.08); /* Slightly more pronounced shadow */
+            border: 1px solid #cbd5e1;
+            font-weight: 600;
+            color: #334155;
+            text-align: center;
+            flex: 1 1 auto; /* Allow items to grow and shrink */
+            min-width: 120px; /* Minimum width for cards */
+        }
+        .control-button, .patient-button {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-color: #4f46e5; /* Primary button colour */
+            color: white;
+            border: none;
+            font-size: 1rem;
+            padding: 0.85rem 1.5rem; /* Slightly more vertical padding */
+            font-weight: 700; /* Bolder text */
+            position: relative; /* For potential icon positioning */
+            overflow: hidden; /* For ripple effect */
+        }
+        .control-button:hover:not(:disabled), .patient-button:hover:not(.selected) {
+            background-color: #4338ca;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15); /* Stronger hover shadow */
+        }
+        .control-button:active:not(:disabled), .patient-button:active:not(.selected) {
+            transform: translateY(0);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .control-button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .patient-button.selected {
+            background-color: #22c55e; /* Green for selected patient */
+            color: white;
+            border-color: #16a34a;
+            cursor: default;
+        }
+        .message-box-overlay { /* Removed .encyclopaedia-modal-overlay from this selector */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent dark overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure it's on top */
+            opacity: 0; /* Start hidden */
+            visibility: hidden; /* Start hidden */
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .message-box-overlay.visible { /* Removed .encyclopaedia-modal-overlay.visible from this selector */
+            opacity: 1;
+            visibility: visible;
+        }
+        .message-box { /* Removed .encyclopaedia-modal-content from this selector */
+            background-color: #fff;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            font-weight: 500;
+            color: #1e293b;
+            max-width: 600px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transform: scale(0.95); /* Start slightly smaller */
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        .message-box-overlay.visible .message-box { /* Removed .encyclopaedia-modal-overlay.visible .encyclopaedia-modal-content from this selector */
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .message-box.hidden {
+            display: none;
+        }
+
+        .message-box p, .phase-modal-content p { /* Added .phase-modal-content p */
+            font-size: 1.1rem;
+            line-height: 1.5;
+            text-align: center; /* Ensure text is centered in these modals */
+        }
+        .message-box .message-title, .phase-modal-content h3 { /* Added .phase-modal-content h3 */
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-align: center; /* Ensure titles are centered */
+        }
+        .message-box .play-again-button, .phase-modal-content .dismiss-button { /* Removed .encyclopaedia-modal-content .close-button from this selector */
+            background-color: #22c55e; /* Green for success */
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            border: none;
+            align-self: center; /* Center the button */
+        }
+        .message-box .play-again-button:hover, .phase-modal-content .dismiss-button:hover { /* Removed .encyclopaedia-modal-content .close-button:hover from this selector */
+            background-color: #16a34a;
+        }
+        /* Specific styles for success/error messages */
+        .message-box.success {
+            border: 2px solid #16a34a;
+        }
+        .message-box.error {
+            border: 2px solid #dc2626;
+        }
+        .message-box.success .message-title { color: #16a34a; }
+        .message-box.error .message-title { color: #dc2626; }
+
+        @media (min-width: 768px) {
+            .game-content-area {
+                flex-direction: row; /* Row layout on larger screens */
+            }
+            canvas {
+                width: 60%; /* Canvas takes 60% width */
+            }
+            .metrics-panel {
+                width: 40%; /* Metrics panel takes 40% width */
+            }
+            .game-info, .patient-selection {
+                flex-wrap: nowrap; /* Prevent wrapping on larger screens */
+            }
+            .info-card, .patient-button {
+                flex: 1; /* Distribute space equally */
+            }
+            .game-controls {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Adjust min-width for controls */
+            }
+        }
+
+        /* New style for phase change highlight */
+        .phase-change-highlight {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(67, 56, 202, 0.9); /* Darker blue, semi-transparent */
+            color: white;
+            padding: 2rem 3rem;
+            border-radius: 1rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            z-index: 1001; /* Above game over overlay */
+            opacity: 0;
+            animation: fadeInOut 2s forwards;
+            pointer-events: none; /* Allow clicks to pass through */
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        /* Welcome Screen Styles */
+        .welcome-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f4f8; /* Match body background */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1002; /* Above everything else */
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .welcome-content {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem; /* Increased padding */
+            max-width: 700px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        .welcome-content h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+        .welcome-content p {
+            font-size: 1.1rem;
+            color: #475569;
+            margin-bottom: 1.5rem;
+        }
+        .welcome-buttons { /* New class for the button container */
+            display: flex;
+            flex-direction: column; /* Stack on small screens */
+            gap: 1rem;
+            margin-top: 1rem;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+        @media (min-width: 640px) { /* Tailwind's sm breakpoint */
+            .welcome-buttons {
+                flex-direction: row; /* Row on larger screens */
+            }
+        }
+
+        .welcome-content .start-game-button { /* Removed .encyclopaedia-button from this selector */
+            flex: 1; /* Allow buttons to grow */
+            max-width: 200px; /* Limit max width for individual buttons */
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            border: none;
+        }
+        .welcome-content .start-game-button {
+            background-color: #22c55e;
+            color: white;
+        }
+        .welcome-content .start-game-button:hover {
+            background-color: #16a34a;
+        }
+        /* Removed .welcome-content .encyclopaedia-button styles */
+
+        /* Styles for the temporary message box at the bottom */
+        .temp-message-overlay {
+            position: fixed; /* Use fixed to position relative to viewport */
+            bottom: 20px; /* Distance from the bottom */
+            left: 50%;
+            transform: translateX(-50%); /* Center horizontally */
+            display: flex; /* Changed to flex */
+            flex-direction: column; /* Stack messages vertically */
+            align-items: center; /* Center horizontally */
+            gap: 10px; /* Space between messages */
+            z-index: 1000; /* Ensure it's on top */
+            pointer-events: none; /* Allow clicks to pass through */
+            max-height: 80vh; /* Prevent messages from filling the whole screen */
+            overflow-y: hidden; /* Hide overflow, new messages push old ones up */
+        }
+
+        .temp-message-box-item { /* New class for individual messages */
+            background-color: rgba(0, 0, 0, 0.7); /* Darker, semi-transparent background for the message itself */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            opacity: 0; /* Start hidden */
+            transform: translateY(20px); /* Start slightly below */
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; /* Add transition for manual fade and move */
+            width: fit-content; /* Adjust width to content */
+            max-width: 90vw; /* Max width for responsiveness */
+            text-align: center;
+        }
+
+        /* Specific colours for temporary message types */
+        .temp-message-box-item.info { background-color: rgba(67, 56, 202, 0.8); } /* Blue */
+        .temp-message-box-item.success { background-color: rgba(34, 197, 94, 0.8); } /* Green */
+        .temp-message-box-item.warning { background-color: rgba(234, 179, 8, 0.8); } /* Yellow/Orange */
+        .temp-message-box-item.error { background-color: rgba(220, 38, 38, 0.8); } /* Red */
+
+        /* Phase Modal Styles */
+        .phase-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1005; /* Above everything else */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .phase-modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .phase-modal-content {
+            background-color: #fff;
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        .phase-modal-overlay.visible .phase-modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Slider fill colours */
+        .slider-track {
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            height: 12px;
+            overflow: hidden;
+        }
+        .slider-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+        .slider-fill.good {
+            background-color: #22c55e; /* Green */
+        }
+        .slider-fill.medium {
+            background-color: #eab308; /* Yellow */
+        }
+        .slider-fill.bad {
+            background-color: #ef4444; /* Red */
+        }
+
+        /* Removed encyclopaedia-specific styles */
+    </style>
+</head>
+<body>
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen" class="welcome-screen">
+        <div class="welcome-content">
+            <h2>Welcome to Wound Healing Saga!</h2>
+            <p>Become the Cellular Commander and guide a patient's wound through healing. Manage cells, fight threats, and ensure minimal scarring. Choose your patient and start the game!</p>
+            <div class="patient-selection mb-4">
+                <span class="text-gray-700 font-semibold mr-2">Choose Patient:</span>
+                <button id="patient-healthy" class="patient-button selected" data-type="healthy">Healthy</button>
+                <button id="patient-elderly" class="patient-button" data-type="elderly">Elderly</button>
+                <button id="patient-diabetic" class="patient-button" data-type="diabetic">Diabetic</button>
+            </div>
+            <div class="welcome-buttons">
+                <button id="startGameButton" class="start-game-button">Start Game</button>
+                <!-- Removed Encyclopaedia Button -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Game Container (initially hidden) -->
+    <div id="gameMainContainer" class="game-container hidden">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Wound Healing Saga</h1>
+
+        <div class="patient-info-display mb-4"> <!-- New div to display chosen patient -->
+            <span class="text-gray-700 font-semibold mr-2">Chosen Patient: <span id="chosenPatientDisplay" class="font-bold text-blue-700">Healthy</span></span>
+        </div>
+
+        <div class="game-info">
+            <div class="info-card">Phase: <span id="game-phase">Inflammation</span></div>
+            <div class="info-card" id="time-info-card">Time Elapsed: <span id="game-time">0.0s</span></div>
+        </div>
+
+        <div class="game-content-area">
+            <canvas id="gameCanvas" width="850" height="400"></canvas>
+
+            <div class="metrics-panel flex flex-col gap-4">
+                <div class="metric-slider" id="wound-health-metric">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Wound Health: <span id="wound-health-val"></span></label>
+                    <div class="slider-track">
+                        <div id="wound-health-fill" class="slider-fill"></div>
+                    </div>
+                </div>
+                <div class="metric-slider" id="wound-coverage-metric">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Wound Coverage: <span id="wound-coverage-val"></span></label>
+                    <div class="slider-track">
+                        <div id="wound-coverage-fill" class="slider-fill"></div>
+                    </div>
+                </div>
+                <div class="metric-slider" id="scar-level-metric">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Scarring: <span id="scar-level-val"></span></label>
+                    <div class="slider-track">
+                        <div id="scar-level-fill" class="slider-fill"></div>
+                    </div>
+                </div>
+                <div class="metric-slider" id="infection-level-metric">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Infection: <span id="infection-level-val"></span></label>
+                    <div class="slider-track">
+                        <div id="infection-level-fill" class="slider-fill"></div>
+                    </div>
+                </div>
+                <div class="metric-slider" id="inflammation-level-metric">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Inflammation: <span id="inflammation-level-val"></span></label>
+                    <div class="slider-track">
+                        <div id="inflammation-level-fill" class="slider-fill"></div>
+                    </div>
+                </div>
+                <div class="metric-slider" id="cellular-energy-metric">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Cellular Energy: <span id="cellular-energy-val"></span></label>
+                    <div class="slider-track">
+                        <div id="cellular-energy-fill" class="slider-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="game-controls">
+            <button id="activateMacrophages" class="control-button" disabled="">Activate Macrophages (10)</button>
+            <button id="releaseGrowthFactor" class="control-button" disabled="">Release Growth Factor (20)</button>
+            <button id="applyAntimicrobial" class="control-button" disabled="">Apply Antimicrobial (15)</button>
+            <button id="mechanicalStimulation" class="control-button hidden" disabled="">Mechanical Stimulation (25)</button>
+            <button id="restartGame" class="control-button bg-red-500 hover:bg-red-600">Restart Game</button>
+        </div>
+
+        <!-- Game Over Message Box Overlay -->
+        <div id="gameOverOverlay" class="message-box-overlay hidden">
+            <div id="messageBox" class="message-box error">
+                <h3 class="message-title" id="messageTitle">Healing Failed!</h3>
+                <p id="messageText">The wound became too severe and failed to heal. Final Wound Health: 0.0%, Final Scar Level: 0.0%. Time Elapsed: 0.0s</p>
+                <button id="playAgainButton" class="play-again-button" style="background-color: rgb(239, 68, 68);">Play Again?</button>
+            </div>
+        </div>
+
+        <!-- Temporary Message Display Container -->
+        <div id="tempMessage" class="temp-message-overlay">
+            <!-- Individual message boxes will be dynamically added here -->
+        </div>
+
+        <div class="phase-change-highlight hidden" id="phaseChangeHighlight"></div>
+
+        <!-- Phase Modal Overlay -->
+        <div id="phaseModalOverlay" class="phase-modal-overlay">
+            <div id="phaseModalContent" class="phase-modal-content">
+                <h3 id="phaseModalTitle"></h3>
+                <p id="phaseModalText"></p>
+                <button id="dismissPhaseModalButton" class="dismiss-button">Dismiss</button>
+            </div>
+        </div>
+
+        <!-- Removed Encyclopaedia Modal Overlay -->
+
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game state variables
+        let gamePhase = 'Inflammation';
+        let cellularEnergy = 100;
+        let woundHealth = 50; // Changed initial wound health to 50
+        let woundCoverage = 0; // New: Represents how much of the wound is covered/closed
+        let scarLevel = 0; // Represents percentage of scar tissue
+        let infectionLevel = 0; // 0-100, higher is worse
+        let inflammationLevel = 50; // 0-100, ideal is low but necessary initially
+        let gameTime = 0; // In-game time units (frames)
+        let gameRunning = false; // Game starts as false, waiting for user to click 'Start Game'
+        let currentPatientType = 'healthy'; // Default patient type
+        let proliferationActivity = 0; // New: Tracks proliferation intensity
+        let currentSkinColour = '#fce2c4'; // Initial default skin colour
+        let animationFrameId = null; // To store the ID of the animation frame
+        let reorganizeAnimationTimer = 0; // Timer for reorganize visual effect
+        let remodelingTimer = 0; // New: Timer for the Remodelling phase
+        let phaseModalTimeoutId = null; // To store the timeout ID for phase modals
+        let isModalActive = false; // New: Flag to indicate if a modal is active
+        let isFirstInflammationModal = true; // New: Flag for the very first inflammation modal
+
+        // Wound shape points for dynamic visualisation
+        let woundShapePoints = [];
+        const WOUND_SEGMENTS = 20; // Number of segments to define the wound circle
+        const WOUND_JAGGEDNESS = 0.15; // How irregular the wound is (0 to 1) - Reduced for stability
+
+        // Message Queue variables
+        const messageQueue = []; // Stores { message, type, duration } objects
+        const activeMessages = []; // Stores { element, timeoutId } for currently displayed messages
+        const MAX_VISIBLE_MESSAGES = 3; // Max messages to show at once
+
+        // Define possible skin colours for random selection (hex codes)
+        const skinColours = [
+            '#FCE2C4', // Light/Fair (e.g., Caucasian)
+            '#A0522D', // Medium/Brown (e.g., Hispanic, South Asian)
+            '#362D28'  // Dark/Black (e.g., African)
+        ];
+
+        // --- Sound Effects Setup ---
+        const synth = new Tone.Synth().toDestination();
+        const clickSound = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 }
+        }).toDestination();
+        const phaseChangeSound = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.5 }
+        }).toDestination();
+        const winSound = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "square" },
+            envelope: { attack: 0.02, decay: 0.2, sustain: 0.1, release: 0.4 } // Shortened release
+        }).toDestination();
+        const loseSound = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sawtooth" },
+            envelope: { attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.4 } // Shortened release
+        }).toDestination();
+        const warningSound = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.01, decay: 0.1, sustain: 0.05, release: 0.2 }
+        }).toDestination();
+
+        function playSound(type) {
+            Tone.start(); // Ensure audio context is started on user interaction
+            switch (type) {
+                case 'click':
+                    clickSound.triggerAttackRelease("C4", "8n");
+                    break;
+                case 'phaseChange':
+                    phaseChangeSound.triggerAttackRelease(["C4", "E4", "G4"], "4n");
+                    break;
+                case 'win':
+                    winSound.triggerAttackRelease(["C5", "E5", "G5"], "4n");
+                    break;
+                case 'lose':
+                    loseSound.triggerAttackRelease(["C3", "F#3", "C3"], "4n");
+                    break;
+                case 'warning':
+                    warningSound.triggerAttackRelease("A3", "16n");
+                    break;
+            }
+        }
+
+        // Helper function to convert hex colour to RGB array [r, g, b]
+        function hexToRgb(hex) {
+            const bigint = parseInt(hex.slice(1), 16);
+            const r = (bigint >> 16) & 255;
+            const g = (bigint >> 8) & 255;
+            const b = bigint & 255;
+            return [r, g, b];
+        }
+
+        // Helper function to interpolate between two RGB colours
+        function interpolateColour(colour1Rgb, colour2Rgb, factor) {
+            const r = Math.round(colour1Rgb[0] + factor * (colour2Rgb[0] - colour1Rgb[0]));
+            const g = Math.round(colour1Rgb[1] + factor * (colour2Rgb[1] - colour2Rgb[1]));
+            const b = Math.round(colour1Rgb[2] + factor * (colour2Rgb[2] - colour2Rgb[2]));
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        // Patient-specific parameters
+        const patientParams = {
+            healthy: {
+                healingFactor: 0.15,
+                infectionResistance: 0.006,
+                scarTendency: 0.03,
+                inflammationControl: 0.3, // Reduced from 0.5
+                displayName: 'Healthy'
+            },
+            elderly: { // Elderly patient parameters
+                healingFactor: 0.10,
+                infectionResistance: 0.002,
+                scarTendency: 0.15,
+                inflammationControl: 0.15, // Reduced from 0.3
+                displayName: 'Elderly'
+            },
+            diabetic: { // Diabetic patient parameters (most difficult)
+                healingFactor: 0.05,
+                infectionResistance: 0.03, // Significantly increased infection chance for diabetic
+                scarTendency: 0.20,
+                inflammationControl: 0.1, // Reduced from 0.2
+                displayName: 'Diabetic'
+            }
+        };
+
+        // Cell definitions for drawing and movement
+        let cells = []; // Changed from const to let
+        const CELL_SPEED = 0.5; // Base speed for cells
+        const CELL_RADIUS = 4;
+        const CELL_LIFESPAN = 300; // Lifespan in frames (e.g., 5 seconds at 60 FPS)
+
+        // Blood vessel and collagen data
+        const bloodVessels = [];
+        const collagenFibers = [];
+
+        // Wound dimensions
+        const WOUND_INITIAL_RADIUS = 100; // Initial wound radius
+        let woundCenterX, woundCenterY, currentWoundRadius; // Position and current radius of the wound
+
+        // UI elements
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const startGameButton = document.getElementById('startGameButton');
+        const gameMainContainer = document.getElementById('gameMainContainer'); // The main game UI
+        const chosenPatientDisplay = document.getElementById('chosenPatientDisplay'); // To display chosen patient
+
+        const gamePhaseEl = document.getElementById('game-phase');
+        const gameTimeEl = document.getElementById('game-time'); // New time element
+        const timeInfoCard = document.getElementById('time-info-card'); // New: Reference to the info card itself
+        const gameOverOverlay = document.getElementById('gameOverOverlay');
+        const messageTitleEl = document.getElementById('messageTitle');
+        const messageTextEl = document.getElementById('messageText');
+        const playAgainButton = document.getElementById('playAgainButton');
+        const phaseChangeHighlight = document.getElementById('phaseChangeHighlight');
+
+        // Temporary message box elements
+        const tempMessageOverlay = document.getElementById('tempMessage');
+
+        // Phase Modal elements
+        const phaseModalOverlay = document.getElementById('phaseModalOverlay');
+        const phaseModalContent = document.getElementById('phaseModalContent'); // Get content div
+        const phaseModalTitle = document.getElementById('phaseModalTitle');
+        const phaseModalText = document.getElementById('phaseModalText');
+        const dismissPhaseModalButton = document.getElementById('dismissPhaseModalButton'); // New dismiss button
+
+        // Removed Encyclopaedia Modal elements
+        // const encyclopaediaButton = document.getElementById('encyclopaediaButton');
+        // const encyclopaediaModalOverlay = document.getElementById('encyclopaediaModalOverlay');
+        // const encyclopaediaModalContent = document.getElementById('encyclopaediaModalContent');
+        // const closeEncyclopaediaButton = document.getElementById('closeEncyclopaediaButton');
+
+        // Control buttons
+        const activateMacrophagesBtn = document.getElementById('activateMacrophages');
+        const releaseGrowthFactorBtn = document.getElementById('releaseGrowthFactor');
+        const applyAntimicrobialBtn = document.getElementById('applyAntimicrobial');
+        const mechanicalStimulationBtn = document.getElementById('mechanicalStimulation'); // Renamed from reorganizeBtn
+        const restartGameBtn = document.getElementById('restartGame');
+
+        // Patient selection buttons (now directly within the welcome screen HTML)
+        const patientButtons = document.querySelectorAll('#welcomeScreen .patient-button'); // Select only buttons within welcomeScreen
+
+        // Slider elements (added IDs for tutorial targeting)
+        const woundHealthMetric = document.getElementById('wound-health-metric');
+        const woundHealthFill = document.getElementById('wound-health-fill');
+        const woundHealthVal = document.getElementById('wound-health-val');
+        const woundCoverageMetric = document.getElementById('wound-coverage-metric');
+        const woundCoverageFill = document.getElementById('wound-coverage-fill'); // New
+        const woundCoverageVal = document.getElementById('wound-coverage-val');     // New
+        const scarLevelMetric = document.getElementById('scar-level-metric');
+        const scarLevelFill = document.getElementById('scar-level-fill');
+        const scarLevelVal = document.getElementById('scar-level-val');
+        const infectionLevelMetric = document.getElementById('infection-level-metric');
+        const infectionLevelFill = document.getElementById('infection-level-fill');
+        const infectionLevelVal = document.getElementById('infection-level-val');
+        const inflammationLevelMetric = document.getElementById('inflammation-level-metric');
+        const inflammationLevelFill = document.getElementById('inflammation-level-fill');
+        const inflammationLevelVal = document.getElementById('inflammation-level-val');
+        const cellularEnergyMetric = document.getElementById('cellular-energy-metric');
+        const cellularEnergyFill = document.getElementById('cellular-energy-fill');
+        const cellularEnergyVal = document.getElementById('cellular-energy-val');
+
+        // --- Phase Definitions for Modals ---
+        const phaseInfo = {
+            'Inflammation': {
+                title: "Phase 1: Inflammation",
+                text: "The initial response to injury! Your goal is to clear debris, fight infection, and reduce excessive inflammation. Macrophages are your key allies here. High inflammation can hinder healing and increase scarring."
+            },
+            'Proliferation': {
+                title: "Phase 2: Proliferation",
+                text: "New tissue is forming! Focus on generating new cells, blood vessels, and collagen to close the wound. Growth Factor is essential, but be careful: too much can lead to excessive scarring. Ensure infection is gone before this phase."
+            },
+            'Remodelling': {
+                title: "Phase 3: Remodelling",
+                text: "Maturation and optimisation! The wound is largely closed, and now the focus is on strengthening the new tissue and minimising scar formation. Mechanical Stimulation can help reorganise collagen and reduce scarring. You have a limited time in this phase!"
+            },
+            'Complete Healing': {
+                title: "Complete Healing",
+                text: "Congratulations! The wound has achieved optimal healing with minimal scarring."
+            }
+        };
+
+        // --- Game Initialization ---
+        function initializeGame() {
+            // Stop any ongoing animation frame
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+
+            // Clear message queue and reset display state for active messages
+            clearAllTemporaryMessages();
+
+            // Hide any active phase modal
+            hidePhaseModal();
+            isModalActive = false; // Ensure modal active flag is false
+
+            // Reset first inflammation modal flag
+            isFirstInflammationModal = true;
+
+            // Randomly select a skin colour for the canvas background
+            currentSkinColour = skinColours[Math.floor(Math.random() * skinColours.length)];
+            canvas.style.backgroundColor = currentSkinColour;
+
+            // Reset game state for a new game
+            gamePhase = 'Inflammation';
+            cellularEnergy = 100;
+            woundHealth = 50; // Initial wound health changed to 50
+            infectionLevel = 0;
+            inflammationLevel = 50;
+            woundCoverage = 0; // Initialize new stat
+            scarLevel = 0;
+            gameTime = 0;
+            gameRunning = false; // Game is not running until 'Start Game' is clicked
+            cells.length = 0; // Clear existing cells
+            bloodVessels.length = 0; // Clear blood vessels
+            collagenFibers.length = 0; // Clear collagen
+            proliferationActivity = 0; // Reset proliferation activity
+            reorganizeAnimationTimer = 0; // Reset reorganize visual timer
+            remodelingTimer = 0; // Reset remodelling timer
+
+            // Reset wound dimensions to initial (now radius)
+            currentWoundRadius = WOUND_INITIAL_RADIUS;
+            woundCenterX = canvas.width / 2;
+            woundCenterY = canvas.height / 2;
+
+            // Generate initial irregular wound shape points
+            generateInitialWoundShape();
+
+            // Disable action buttons initially
+            activateMacrophagesBtn.disabled = true;
+            releaseGrowthFactorBtn.disabled = true;
+            applyAntimicrobialBtn.disabled = true;
+            mechanicalStimulationBtn.classList.add('hidden'); // Hide mechanicalStimulation button
+            mechanicalStimulationBtn.disabled = true;
+            restartGameBtn.disabled = false; // Restart button should always be enabled
+
+            // Hide game UI and show welcome screen
+            gameMainContainer.classList.add('hidden');
+            welcomeScreen.classList.remove('hidden');
+            gameOverOverlay.classList.remove('visible'); // Ensure game over is hidden
+            // Removed encyclopaediaModalOverlay.classList.remove('visible');
+
+            // Ensure patient selection on welcome screen is enabled and 'healthy' is selected
+            patientButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('selected');
+            });
+            const healthyButton = document.getElementById('patient-healthy');
+            if (healthyButton) {
+                healthyButton.classList.add('selected');
+                currentPatientType = 'healthy'; // Set default patient type
+            } else {
+                console.error("Error: 'patient-healthy' button not found during initialization.");
+            }
+            chosenPatientDisplay.textContent = patientParams[currentPatientType].displayName;
+
+            updateUI(); // Update UI for initial state
+            drawGame(); // Draw initial canvas state
+        }
+
+        // --- Start Game Function ---
+        function startGame() {
+            gameRunning = true;
+            welcomeScreen.classList.add('hidden');
+            gameMainContainer.classList.remove('hidden');
+
+            // Removed explicit hide encyclopaedia modal call: hideEncyclopaediaModal(0);
+
+            // IMPORTANT: Recalculate canvas size AFTER it becomes visible
+            resizeCanvas(); // This will also call drawGame()
+
+            // Disable patient selection once game starts
+            patientButtons.forEach(btn => btn.disabled = true);
+
+            // Re-enable action buttons (their disabled state will be managed by updateUI based on energy)
+            activateMacrophagesBtn.disabled = false;
+            releaseGrowthFactorBtn.disabled = false;
+            applyAntimicrobialBtn.disabled = false;
+            // mechanicalStimulationBtn visibility handled by updateUI based on phase
+            restartGameBtn.disabled = false;
+
+            // Update the chosen patient display in the main game UI
+            chosenPatientDisplay.textContent = patientParams[currentPatientType].displayName;
+
+            // Show initial phase modal. This will pause the game loop.
+            showPhaseModal(gamePhase);
+
+            // The gameLoop will be started by hidePhaseModal when the modal dismisses.
+        }
+
+        // --- End Game Function ---
+        function endGame(outcome, message) {
+            gameRunning = false;
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null; // Clear animation frame ID
+
+            clearAllTemporaryMessages(); // Clear messages at game end
+
+            // Hide any active phase modal
+            hidePhaseModal();
+            isModalActive = false; // Ensure modal active flag is false
+
+
+            let title = '';
+            let isSuccess = false;
+            if (outcome === 'success') {
+                title = 'Wound Healed Successfully!';
+                isSuccess = true;
+                playSound('win');
+            } else if (outcome === 'scarred_healing') {
+                title = 'Healing Complete, but with Scarring!';
+                isSuccess = true; // Still considered a form of success, just not optimal
+                playSound('win'); // Play win sound even for scarred healing
+            }
+            else {
+                title = 'Healing Failed!';
+                isSuccess = false;
+                playSound('lose');
+            }
+
+            // Adjust message for scarred healing
+            let finalMessage = message;
+            if (outcome === 'scarred_healing') {
+                finalMessage = `Remodelling time is over. The wound healed, but with significant scarring. Final Wound Health: ${woundHealth.toFixed(1)}%, Final Scar Level: ${scarLevel.toFixed(1)}%. Time Elapsed: ${(gameTime / 60).toFixed(1)}s`;
+            } else {
+                finalMessage = `${message} Final Wound Health: ${woundHealth.toFixed(1)}%, Final Scar Level: ${scarLevel.toFixed(1)}%. Time Elapsed: ${(gameTime / 60).toFixed(1)}s`;
+            }
+
+
+            showGameOverMessageBox(title, finalMessage, isSuccess);
+
+            // Disable all action buttons at game end
+            activateMacrophagesBtn.disabled = true;
+            releaseGrowthFactorBtn.disabled = true;
+            applyAntimicrobialBtn.disabled = true;
+            mechanicalStimulationBtn.disabled = true;
+        }
+
+        // Function to create and display a single temporary message element
+        function _createAndDisplayMessageElement(msgObj) {
+            const { message, type, duration } = msgObj;
+
+            const msgElement = document.createElement('div');
+            msgElement.className = `temp-message-box-item ${type}`;
+            msgElement.textContent = message;
+
+            tempMessageOverlay.appendChild(msgElement);
+
+            // Trigger fade-in animation
+            requestAnimationFrame(() => {
+                msgElement.style.opacity = 1;
+                msgElement.style.transform = 'translateY(0)';
+            });
+
+            const timeoutId = setTimeout(() => {
+                // Trigger fade-out animation
+                msgElement.style.opacity = 0;
+                msgElement.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    // Remove from DOM and activeMessages after fade-out
+                    if (msgElement.parentNode) {
+                        msgElement.parentNode.removeChild(msgElement);
+                    }
+                    // Remove from activeMessages array
+                    const index = activeMessages.findIndex(item => item.element === msgElement);
+                    if (index !== -1) {
+                        activeMessages.splice(index, 1);
+                    }
+                    // After a message is removed, try to display the next one from the queue
+                    displayNextMessage();
+                }, 300); // Match CSS transition duration
+            }, duration);
+
+            activeMessages.push({ element: msgElement, timeoutId: timeoutId });
+        }
+
+        // Function to manage displaying messages from the queue
+        function displayNextMessage() {
+            // While there are messages in the queue AND we have space to display more
+            while (messageQueue.length > 0 && activeMessages.length < MAX_VISIBLE_MESSAGES) {
+                const nextMsg = messageQueue.shift();
+                _createAndDisplayMessageElement(nextMsg);
+            }
+        }
+
+        // Function to add a message to the queue and trigger display
+        function showTemporaryMessage(message, type = 'info', duration = 3000) {
+            // Do not show 'success' messages
+            if (type === 'success') {
+                return;
+            }
+
+            // Check if the message is already active or in the queue
+            const isDuplicateActive = activeMessages.some(item => item.element.textContent === message);
+            const isDuplicateQueued = messageQueue.some(item => item.message === message);
+
+            if (!isDuplicateActive && !isDuplicateQueued) {
+                messageQueue.push({ message, type, duration });
+                // Immediately try to display messages if space is available
+                displayNextMessage();
+            }
+        }
+
+        // Function to clear all temporary messages
+        function clearAllTemporaryMessages() {
+            messageQueue.length = 0; // Clear the queue
+            activeMessages.forEach(item => {
+                clearTimeout(item.timeoutId); // Clear any pending timeouts
+                if (item.element.parentNode) {
+                    item.element.parentNode.removeChild(item.element); // Remove from DOM
+                }
+            });
+            activeMessages.length = 0; // Clear the array of active messages
+        }
+
+        // Function to show phase modal
+        function showPhaseModal(phase) {
+            const info = phaseInfo[phase];
+            if (!info) return;
+
+            clearAllTemporaryMessages(); // Clear messages at phase change
+
+            phaseModalTitle.textContent = info.title;
+            phaseModalText.textContent = info.text;
+            phaseModalOverlay.classList.add('visible'); // Use 'visible' class
+            isModalActive = true; // Set modal active flag
+            if (animationFrameId) { // Pause game loop if running
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+
+            // Determine dismissal duration
+            let dismissDuration = 7000; // Default auto-dismiss after 7 seconds
+            if (phase === 'Complete Healing') {
+                dismissDuration = 1000; // Complete Healing modal dismisses after 1 second
+            }
+
+            // Clear any existing timeout for the modal
+            if (phaseModalTimeoutId) {
+                clearTimeout(phaseModalTimeoutId);
+            }
+
+            // Auto-dismiss after calculated duration
+            phaseModalTimeoutId = setTimeout(() => {
+                hidePhaseModal();
+            }, dismissDuration);
+
+            // Show dismiss button for regular phase modals, hide for "Complete Healing"
+            if (phase === 'Complete Healing') {
+                dismissPhaseModalButton.classList.add('hidden');
+            } else {
+                dismissPhaseModalButton.classList.remove('hidden');
+            }
+        }
+
+        // Function to hide phase modal
+        function hidePhaseModal() {
+            phaseModalOverlay.classList.remove('visible'); // Remove 'visible' class
+            isModalActive = false; // Clear modal active flag
+            if (phaseModalTimeoutId) {
+                clearTimeout(phaseModalTimeoutId);
+                phaseModalTimeoutId = null;
+            }
+
+            // Delay game loop start only for the very first inflammation modal dismissal
+            if (gameRunning && animationFrameId === null) {
+                if (isFirstInflammationModal) {
+                    setTimeout(() => {
+                        animationFrameId = requestAnimationFrame(gameLoop);
+                        isFirstInflammationModal = false; // Reset flag after first start
+                    }, 1000); // 1-second delay
+                } else {
+                    animationFrameId = requestAnimationFrame(gameLoop);
+                }
+            }
+            updateUI(); // Ensure UI is updated after modal dismissal
+        }
+
+        // Function to show game over message box
+        function showGameOverMessageBox(title, message, isSuccess) {
+            messageTitleEl.textContent = title;
+            messageTextEl.textContent = message;
+            messageBox.className = `message-box ${isSuccess ? 'success' : 'error'}`; // Use isSuccess to determine class
+            gameOverOverlay.classList.add('visible'); // Use 'visible' class
+            gameOverOverlay.style.pointerEvents = 'auto'; // Ensure it blocks interaction
+            cancelAnimationFrame(animationFrameId); // Stop animation when message box is shown
+            animationFrameId = null; // Clear animation frame ID
+        }
+
+        // Function to hide the game over message box
+        function hideGameOverMessageBox() {
+            gameOverOverlay.classList.remove('visible'); // Remove 'visible' class
+            gameOverOverlay.style.pointerEvents = ''; // Reset to default (auto)
+        }
+
+        // Function to show phase change highlight
+        function showPhaseChangeHighlight(phase) {
+            phaseChangeHighlight.textContent = phase.toUpperCase();
+            phaseChangeHighlight.classList.remove('hidden');
+            // Remove and re-add animation class to re-trigger
+            phaseChangeHighlight.classList.remove('fadeInOut');
+            void phaseChangeHighlight.offsetWidth; // Trigger reflow
+            phaseChangeHighlight.classList.add('fadeInOut');
+            playSound('phaseChange'); // Play sound on phase change
+            setTimeout(() => {
+                phaseChangeHighlight.classList.add('hidden');
+            }, 2000); // Matches animation duration
+        }
+
+        // Function to update UI elements
+        function updateUI() {
+            gamePhaseEl.textContent = gamePhase;
+
+            // Update time display based on phase
+            if (gamePhase === 'Remodelling' && remodelingTimer > 0) {
+                timeInfoCard.innerHTML = `Remodelling Time Left: <span id="game-time">${(remodelingTimer / 60).toFixed(1)}s</span>`;
+            } else {
+                timeInfoCard.innerHTML = `Time Elapsed: <span id="game-time">${(gameTime / 60).toFixed(1)}s</span>`;
+            }
+
+            // Update Wound Health slider
+            woundHealthVal.textContent = `${woundHealth.toFixed(1)}%`;
+            woundHealthFill.style.width = `${woundHealth}%`;
+            if (woundHealth > 70) woundHealthFill.className = 'slider-fill good';
+            else if (woundHealth > 30) woundHealthFill.className = 'slider-fill medium';
+            else woundHealthFill.className = 'slider-fill bad';
+
+            // Update Wound Coverage slider
+            if (gamePhase === 'Inflammation') {
+                woundCoverage = 0;
+            } else {
+                // Wound coverage increases with collagen, capped by wound health
+                woundCoverage = Math.min(100, woundHealth, collagenFibers.length * 3.0); // Factor increased for higher coverage
+            }
+            woundCoverageVal.textContent = `${woundCoverage.toFixed(1)}%`;
+            woundCoverageFill.style.width = `${woundCoverage}%`;
+            if (woundCoverage > 70) woundCoverageFill.className = 'slider-fill good';
+            else if (woundCoverage > 30) woundCoverageFill.className = 'slider-fill medium';
+            else woundCoverageFill.className = 'slider-fill bad';
+
+
+            // Update Scarring slider
+            scarLevelVal.textContent = `${scarLevel.toFixed(1)}%`;
+            scarLevelFill.style.width = `${scarLevel}%`;
+            if (scarLevel < 20) scarLevelFill.className = 'slider-fill good';
+            else if (scarLevel < 50) scarLevelFill.className = 'slider-fill medium';
+            else scarLevelFill.className = 'slider-fill bad';
+
+            // Update Infection slider
+            infectionLevelVal.textContent = `${infectionLevel.toFixed(1)}%`;
+            infectionLevelFill.style.width = `${infectionLevel}%`;
+            if (infectionLevel < 10) infectionLevelFill.className = 'slider-fill good';
+            else if (infectionLevel < 40) infectionLevelFill.className = 'slider-fill medium';
+            else infectionLevelFill.className = 'slider-fill bad';
+
+            // Update Inflammation slider
+            inflammationLevelVal.textContent = `${inflammationLevel.toFixed(1)}%`;
+            inflammationLevelFill.style.width = `${inflammationLevel}%`;
+            if (inflammationLevel < 30) inflammationLevelFill.className = 'slider-fill good';
+            else if (inflammationLevel < 60) inflammationLevelFill.className = 'slider-fill medium';
+            else inflammationLevelFill.className = 'slider-fill bad';
+
+            // Update Cellular Energy slider
+            cellularEnergyVal.textContent = `${Math.round(cellularEnergy)}%`;
+            cellularEnergyFill.style.width = `${cellularEnergy}%`;
+            if (cellularEnergy > 50) cellularEnergyFill.className = 'slider-fill good';
+            else if (cellularEnergy > 20) cellularEnergyFill.className = 'slider-fill medium';
+            else cellularEnergyFill.className = 'slider-fill bad';
+
+
+            // Update button states based on energy and phase
+            // Buttons are disabled if game is not running or a modal is active
+            activateMacrophagesBtn.disabled = cellularEnergy < 10 || !gameRunning || isModalActive;
+            releaseGrowthFactorBtn.disabled = cellularEnergy < (currentPatientType === 'elderly' ? 30 : 20) || !gameRunning || isModalActive;
+            applyAntimicrobialBtn.disabled = cellularEnergy < 15 || !gameRunning || isModalActive;
+            mechanicalStimulationBtn.disabled = cellularEnergy < 25 || !gameRunning || isModalActive; // Only enable if in Remodelling phase and enough energy
+
+            // Mechanical Stimulation button visibility and state
+            if (gamePhase === 'Remodelling') {
+                mechanicalStimulationBtn.classList.remove('hidden');
+                // Hide other buttons during remodelling
+                activateMacrophagesBtn.classList.add('hidden');
+                releaseGrowthFactorBtn.classList.add('hidden');
+                applyAntimicrobialBtn.classList.add('hidden');
+            } else {
+                mechanicalStimulationBtn.classList.add('hidden');
+                // Show other buttons in other phases
+                activateMacrophagesBtn.classList.remove('hidden');
+                releaseGrowthFactorBtn.classList.remove('hidden');
+                applyAntimicrobialBtn.classList.remove('hidden');
+            }
+        }
+
+        // --- Cell Object and Drawing ---
+        class Cell {
+            constructor(type, x, y, targetX, targetY) {
+                this.type = type; // 'macrophage', 'fibroblast', 'endothelial'
+                this.x = x;
+                this.y = y;
+                this.targetX = targetX || x + (Math.random() * 40 - 20); // Cells move towards random points within wound
+                this.targetY = targetY || y + (Math.random() * 40 - 20);
+                this.speed = CELL_SPEED * (1 + Math.random() * 0.5); // Slightly varied speed
+                this.colour = this.getColour();
+                this.radius = CELL_RADIUS;
+                this.lifespan = CELL_LIFESPAN; // Initialize lifespan
+                this.pulseOffset = Math.random() * Math.PI * 2; // For pulsing animation
+                this.rotation = Math.random() * Math.PI * 2; // For rotation
+            }
+
+            getColour() {
+                switch (this.type) {
+                    case 'macrophage': return '#f39c12'; // Orange
+                    case 'fibroblast': return '#27ae60'; // Green
+                    case 'endothelial': return '#e74c3c'; // Reddish
+                    default: return '#3498db'; // Blue
+                }
+            }
+
+            draw() {
+                ctx.save(); // Save current canvas state
+                ctx.translate(this.x, this.y); // Move origin to cell's position
+
+                // Pulsing effect
+                const currentRadius = this.radius + Math.sin(gameTime * 0.1 + this.pulseOffset) * 0.5;
+
+                ctx.fillStyle = this.colour;
+                ctx.beginPath();
+
+                switch (this.type) {
+                    case 'macrophage':
+                        // Draw a simple square for macrophage
+                        ctx.rect(-currentRadius, -currentRadius, currentRadius * 2, currentRadius * 2);
+                        break;
+                    case 'fibroblast':
+                        // Draw a simple triangle for fibroblast
+                        ctx.moveTo(0, -currentRadius * 1.5);
+                        ctx.lineTo(currentRadius * 1.5, currentRadius);
+                        ctx.lineTo(-currentRadius * 1.5, currentRadius);
+                        ctx.closePath();
+                        break;
+                    case 'endothelial':
+                        // Draw a cross for endothelial cell
+                        ctx.moveTo(-currentRadius, 0);
+                        ctx.lineTo(currentRadius, 0);
+                        ctx.moveTo(0, -currentRadius);
+                        ctx.lineTo(0, currentRadius);
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = this.colour;
+                        ctx.stroke();
+                        break;
+                    default:
+                        ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
+                        break;
+                }
+                ctx.fill();
+                ctx.restore(); // Restore canvas state
+            }
+
+            update() {
+                // Move towards target
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < this.speed) {
+                    this.x = this.targetX;
+                    this.y = this.targetY;
+                    // Set new random target within wound area (now circular)
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = Math.random() * currentWoundRadius * 0.8; // Target within 80% of wound radius
+                    this.targetX = woundCenterX + Math.cos(angle) * dist;
+                    this.targetY = woundCenterY + Math.sin(angle) * dist;
+                } else {
+                    this.x += (dx / distance) * this.speed;
+                    this.y += (dy / distance) * this.speed;
+                }
+
+                // Keep cells within wound boundaries (circular)
+                const distFromCenter = Math.sqrt(Math.pow(this.x - woundCenterX, 2) + Math.pow(this.y - woundCenterY, 2));
+                if (distFromCenter > currentWoundRadius) {
+                    // If outside, push back towards center
+                    const angle = Math.atan2(this.y - woundCenterY, this.x - woundCenterX);
+                    this.x = woundCenterX + Math.cos(angle) * currentWoundRadius;
+                    this.y = woundCenterY + Math.sin(angle) * currentWoundRadius;
+                }
+
+                this.lifespan--; // Decrement lifespan
+            }
+        }
+
+        // --- Canvas Drawing Functions ---
+
+        // Function to generate initial irregular wound shape points
+        function generateInitialWoundShape() {
+            woundShapePoints = [];
+            for (let i = 0; i < WOUND_SEGMENTS; i++) {
+                const angle = (i / WOUND_SEGMENTS) * Math.PI * 2;
+                // Introduce randomness to the radius for jaggedness
+                const radiusOffset = (Math.random() * 2 - 1) * WOUND_INITIAL_RADIUS * WOUND_JAGGEDNESS;
+                woundShapePoints.push({
+                    angle: angle, // Store angle for easier calculation
+                    initialRadialOffset: radiusOffset // Store the random offset
+                });
+            }
+        }
+
+        function drawWound() {
+            // Calculate current wound radius based on health
+            const healthRatio = woundHealth / 100;
+            let visualRadiusFactor = (0.2 + 0.8 * (1 - healthRatio));
+
+            // Apply a visual factor for Inflammation, Proliferation, and Remodelling phases to make it appear 'bigger'
+            if (gamePhase === 'Inflammation' || gamePhase === 'Proliferation' || gamePhase === 'Remodelling') {
+                const phaseVisualBoost = 0.3; // Add 30% to the visual size relative to the health deficit
+                visualRadiusFactor = Math.min(1.0, visualRadiusFactor + phaseVisualBoost);
+            }
+
+            currentWoundRadius = WOUND_INITIAL_RADIUS * visualRadiusFactor;
+
+            woundCenterX = canvas.width / 2;
+            woundCenterY = canvas.height / 2;
+
+            let woundFillStyle; // Changed from woundFillColour to woundFillStyle to accommodate gradients
+            const skinColourRgb = hexToRgb(currentSkinColour);
+            const healingFleshColourRgb = [255, 192, 203]; // Light pink/flesh tone (for interpolation)
+            const woundRedColour = '#8B0000'; // Deep wound red for centre of gradient
+
+            // Base wound colour
+            if (infectionLevel > 0) {
+                // Greenish for infection, with intensity based on infection level
+                woundFillStyle = `rgba(100, 200, 50, ${Math.min(1, infectionLevel / 100)})`;
+            } else if (inflammationLevel > 0) {
+                // Red for inflammation, with intensity based on inflammation level
+                const redIntensity = inflammationLevel / 100;
+                woundFillStyle = `rgba(255, 0, 0, ${redIntensity})`;
+            } else if (gamePhase === 'Proliferation') {
+                // Orange-red for active proliferation
+                woundFillStyle = '#FF4500';
+            } else if (gamePhase === 'Remodelling') {
+                // Radial gradient for Remodelling phase: from wound red to skin colour
+                const gradient = ctx.createRadialGradient(woundCenterX, woundCenterY, 0, woundCenterX, woundCenterY, currentWoundRadius);
+                gradient.addColorStop(0, woundRedColour);
+                gradient.addColorStop(1, currentSkinColour);
+                woundFillStyle = gradient;
+            } else {
+                // Default interpolation for healing flesh to skin colour
+                const healingFactor = Math.min(1, Math.max(0, (woundHealth - 75) / (100 - 75)));
+                woundFillStyle = interpolateColour(healingFleshColourRgb, skinColourRgb, healingFactor);
+            }
+
+            ctx.fillStyle = woundFillStyle;
+            ctx.beginPath();
+
+            // Draw irregular wound shape
+            // Smoothing factor now always active, from 0 (at 0% health) to 1 (at 100% health)
+            const smoothingFactor = Math.min(1, Math.max(0, woundHealth / 100));
+
+            for(let i = 0; i < woundShapePoints.length; i++) {
+                const point = woundShapePoints[i];
+                // Interpolate the radial offset towards 0 (perfect circle)
+                const currentRadialOffset = point.initialRadialOffset * (1 - smoothingFactor);
+                const currentRadiusForPoint = currentWoundRadius + currentRadialOffset;
+
+                // Calculate the actual x, y based on angle and currentRadiusForPoint
+                const x = woundCenterX + Math.cos(point.angle) * currentRadiusForPoint;
+                const y = woundCenterY + Math.sin(point.angle) * currentRadiusForPoint;
+
+                // Use x, y directly for drawing
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+
+
+            // Visual for infection (pulsing green overlay) - now clipped to wound shape
+            if (infectionLevel > 0) {
+                ctx.save(); // Save current state before clipping
+                ctx.beginPath();
+                // Re-draw the wound shape path for clipping
+                for(let i = 0; i < woundShapePoints.length; i++) {
+                    const point = woundShapePoints[i];
+                    const currentRadialOffset = point.initialRadialOffset * (1 - smoothingFactor);
+                    const currentRadiusForPoint = currentWoundRadius + currentRadialOffset;
+                    const x = woundCenterX + Math.cos(point.angle) * currentRadiusForPoint;
+                    const y = woundCenterY + Math.sin(point.angle) * currentRadiusForPoint;
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                ctx.clip(); // Clip subsequent drawing to this path
+
+                const pulseOpacity = Math.abs(Math.sin(gameTime * 0.1)) * 0.3 + 0.2; // Pulsing effect
+                ctx.fillStyle = `rgba(0, 255, 0, ${pulseOpacity})`;
+                // Fill the entire clipped area (the wound shape) with the pulsing green
+                ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the entire canvas, but it will only show within the clipped wound area
+                ctx.restore(); // Restore canvas state to remove clipping path
+            }
+
+            // Visual for inflammation (red glow/haze)
+            if (inflammationLevel > 0) {
+                const glowOpacity = inflammationLevel / 100 * 0.4; // Stronger glow for higher inflammation
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = `rgba(255, 0, 0, ${glowOpacity})`;
+                ctx.fillStyle = 'transparent'; // Don't fill, just apply shadow
+                ctx.beginPath();
+                ctx.arc(woundCenterX, woundCenterY, currentWoundRadius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0; // Reset shadow
+                ctx.shadowColor = 'transparent';
+            }
+
+
+            // Draw wound edges (more defined outline)
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            // Redraw the irregular wound edge
+            for(let i = 0; i < woundShapePoints.length; i++) {
+                const point = woundShapePoints[i];
+                const currentRadialOffset = point.initialRadialOffset * (1 - smoothingFactor);
+                const currentRadiusForPoint = currentWoundRadius + currentRadialOffset;
+                const x = woundCenterX + Math.cos(point.angle) * currentRadiusForPoint;
+                const y = woundCenterY + Math.sin(point.angle) * currentRadiusForPoint;
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            // Simulate scar tissue (paler, translucent overlay on the irregular wound)
+            if (scarLevel > 0) {
+                ctx.save();
+                ctx.beginPath();
+                // Clip to the irregular wound shape
+                for(let i = 0; i < woundShapePoints.length; i++) {
+                    const point = woundShapePoints[i];
+                    const currentRadialOffset = point.initialRadialOffset * (1 - smoothingFactor);
+                    const currentRadiusForPoint = currentWoundRadius + currentRadialOffset;
+                    const x = woundCenterX + Math.cos(point.angle) * currentRadiusForPoint;
+                    const y = woundCenterY + Math.sin(point.angle) * currentRadiusForPoint;
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                ctx.clip(); // Clip to the wound area
+
+                const baseScarOpacity = scarLevel / 100 * 0.7; // Max 70% opacity for scar
+                let currentScarOpacity = baseScarOpacity;
+                let currentLineWaviness = 1; // Default waviness
+                let currentLineColour = `rgba(150, 150, 150, ${baseScarOpacity})`;
+
+                // Apply reorganiseAnimationEffect
+                if (reorganizeAnimationTimer > 0) {
+                    const animationFactor = reorganizeAnimationTimer / 60; // 1 to 0 over 60 frames
+                    currentScarOpacity = baseScarOpacity * (0.5 + 0.5 * animationFactor); // Fade out slightly
+                    currentLineWaviness = 1 - (0.8 * (1 - animationFactor)); // Lines become straighter
+                    currentLineColour = `rgba(100, 100, 255, ${currentScarOpacity})`; // Blueish tint during reorganise
+                }
+
+                ctx.strokeStyle = currentLineColour;
+                ctx.lineWidth = 1;
+
+                // Draw fibrous scar lines
+                const lineDensity = 5 + (scarLevel / 10); // More lines for higher scar
+                for (let i = 0; i < currentWoundRadius * 2; i += lineDensity) {
+                    const startX = woundCenterX - currentWoundRadius + i;
+                    const startY = woundCenterY - currentWoundRadius;
+                    const endX = woundCenterX - currentWoundRadius;
+                    const endY = woundCenterY - currentWoundRadius + i;
+
+                    ctx.beginPath();
+                    // Draw wavy lines
+                    ctx.moveTo(startX, startY);
+                    ctx.quadraticCurveTo(
+                        startX + (Math.random() - 0.5) * 20 * currentLineWaviness,
+                        startY + (Math.random() - 0.5) * 20 * currentLineWaviness,
+                        endX,
+                        endY
+                    );
+                    ctx.stroke();
+                }
+
+                ctx.restore(); // Restore clipping and other canvas states
+            }
+
+            // If it's very close to 100% health and low scar, make it fully opaque skin colour
+            if (woundHealth >= 99 && scarLevel < 10) {
+                ctx.fillStyle = currentSkinColour;
+                ctx.beginPath();
+                ctx.arc(woundCenterX, woundCenterY, currentWoundRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Reorganise pulse effect
+            if (reorganizeAnimationTimer > 0) {
+                const pulseAlpha = (reorganizeAnimationTimer / 60) * 0.5; // Fades from 0.5 to 0
+                const pulseRadius = WOUND_INITIAL_RADIUS * (1 - reorganizeAnimationTimer / 60) * 1.5; // Expands
+                ctx.strokeStyle = `rgba(173, 216, 230, ${pulseAlpha})`; // Light blue pulse
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.arc(woundCenterX, woundCenterY, pulseRadius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+
+        function drawCells() {
+            cells.forEach(cell => cell.draw());
+        }
+
+        function drawBloodVessels() {
+            ctx.strokeStyle = '#8b0000'; // Dark red for blood vessels
+            ctx.lineWidth = 2;
+            bloodVessels.forEach(vessel => {
+                // Animate growth
+                const currentX2 = vessel.x1 + (vessel.targetX - vessel.x1) * vessel.growthProgress;
+                const currentY2 = vessel.y1 + (vessel.targetY - vessel.y1) * vessel.growthProgress;
+
+                ctx.beginPath();
+                ctx.moveTo(vessel.x1, vessel.y1);
+                ctx.lineTo(currentX2, currentY2);
+                ctx.stroke();
+
+                // Update growth progress
+                vessel.growthProgress = Math.min(1, vessel.growthProgress + 0.02); // Grow over 50 frames
+            });
+        }
+
+        function drawCollagenFibers() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; // White/off-white for collagen
+            ctx.lineWidth = 1;
+            collagenFibers.forEach(fiber => {
+                // Animate growth
+                const currentX2 = fiber.x1 + (fiber.targetX - fiber.x1) * fiber.growthProgress;
+                const currentY2 = fiber.y1 + (fiber.targetY - fiber.y1) * fiber.growthProgress;
+
+                ctx.beginPath();
+                ctx.moveTo(fiber.x1, fiber.y1);
+                ctx.lineTo(currentX2, currentY2);
+                ctx.stroke();
+
+                // Update growth progress
+                fiber.growthProgress = Math.min(1, fiber.growthProgress + 0.015); // Grow slightly slower than vessels
+            });
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function resizeCanvas() {
+            // Set canvas width based on its parent's calculated width
+            const gameContentArea = document.querySelector('.game-content-area');
+            if (gameContentArea && window.innerWidth >= 768) { // Apply only on larger screens
+                canvas.style.width = '60%';
+                canvas.style.height = '400px'; // Maintain fixed height or adjust as needed
+            } else {
+                canvas.style.width = '100%';
+                canvas.style.height = '400px';
+            }
+
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            // Recalculate wound position (centre)
+            woundCenterX = canvas.width / 2;
+            woundCenterY = canvas.height / 2;
+            // Regenerate wound shape points based on new centre
+            generateInitialWoundShape();
+            drawGame(); // Redraw immediately after resize
+        }
+
+        function drawGame() {
+            clearCanvas();
+            drawWound();
+            drawBloodVessels(); // Draw blood vessels
+            drawCollagenFibers(); // Draw collagen
+            drawCells(); // Draw active cells
+        }
+
+        // --- Game Logic Update ---
+        function updateGameLogic() {
+            if (!gameRunning || isModalActive) return; // Only run if game is active AND no modal is active
+
+            gameTime++; // Increment game time every frame
+
+            // Update cell positions and remove expired cells
+            for (let i = cells.length - 1; i >= 0; i--) {
+                cells[i].update();
+                if (cells[i].lifespan <= 0) {
+                    cells.splice(i, 1); // Remove cell if lifespan is over
+                }
+            }
+
+            // Natural resource regeneration
+            cellularEnergy = Math.min(100, cellularEnergy + 0.5);
+
+            const params = patientParams[currentPatientType];
+
+            // Determine infection/inflammation progression divisors based on patient type
+            const infectionHealthDivisor = currentPatientType === 'diabetic' ? 200 : 80; // Reduced for diabetic
+            const infectionInflammationDivisor = currentPatientType === 'diabetic' ? 100 : 10;
+            const inflammationHealthDeterioration = currentPatientType === 'diabetic' ? 0.5 : 1.0; // Increased for diabetic
+
+            // Passive healing/deterioration based on conditions
+            if (infectionLevel > 0) {
+                woundHealth = Math.max(0, woundHealth - (infectionLevel / infectionHealthDivisor));
+                inflammationLevel = Math.min(100, inflammationLevel + (infectionLevel / infectionInflammationDivisor));
+                if (gameTime % 180 === 0) { // Show message every 3 seconds (180 frames)
+                    showTemporaryMessage(`Infection is worsening the wound! Health: ${woundHealth.toFixed(1)}%`, 'error');
+                    playSound('warning'); // Play warning sound
+                }
+            } else if (inflammationLevel > 70 && gamePhase !== 'Inflammation') {
+                woundHealth = Math.max(0, woundHealth - inflammationHealthDeterioration);
+                if (gameTime % 30 === 0) { // Show message every 0.5 second (30 frames)
+                    showTemporaryMessage(`High inflammation is slowing healing! Health: ${woundHealth.toFixed(1)}%`, 'warning');
+                    playSound('warning'); // Play warning sound
+                }
+            } else if (gamePhase === 'Inflammation') {
+                woundHealth = Math.max(0, woundHealth - 0.2);
+                inflammationLevel = Math.min(100, inflammationLevel + params.inflammationControl);
+            } else if (gamePhase === 'Proliferation' && cellularEnergy > 20) {
+                woundHealth = Math.min(100, woundHealth + params.healingFactor);
+            } else if (gamePhase === 'Remodelling') {
+                woundHealth = Math.min(100, woundHealth + params.healingFactor * 0.05);
+                // Collagen fibres can slightly shift during remodelling
+                if (Math.random() < 0.02 && collagenFibers.length > 0) {
+                    const fiber = collagenFibers[Math.floor(Math.random() * collagenFibers.length)];
+                    fiber.x2 += (Math.random() - 0.5) * 5;
+                    fiber.y2 += (Math.random() - 0.5) * 5;
+                }
+            }
+
+            // Simulate random infection chance (even at 100% health)
+            let effectiveInfectionResistance = params.infectionResistance;
+            if (gamePhase === 'Proliferation') { // Only reduce chance in Proliferation, not Remodelling
+                effectiveInfectionResistance *= 0.05; // 5% of normal chance in later phases
+            }
+
+            // ONLY allow new infections if NOT in Remodelling phase
+            if (gamePhase !== 'Remodelling' && infectionLevel === 0 && Math.random() < effectiveInfectionResistance) {
+                infectionLevel = 10 + Math.random() * 10;
+                showTemporaryMessage('A new infection has started! Act fast!', 'error');
+                playSound('warning'); // Play warning sound
+            }
+
+            // Update scar level based on inflammation and healing speed
+            const woundSizeFactor = (100 - woundHealth) / 100;
+            const effectiveScarTendency = params.scarTendency * (1 + woundSizeFactor * 1.0);
+
+            if (gamePhase === 'Remodelling') {
+                if (inflammationLevel > 40) {
+                    scarLevel = Math.min(100, scarLevel + effectiveScarTendency * 0.02);
+                    if (gameTime % 60 === 0) {
+                        showTemporaryMessage(`Scarring is increasing due to high inflammation and large wound size! Current: ${scarLevel.toFixed(1)}%`, 'warning');
+                        playSound('warning'); // Play warning sound
+                    }
+                } else {
+                    scarLevel = Math.max(0, scarLevel - (effectiveScarTendency * 0.1));
+                }
+            } else if (gamePhase === 'Proliferation' && inflammationLevel > 50) {
+                scarLevel = Math.min(100, scarLevel + effectiveScarTendency * 0.1);
+                if (gameTime % 60 === 0) {
+                    showTemporaryMessage(`Scarring is beginning due to high inflammation and large wound size! Current: ${scarLevel.toFixed(1)}%`, 'warning');
+                    playSound('warning'); // Play warning sound
+                }
+            }
+
+            // Scarring from over-proliferation (more sensitive to excess activity)
+            if (gamePhase === 'Proliferation' && proliferationActivity > 50) {
+                // The higher the proliferationActivity above 50, the faster scarring increases
+                scarLevel = Math.min(100, scarLevel + (proliferationActivity - 50) * 0.001);
+                // Trigger message periodically if over-proliferating
+                if (gameTime % 30 === 0) { // Every 0.5 seconds
+                    showTemporaryMessage(`Warning! Excessive fibroblast activity is leading to disorganised collagen deposition and increased scarring!`, 'warning', 4000);
+                    playSound('warning'); // Play warning sound
+                }
+            }
+            // Passive reduction of proliferationActivity over time
+            proliferationActivity = Math.max(0, proliferationActivity - 0.2);
+
+
+            // Check for game over conditions
+            if (woundHealth <= 0) {
+                endGame('failure', 'The wound became too severe and failed to heal.');
+                return; // Stop further updates
+            }
+
+            // Decrement reorganise animation timer
+            if (reorganizeAnimationTimer > 0) {
+                reorganizeAnimationTimer--;
+            }
+
+            // --- Automatic Phase Advancement Logic ---
+            let canAdvance = false;
+            let nextPhase = '';
+            let phaseChangeMessage = '';
+            let showPhaseModalOnAdvance = false; // Flag to show modal after phase change
+
+            if (gamePhase === 'Inflammation') {
+                // Conditions for advancing to Proliferation
+                const meetsInflammation = inflammationLevel < 40;
+                const meetsInfection = infectionLevel === 0;
+                const meetsWoundHealth = woundHealth >= 90;
+                const meetsProliferationActivity = proliferationActivity >= 10;
+
+                if (meetsInflammation && meetsInfection && meetsWoundHealth && meetsProliferationActivity) {
+                    canAdvance = true;
+                    nextPhase = 'Proliferation';
+                    phaseChangeMessage = 'Advancing to Proliferation Phase! New tissue formation begins.';
+                    showPhaseModalOnAdvance = true;
+                } else if (woundHealth >= 90 && gameTime % 30 === 0) { // Show message every 0.5 second (30 frames)
+                    showTemporaryMessage('Wound health is good! Increase proliferation activity to advance to the next stage.', 'info', 3000); // Longer duration
+                }
+            } else if (gamePhase === 'Proliferation') {
+                // Conditions for advancing to Remodelling
+                const meetsWoundHealth = woundHealth >= 90;
+                const meetsInfection = infectionLevel === 0;
+                // Changed condition for Remodelling: Wound Coverage must be >= 100
+                const meetsWoundCoverage = woundCoverage >= 100; // Changed from 90 to 100
+                const meetsProliferationActivity = proliferationActivity >= 30;
+
+                if (meetsWoundHealth && meetsInfection && meetsWoundCoverage && meetsProliferationActivity) {
+                    canAdvance = true;
+                    nextPhase = 'Remodelling';
+                    phaseChangeMessage = 'Advancing to Remodelling Phase! Tissue maturation and scar reduction begin.';
+                    showPhaseModalOnAdvance = true;
+                }
+            } else if (gamePhase === 'Remodelling') {
+                // Handle remodelling timer
+                if (remodelingTimer > 0) {
+                    remodelingTimer--;
+                } else {
+                    // Remodelling time is over, check for complete healing or end game
+                    const meetsWoundHealth = woundHealth >= 99;
+                    const meetsScarLevel = scarLevel < 10;
+                    const meetsInfection = infectionLevel === 0;
+
+                    if (meetsWoundHealth && meetsScarLevel && meetsInfection) {
+                        canAdvance = true;
+                        nextPhase = 'Complete Healing';
+                        phaseChangeMessage = 'Wound has achieved Complete Healing! Excellent work, Cellular Commander!';
+                        showPhaseModalOnAdvance = true;
+                    } else if (woundHealth >= 90) { // If wound health is high but not perfect, and scar is also high
+                        // Optimised healing but with significant scarring
+                        endGame('scarred_healing', 'Remodelling time is over. The wound healed, but with significant scarring.');
+                        return; // Stop further updates
+                    }
+                    else {
+                        // If not completely healed and health is also low, it's a true failure
+                        endGame('failure', 'Remodelling time is over. The wound did not fully heal optimally.');
+                        return; // Stop further updates
+                    }
+                }
+            }
+
+            if (canAdvance) {
+                // Before changing phase, reduce macrophages if transitioning to Proliferation
+                if (gamePhase === 'Inflammation' && nextPhase === 'Proliferation') {
+                    // Filter out 70% of macrophages
+                    const initialMacrophageCount = cells.filter(cell => cell.type === 'macrophage').length;
+                    const macrophagesToRemove = Math.floor(initialMacrophageCount * 0.7);
+                    let removedCount = 0;
+                    cells = cells.filter(cell => { // Reassign 'cells' using let
+                        if (cell.type === 'macrophage' && removedCount < macrophagesToRemove) {
+                            removedCount++;
+                            return false; // Remove this cell
+                        }
+                        return true; // Keep this cell
+                    });
+                    showTemporaryMessage(`Macrophages reduced by ${Math.round((removedCount / initialMacrophageCount) * 100)}% for Proliferation!`, 'info');
+                }
+
+                // Store current scar level before phase change for remodelling calculation
+                const scarLevelAtProliferationEnd = scarLevel;
+
+                gamePhase = nextPhase;
+                showPhaseChangeHighlight(gamePhase);
+                // Special handling for Remodelling phase entry
+                if (gamePhase === 'Remodelling') {
+                    // Calculate initial scar base from previous conditions
+                    const initialScarBaseFromConditions = 30 + (inflammationLevel * 0.2) + (infectionLevel * 0.1) + (proliferationActivity * 0.1);
+                    // Set scarLevel to the maximum of 50 and the calculated base, or the scar level at the end of proliferation
+                    scarLevel = Math.min(100, Math.max(50, scarLevelAtProliferationEnd, initialScarBaseFromConditions));
+                    remodelingTimer = 20 * 60; // Start 20-second timer for remodelling (20 seconds * 60 frames/sec)
+                    showTemporaryMessage('Remodelling phase has begun! You have 20 seconds to optimise healing and minimise scarring.', 'info', 4000);
+                }
+                if (gamePhase === 'Complete Healing') {
+                    endGame('success', phaseChangeMessage);
+                }
+
+                // Show phase modal if flagged
+                if (showPhaseModalOnAdvance) {
+                    showPhaseModal(gamePhase);
+                }
+            }
+
+            updateUI();
+        }
+
+        // --- Game Loop ---
+        function gameLoop() {
+            // Only continue the loop if the game is running and no modal is active
+            if (gameRunning && !isModalActive) {
+                updateGameLogic();
+                drawGame();
+                animationFrameId = requestAnimationFrame(gameLoop);
+            } else {
+                // If the loop is stopped, ensure animationFrameId is nullified
+                if (animationFrameId !== null) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+            }
+        }
+
+        // Removed Encyclopaedia Functions
+        // function showEncyclopaediaModal() { ... }
+        // function hideEncyclopaediaModal(delay = 300) { ... }
+
+
+        // --- Action Handlers ---
+
+        // Activate Macrophages
+        activateMacrophagesBtn.addEventListener('click', () => {
+            playSound('click');
+            const cost = 10;
+            if (cellularEnergy >= cost) {
+                cellularEnergy -= cost;
+                let inflammationReduction = 25; // Increased for healthy
+                let infectionReduction = 20;    // Increased for healthy
+                let healthBoost = 20;           // Increased for healthy
+
+                // Adjust effectiveness for elderly patient
+                if (currentPatientType === 'elderly') {
+                    inflammationReduction = 10;
+                    infectionReduction = 8;
+                    healthBoost = 10; // Slightly reduced for elderly
+                    showTemporaryMessage('Macrophages are slightly less effective for elderly patients.', 'warning');
+                }
+                // Adjust effectiveness for diabetic patient
+                if (currentPatientType === 'diabetic') {
+                    inflammationReduction = 5;
+                    infectionReduction = 4;
+                    healthBoost = 7; // Slightly reduced for diabetic
+                    showTemporaryMessage('Macrophages are less effective for diabetic patients.', 'warning');
+                }
+
+                inflammationLevel = Math.max(0, inflammationLevel - inflammationReduction);
+                infectionLevel = Math.max(0, infectionLevel - infectionReduction);
+                woundHealth = Math.min(100, woundHealth + healthBoost);
+
+                // Add macrophage cells for visualisation (Reduced from 3 to 1)
+                for (let i = 0; i < 1; i++) {
+                    cells.push(new Cell('macrophage', woundCenterX, woundCenterY));
+                }
+                showTemporaryMessage('Macrophages activated! Inflammation and infection reduced.', 'success');
+
+            } else {
+                showTemporaryMessage('Not enough Cellular Energy!', 'error');
+            }
+            updateUI();
+        });
+
+        // Release Growth Factor
+        releaseGrowthFactorBtn.addEventListener('click', () => {
+            playSound('click');
+            const cost = 20;
+            if (cellularEnergy >= cost) {
+                cellularEnergy -= cost;
+                let healingBoost = 15;
+                let proliferationIncrease = 20;
+                let message = 'Growth Factor released! Healing boosted. Monitor proliferation!';
+
+                if (currentPatientType === 'elderly') {
+                    healingBoost = 10; // Less effective for elderly
+                    proliferationIncrease = 10;
+                    message = 'Growth Factor is less effective for elderly patients.';
+                }
+
+                if (gamePhase === 'Inflammation') {
+                    if (woundHealth >= 90) {
+                        // Higher impact during inflammation if wound health is good
+                        healingBoost *= 0.7; // 70% effectiveness
+                        proliferationIncrease *= 0.7; // 70% effectiveness
+                        message = 'Growth Factor is highly effective! Proliferation boosted to advance healing.';
+                    } else {
+                        // Reduced impact during inflammation if wound health is not good enough
+                        healingBoost *= 0.2; // 20% effectiveness
+                        proliferationIncrease *= 0.2; // 20% effectiveness
+                        message = 'Growth Factor impact is minimal during Inflammation. Focus on clearing infection/inflammation first!';
+                    }
+                }
+
+
+                woundHealth = Math.min(100, woundHealth + healingBoost); // Boost healing
+                proliferationActivity += proliferationIncrease; // Increase proliferation activity
+
+                // Immediate scarring message if proliferation activity is too high
+                if (gamePhase === 'Proliferation' && proliferationActivity > 50) {
+                    showTemporaryMessage(`Warning! Excessive fibroblast activity is leading to disorganised collagen deposition and increased scarring!`, 'warning', 3000);
+                }
+
+                // Add fibroblast cells for visualisation (Reduced from 5 to 2)
+                for (let i = 0; i < 2; i++) {
+                    cells.push(new Cell('fibroblast', woundCenterX, woundCenterY));
+                }
+
+                // New: Generate blood vessels and collagen only when Growth Factor is released in Proliferation
+                if (gamePhase === 'Proliferation') {
+                    if (bloodVessels.length < 50) { // Cap for visual elements
+                        for (let i = 0; i < 1; i++) { // Add a couple of blood vessels per click (Reduced from 2 to 1)
+                            // Animate blood vessel growth
+                            const startX = woundCenterX + (Math.random() - 0.5) * currentWoundRadius * 0.5;
+                            const startY = woundCenterY + (Math.random() - 0.5) * currentWoundRadius * 0.5;
+                            const endX = woundCenterX + (Math.random() - 0.5) * currentWoundRadius * 1.5;
+                            const endY = woundCenterY + (Math.random() - 0.5) * currentWoundRadius * 1.5;
+                            bloodVessels.push({ x1: startX, y1: startY, x2: startX, y2: startY, targetX: endX, targetY: endY, growthProgress: 0 });
+                        }
+                    }
+                    if (collagenFibers.length < 100) { // Cap for visual elements
+                        for (let i = 0; i < 1; i++) { // Add a few collagen fibres per click (Reduced from 3 to 1)
+                            // Animate collagen fibre growth
+                            const startX = woundCenterX + (Math.random() - 0.5) * currentWoundRadius * 0.5;
+                            const startY = woundCenterY + (Math.random() - 0.5) * currentWoundRadius * 0.5;
+                            const endX = woundCenterX + (Math.random() - 0.5) * currentWoundRadius * 1.5;
+                            const endY = woundCenterY + (Math.random() - 0.5) * currentWoundRadius * 1.5;
+                            collagenFibers.push({ x1: startX, y1: startY, x2: startX, y2: startY, targetX: endX, targetY: endY, growthProgress: 0 });
+                        }
+                    }
+                }
+
+                // In remodelling, growth factor can also reduce scar
+                if (gamePhase === 'Remodelling') {
+                    scarLevel = Math.max(0, scarLevel - 10);
+                    message = 'Growth Factor released! Healing boosted, scar reduced.';
+                }
+                showTemporaryMessage(message, 'success'); // Use the dynamic message
+
+            } else {
+                showTemporaryMessage('Not enough Cellular Energy!', 'error');
+            }
+            updateUI();
+        });
+
+        // Apply Antimicrobial
+        applyAntimicrobialBtn.addEventListener('click', () => {
+            playSound('click');
+            const cost = 15;
+            if (cellularEnergy >= cost) {
+                cellularEnergy -= cost;
+                // Store initial infection level to check if infection was present
+                const initialInfectionLevel = infectionLevel;
+                infectionLevel = Math.max(0, infectionLevel - 50); // Significantly reduce infection (changed from 30 to 50)
+                // Only reduce inflammation if there was an active infection before this action
+                if (initialInfectionLevel > 0) {
+                    inflammationLevel = Math.max(0, inflammationLevel - 10); // Reduce inflammation due to infection
+                }
+                showTemporaryMessage('Antimicrobial applied! Infection level decreased.', 'success');
+
+            } else {
+                showTemporaryMessage('Not enough Cellular Energy!', 'error');
+            }
+            updateUI();
+        });
+
+
+        // Mechanical Stimulation (formerly Reorganise)
+        mechanicalStimulationBtn.addEventListener('click', () => {
+            playSound('click');
+            const cost = 25;
+            if (cellularEnergy >= cost) {
+                cellularEnergy -= cost;
+                scarLevel = Math.max(0, scarLevel - 3); // Reduced from 5
+                inflammationLevel = Math.max(0, inflammationLevel - 1); // Reduced from 3
+                infectionLevel = Math.max(0, infectionLevel - 1); // Reduced from 2
+                woundHealth = Math.min(100, woundHealth + 1); // Reduced from 2
+                // Add more fibroblast cells to represent collagen remodelling (Reduced from 3 to 1)
+                for (let i = 0; i < 1; i++) {
+                    cells.push(new Cell('fibroblast', woundCenterX, woundCenterY));
+                }
+                reorganizeAnimationTimer = 60; // Activate reorganise visual for 1 second (60 frames)
+                showTemporaryMessage('Mechanical Stimulation applied! Scarring reduced, tissue maturation improved.', 'success');
+
+            } else {
+                showTemporaryMessage('Not enough Cellular Energy!', 'error');
+            }
+            updateUI();
+        });
+
+        // Restart Game
+        restartGameBtn.addEventListener('click', () => {
+            playSound('click');
+            initializeGame();
+        });
+
+        // Play Again button in game over message box
+        playAgainButton.addEventListener('click', () => {
+            playSound('click');
+            hideGameOverMessageBox();
+            initializeGame(); // Re-initialize game for a fresh start
+        });
+
+        // --- Event Listeners ---
+        startGameButton.addEventListener('click', startGame);
+        // Removed encyclopaediaButton.addEventListener('click', showEncyclopaediaModal);
+        // Removed closeEncyclopaediaButton.addEventListener('click', hideEncyclopaediaModal);
+        dismissPhaseModalButton.addEventListener('click', () => { // New: Dismiss button for phase modal
+            playSound('click');
+            hidePhaseModal();
+        });
+
+
+        patientButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                playSound('click');
+                if (gameRunning) { // Prevent changing patient during game
+                    showTemporaryMessage('Cannot change patient during an active game. Please restart first.', 'warning');
+                    return;
+                }
+                patientButtons.forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
+                currentPatientType = button.dataset.type;
+                chosenPatientDisplay.textContent = patientParams[currentPatientType].displayName;
+                showTemporaryMessage(`Patient set to: ${patientParams[currentPatientType].displayName}`, 'info');
+            });
+        });
+
+        // Listen for window resize to adjust canvas
+        window.addEventListener('resize', resizeCanvas);
+
+        // Initial setup when the script loads
+        initializeGame();
+    </script>
+
+  <script src="./assets/js/marked.min.js"></script>
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js"></script>
+  <script src="./assets/js/Tone.min.js"></script>
+</body>
+</html>

@@ -2,6 +2,6 @@
   {
     "name": "John Smith",
     "role": "PhD Graduate",
-    "photo": "/assets/img/alumni.png"
+    "photo": "./assets/img/alumni.png"
   }
 ]

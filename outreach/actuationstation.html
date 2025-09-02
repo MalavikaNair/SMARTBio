@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
+  <link rel="stylesheet" href="./assets/css/fonts.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>body{font-family: var(--font-sans-exo);}</style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actuation Station: The Robot Challenge</title>
+<style>
+        /* Custom CSS for the game */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            display: flex;
+            flex-direction: column; /* Default to column for small screens */
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px; /* Increased max-width for side-by-side layout */
+            margin-top: 20px;
+            margin-bottom: 20px;
+            position: relative; /* Needed for absolute positioning of welcome screen */
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
+
+        .score-display {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .action-button { /* General style for action buttons */
+            background-color: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+
+        .action-button:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .action-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .end-game-button {
+            background-color: #ef4444; /* Red color for end game */
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+
+        .end-game-button:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .end-game-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .selection-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px; /* Reduced gap */
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #334155;
+            flex-wrap: wrap;
+        }
+
+        .selection-group label {
+            white-space: nowrap;
+            display: flex; /* Use flex for better alignment of radio and text */
+            align-items: center;
+            cursor: pointer;
+            padding: 6px 10px; /* Reduced padding */
+            border-radius: 8px;
+            background-color: #f0f4f8;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .selection-group label:hover {
+            background-color: #e2e8f0;
+        }
+
+        .selection-group input[type="radio"] {
+            margin-right: 8px;
+            /* Custom radio button styling */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #3b82f6;
+            border-radius: 50%;
+            outline: none;
+            transition: background-color 0.2s, border-color 0.2s;
+            position: relative;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .selection-group input[type="radio"]:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .selection-group input[type="radio"]:checked::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .selection-group input[type="radio"]:disabled + span {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .selection-group input[type="radio"]:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+
+        .main-content {
+            display: flex;
+            flex-direction: column; /* Default to column for small screens */
+            gap: 30px;
+            flex-grow: 1;
+        }
+
+        .canvas-container {
+            flex-grow: 1;
+            background-color: transparent;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            min-height: 400px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Added shadow for canvas */
+        }
+
+        canvas {
+            display: block;
+            background-color: #fff; /* White background for the drawing area */
+            border-radius: 12px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls-panel {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            flex-shrink: 0; /* Prevent shrinking on larger screens */
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #334155;
+            font-size: 1em;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 8px;
+            background: #cbd5e1;
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+
+        .control-group input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .value-display {
+            font-weight: 500;
+            color: #64748b;
+            text-align: right;
+            font-size: 0.9em;
+        }
+
+        .message-box {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 8px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            color: #333;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        .message-box.show {
+            opacity: 1;
+        }
+        .message-box.error {
+            background-color: #ef4444; /* Red for errors */
+            color: white;
+        }
+        .message-box.success {
+            background-color: #22c55e; /* Green for success */
+            color: white;
+        }
+
+        /* Hide control groups by default, show based on selected robot */
+        .controls-panel .control-group {
+            display: none;
+        }
+        /* Rigid Robot */
+        .controls-panel.rigid-active .rigid-control-group {
+            display: flex;
+        }
+        /* Soft Robot - Pneumatic */
+        .controls-panel.soft-pneumatic-active .soft-pneumatic-control-group {
+            display: flex;
+        }
+        /* Soft Robot - Electro/Magnetic */
+        .controls-panel.soft-electro-magnetic-active .soft-electro-magnetic-control-group {
+            display: flex;
+        }
+
+        /* Responsive layout for larger screens */
+        @media (min-width: 900px) {
+            .game-container {
+                flex-direction: row; /* Side-by-side for larger screens */
+            }
+            .main-content {
+                flex-direction: row; /* Keep main content side-by-side */
+            }
+            .controls-panel {
+                width: 350px; /* Fixed width for controls panel on large screens */
+                grid-template-columns: 1fr; /* Stack controls vertically within the panel */
+                align-content: start; /* Align items to the start of the grid */
+            }
+        }
+
+        /* Welcome Screen Styles */
+        .welcome-screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20; /* Above everything else */
+            border-radius: 16px; /* Match game-container border-radius */
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .welcome-screen-content {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .welcome-screen-content h2 {
+            font-size: 2em;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 15px;
+        }
+
+        .welcome-screen-content p {
+            font-size: 1.1em;
+            color: #4a5568;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .welcome-screen-content button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            margin-top: 20px; /* Space between text and button */
+        }
+
+        .welcome-screen-content button:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .welcome-screen-content button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Tutorial Specific Styles */
+        .tutorial-content {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .tutorial-content p {
+            font-size: 1.1em;
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+        .tutorial-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .tutorial-buttons button.primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .tutorial-buttons button.primary:hover {
+            background-color: #2563eb;
+        }
+        .tutorial-buttons button.secondary {
+            background-color: #e2e8f0;
+            color: #334155;
+        }
+        .tutorial-buttons button.secondary:hover {
+            background-color: #cbd5e1;
+        }
+
+        /* Highlight active control panel during tutorial */
+        .controls-panel.tutorial-highlight .control-group {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* Blue glow */
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        .controls-panel.tutorial-highlight.rigid-active .rigid-control-group {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.8);
+        }
+        .controls-panel.tutorial-highlight.soft-pneumatic-active .soft-pneumatic-control-group {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.8);
+        }
+        .controls-panel.tutorial-highlight.soft-electro-magnetic-active .soft-electro-magnetic-control-group {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.8);
+        }
+
+        /* Show Info Button on Canvas */
+        #showInfoButton {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+            padding: 6px 12px;
+            font-size: 0.9em;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s ease-in-out;
+        }
+        #showInfoButton:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        /* Tutorial Pointer */
+        #tutorialPointer {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #3b82f6; /* Blue */
+            border-radius: 50%;
+            z-index: 30; /* Above other elements */
+            opacity: 0.8;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+            animation: pulse 1s infinite alternate;
+            display: none; /* Hidden by default */
+        }
+
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            to {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Welcome Screen Overlay -->
+        <div id="welcomeScreen" class="welcome-screen-overlay">
+            <!-- Main Welcome Content (initially shown) -->
+            <div id="mainWelcomeContent" class="welcome-screen-content">
+                <h2>Actuation Station: The Robot Challenge!</h2>
+                <p>
+                    Control different robot arms to grab cells and drop them into the **Wound**.
+                </p>
+                <p>
+                    Choose your robot and cell type (Drug, Fibroblast, or Red Blood Cell) and try to score!
+                </p>
+                <button id="startGameButton" class="action-button">Start Game</button>
+                <button id="startTutorialButton" class="action-button secondary">Start Tutorial</button>
+            </div>
+
+            <!-- Tutorial Content (initially hidden) -->
+            <div id="tutorialContent" class="welcome-screen-content hidden">
+                <h2>Tutorial Mode</h2>
+                <p id="tutorialText"></p>
+                <div class="tutorial-buttons">
+                    <button id="nextTutorialButton" class="action-button primary">Next Robot</button>
+                    <button id="resumeTutorialButton" class="action-button secondary">Try it out!</button> <!-- Updated text -->
+                    <button id="exitTutorialButton" class="action-button secondary">Exit Tutorial</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen Overlay -->
+        <div id="gameOverScreen" class="welcome-screen-overlay hidden">
+            <div class="welcome-screen-content">
+                <h2>Game Over!</h2>
+                <p>Your final score is: <span id="finalScoreValue" class="font-bold text-2xl text-blue-600">0</span></p>
+                <button id="playAgainButton" class="action-button">Play Again</button>
+            </div>
+        </div>
+
+        <!-- This div will contain the main game UI elements: selections, canvas, controls -->
+        <div id="gameUI" class="flex flex-col flex-grow hidden">
+            <div id="robotSelectionGroup" class="selection-group robot-selection">
+                <label>
+                    <input type="radio" name="robotType" value="rigid" id="rigidRobotRadio" checked>
+                    <span>Traditional Rigid Robot</span>
+                </label>
+                <label>
+                    <input type="radio" name="robotType" value="soft_pneumatic" id="softPneumaticRadio">
+                    <span>Soft Robot (Pneumatic/Hydraulic)</span>
+                </label>
+                <label>
+                    <input type="radio" name="robotType" value="soft_electro_magnetic" id="softElectroMagneticRadio">
+                    <span>Soft Robot (Electro/Magnetic)</span>
+                </label>
+            </div>
+
+            <div id="ballSelectionGroup" class="selection-group ball-selection">
+                <label>
+                    <input type="radio" name="ballType" value="drug" id="drugRadio" checked>
+                    <span>Drug</span>
+                </label>
+                <label>
+                    <input type="radio" name="ballType" value="fibroblast" id="fibroblastRadio">
+                    <span>Fibroblast</span>
+                </label>
+                <label>
+                    <input type="radio" name="ballType" value="red_blood_cell" id="redBloodCellRadio">
+                    <span>Red Blood Cell</span>
+                </label>
+            </div>
+
+            <!-- This div will arrange game content and controls side-by-side on larger screens -->
+            <div class="flex flex-col md:flex-row gap-5 flex-grow">
+                <div id="gameContent" class="flex flex-col gap-5 flex-grow">
+                    <div class="game-header">
+                        <div class="score-display">Score: <span id="scoreValue">0</span></div>
+                        <div class="score-display">Time: <span id="timeValue"></span></div>
+                        <button id="endGameButton" class="end-game-button">End Game</button>
+                    </div>
+
+                    <div class="canvas-container">
+                        <canvas id="robotCanvas"></canvas>
+                        <div id="messageBox" class="message-box"></div>
+                        <button id="showInfoButton">Show Info</button> <!-- Initial text, updated by JS -->
+                    </div>
+                </div>
+
+                <div id="controlsPanel" class="controls-panel rigid-active">
+                    <div class="control-group rigid-control-group">
+                        <label for="rigidBaseRotation">Base Rotation (Yaw)</label>
+                        <input type="range" id="rigidBaseRotation" min="-90" max="90" value="0">
+                        <span class="value-display" id="rigidBaseRotationValue">0°</span>
+                    </div>
+
+                    <div class="control-group rigid-control-group">
+                        <label for="rigidShoulderAngle">Shoulder Angle (Pitch)</label>
+                        <input type="range" id="rigidShoulderAngle" min="-90" max="150" value="-30">
+                        <span class="value-display" id="rigidShoulderAngleValue">-30°</span>
+                    </div>
+
+                    <div class="control-group rigid-control-group">
+                        <label for="rigidElbowAngle">Elbow Angle (Pitch)</label>
+                        <input type="range" id="rigidElbowAngle" min="-90" max="90" value="45">
+                        <span class="value-display" id="rigidElbowAngleValue">45°</span>
+                    </div>
+
+                    <div class="control-group rigid-control-group">
+                        <label for="rigidGripperOpenClose">Gripper Open/Close</label>
+                        <input type="range" id="rigidGripperOpenClose" min="0" max="50" value="0">
+                        <span class="value-display" id="rigidGripperOpenCloseValue">0 units</span>
+                    </div>
+
+                    <div class="control-group rigid-control-group">
+                        <label for="rigidGripperExtension">Gripper Extension</label>
+                        <input type="range" id="rigidGripperExtension" min="0" max="100" value="0">
+                        <span class="value-display" id="rigidGripperExtensionValue">0 units</span>
+                    </div>
+
+                    <!-- New controls for Soft Pneumatic Robot -->
+                    <div class="control-group soft-pneumatic-control-group">
+                        <label for="softPneumaticLeftPressure">Left Side Pressure</label>
+                        <input type="range" id="softPneumaticLeftPressure" min="0" max="100" value="0">
+                        <span class="value-display" id="softPneumaticLeftPressureValue">0 units</span>
+                    </div>
+
+                    <div class="control-group soft-pneumatic-control-group">
+                        <label for="softPneumaticRightPressure">Right Side Pressure</label>
+                        <input type="range" id="softPneumaticRightPressure" min="0" max="100" value="0">
+                        <span class="value-display" id="softPneumaticRightPressureValue">0 units</span>
+                    </div>
+
+                    <div class="control-group soft-pneumatic-control-group">
+                        <label for="softPneumaticExtensionPressure">Extension Pressure</label>
+                        <input type="range" id="softPneumaticExtensionPressure" min="-100" max="100" value="0">
+                        <span class="value-display" id="softPneumaticExtensionPressureValue">0 units</span>
+                    </div>
+
+                    <div class="control-group soft-pneumatic-control-group">
+                        <label for="softPneumaticGripperPressure">Soft Gripper (Pneumatic/Hydraulic)</label>
+                        <input type="range" id="softPneumaticGripperPressure" min="0" max="100" value="0">
+                        <span class="value-display" id="softPneumaticGripperPressureValue">0 units</span>
+                    </div>
+
+                    <!-- Updated controls for Soft Electro/Magnetic Robot -->
+                    <div class="control-group soft-electro-magnetic-control-group">
+                        <label for="softElectroMagneticLeftElectrodeStrength">Left Electrode Strength</label>
+                        <input type="range" id="softElectroMagneticLeftElectrodeStrength" min="0" max="100" value="0">
+                        <span class="value-display" id="softElectroMagneticLeftElectrodeStrengthValue">0 units</span>
+                    </div>
+
+                    <div class="control-group soft-electro-magnetic-control-group">
+                        <label for="softElectroMagneticRightElectrodeStrength">Right Electrode Strength</label>
+                        <input type="range" id="softElectroMagneticRightElectrodeStrength" min="0" max="100" value="0">
+                        <span class="value-display" id="softElectroMagneticRightElectrodeStrengthValue">0 units</span>
+                    </div>
+
+                    <div class="control-group soft-electro-magnetic-control-group">
+                        <label for="softElectroMagneticUpElectrode">Up Electrode</label>
+                        <input type="range" id="softElectroMagneticUpElectrode" min="0" max="100" value="0">
+                        <span class="value-display" id="softElectroMagneticUpElectrodeValue">0 units</span>
+                    </div>
+
+                    <div class="control-group soft-electro-magnetic-control-group">
+                        <label for="softElectroMagneticDownElectrode">Down Electrode</label>
+                        <input type="range" id="softElectroMagneticDownElectrode" min="0" max="100" value="0">
+                        <span class="value-display" id="softElectroMagneticDownElectrodeValue">0 units</span>
+                    </div>
+
+                    <div class="control-group soft-electro-magnetic-control-group">
+                        <label for="softElectroMagneticGraspingForce">Electro/Magnetic Grasping Force</label>
+                        <input type="range" id="softElectroMagneticGraspingForce" min="0" max="100" value="50">
+                        <span class="value-display" id="softElectroMagneticGraspingForceValue">50%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Tutorial Pointer -->
+        <div id="tutorialPointer"></div>
+    </div>
+
+    <script>
+        // --- Global Canvas and Context ---
+        const canvas = document.getElementById('robotCanvas');
+        const ctx = canvas.getContext('2d');
+        const messageBox = document.getElementById('messageBox');
+        const scoreValueDisplay = document.getElementById('scoreValue');
+        const endGameButton = document.getElementById('endGameButton');
+
+        // --- Welcome Screen Elements ---
+        const welcomeScreen = document.getElementById('welcomeScreen'); // The transparent overlay
+        const mainWelcomeContent = document.getElementById('mainWelcomeContent'); // The actual welcome text/buttons
+        const tutorialContent = document.getElementById('tutorialContent'); // The actual tutorial text/buttons
+        const startGameButton = document.getElementById('startGameButton'); // "Start Game" button on main welcome
+        const startTutorialButton = document.getElementById('startTutorialButton'); // "Start Tutorial" button on main welcome
+        const nextTutorialButton = document.getElementById('nextTutorialButton'); // "Next Robot" button in tutorial
+        const resumeTutorialButton = document.getElementById('resumeTutorialButton'); // New: "Try it out!" button in tutorial
+        const exitTutorialButton = document.getElementById('exitTutorialButton'); // "Exit Tutorial" button in tutorial
+        const tutorialText = document.getElementById('tutorialText');
+        const gameContent = document.getElementById('gameContent');
+        const controlsPanel = document.getElementById('controlsPanel');
+        const gameUI = document.getElementById('gameUI'); // Main game UI container
+        const showInfoButton = document.getElementById('showInfoButton'); // New: Button on canvas to show info
+
+        // --- Game Over Screen Elements ---
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScoreValueDisplay = document.getElementById('finalScoreValue');
+        const playAgainButton = document.getElementById('playAgainButton');
+
+        // --- Robot and Ball Selection Groups ---
+        const robotSelectionGroup = document.getElementById('robotSelectionGroup');
+        const ballSelectionGroup = document.getElementById('ballSelectionGroup');
+
+        // --- Global Object Properties ---
+        let objectRadius = 20; // Now dynamic based on ball type
+        const objectColors = {
+            drug: '#4a90e2', // Vibrant Blue (base color, will be used in gradient)
+            fibroblast: '#ffb6c1', // Light Pink
+            red_blood_cell: '#b22222' // Firebrick Red
+        };
+        const grabbedColor = '#ff6347';
+        const crushedColor = '#dc2626';
+        const grabbableColor = '#90ee90';
+
+        // Target zone properties (Wound)
+        const WOUND_EFFECTIVE_RADIUS = 70; // Approximation for collision detection
+        const WOUND_GLOW_THRESHOLD = 80;
+
+        let currentRobotType = 'rigid';
+        let currentBallType = 'drug'; // Default to drug
+        let objectX, objectY;
+        let isObjectGrabbed = false;
+        let objectCrushed = false;
+        let score = 0;
+        let hasScoredThisGrab = false;
+        let ballVisible = true;
+
+        // --- Time related variables ---
+        const roundTimeLimit = 30;
+        let timeLeft = roundTimeLimit;
+        let timerInterval;
+        let gameActive = false; // Tracks if the main game is active (not paused or in tutorial)
+
+        const timeDisplay = document.getElementById('timeValue');
+
+        // --- Store previous slider values to detect "open then close" or "off then on" grab mechanic ---
+        let prevRigidGripperOpen = 0;
+        let prevSoftPneumaticGripperPressure = 0;
+        let prevSoftElectroMagneticGraspingForce = 0;
+
+        // --- Robot Type Selection ---
+        const rigidRobotRadio = document.getElementById('rigidRobotRadio');
+        const softPneumaticRadio = document.getElementById('softPneumaticRadio');
+        const softElectroMagneticRadio = document.getElementById('softElectroMagneticRadio');
+        
+        // --- Ball Type Selection ---
+        const drugRadio = document.getElementById('drugRadio');
+        const fibroblastRadio = document.getElementById('fibroblastRadio');
+        const redBloodCellRadio = document.getElementById('redBloodCellRadio');
+
+        // --- Score Pop-up and Particle System Arrays ---
+        const activeScorePopups = [];
+        const activeParticles = [];
+
+        // Background particles
+        const backgroundParticles = [];
+        const MAX_BG_PARTICLES = 150; // Increased particle count
+
+        // --- Tutorial Mode Variables ---
+        let inTutorialMode = false;
+        let currentTutorialRobotIndex = 0;
+        const tutorialRobots = [
+            {
+                type: 'rigid',
+                name: 'Traditional Rigid Robot',
+                explanation: 'This robot uses fixed joints. Control its **Base Rotation (Yaw)**, **Shoulder Angle (Pitch)**, and **Elbow Angle (Pitch)**. The **Gripper Open/Close** and **Gripper Extension** sliders control its end effector. Try moving the sliders to see how it responds!',
+                controlGroupClass: 'rigid-control-group'
+            },
+            {
+                type: 'soft_pneumatic',
+                name: 'Soft Robot (Pneumatic/Hydraulic)',
+                explanation: 'This soft robot uses internal pressure. Adjust **Left/Right Side Pressure** to bend the arm, and **Extension Pressure** to make it longer or shorter. The **Soft Gripper** controls its flexible grasp. Experiment with these controls!',
+                controlGroupClass: 'soft-pneumatic-control-group'
+            },
+            {
+                type: 'soft_electro_magnetic',
+                name: 'Soft Robot (Electro/Magnetic)',
+                explanation: 'This soft robot uses electromagnetic forces. Adjust **Left Electrode Strength** and **Right Electrode Strength** to bend the arm. Use **Up Electrode** and **Down Electrode** to extend/contract. The **Electro/Magnetic Grasping Force** allows it to attract metal objects. Try varying the left and right electrode strengths *differentially* to see it bend!',
+                controlGroupClass: 'soft-electro-magnetic-control-group'
+            }
+        ];
+
+        // --- Tutorial Pointer Element ---
+        const tutorialPointer = document.getElementById('tutorialPointer');
+
+
+        // --- Message box functions ---
+        let messageTimeoutId;
+        function showMessage(message, duration = 1500, type = 'info') {
+            clearTimeout(messageTimeoutId); 
+            messageBox.textContent = message;
+            messageBox.classList.remove('error', 'success'); // Clear previous types
+            messageBox.classList.add(type); // Add new type
+            messageBox.classList.add('show');
+            messageTimeoutId = setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, duration);
+        }
+
+        // --- Audio Context for simple sounds ---
+        let audioContext;
+        function playScoreSound() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.type = 'sine'; // A clean sine wave
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // Start at half volume
+
+            // Fade out quickly
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3); // Play for 0.3 seconds
+        }
+
+        // --- Rigid Robot Controls ---
+        const rigidBaseRotationSlider = document.getElementById('rigidBaseRotation');
+        const rigidShoulderAngleSlider = document.getElementById('rigidShoulderAngle');
+        const rigidElbowAngleSlider = document.getElementById('rigidElbowAngle');
+        const rigidGripperOpenCloseSlider = document.getElementById('rigidGripperOpenClose');
+        const rigidGripperExtensionSlider = document.getElementById('rigidGripperExtension');
+
+        const rigidBaseRotationValue = document.getElementById('rigidBaseRotationValue');
+        const rigidShoulderAngleValue = document.getElementById('rigidShoulderAngleValue');
+        const rigidElbowAngleValue = document.getElementById('rigidElbowAngleValue');
+        const rigidGripperOpenCloseValue = document.getElementById('rigidGripperOpenCloseValue');
+        const rigidGripperExtensionValue = document.getElementById('rigidGripperExtensionValue');
+
+        const RIGID_ARM_SEGMENT_LENGTH = 170;
+        const RIGID_GRIPPER_LENGTH = 40;
+
+        // --- Soft Robot - Pneumatic Controls ---
+        const softPneumaticLeftPressureSlider = document.getElementById('softPneumaticLeftPressure');
+        const softPneumaticRightPressureSlider = document.getElementById('softPneumaticRightPressure');
+        const softPneumaticExtensionPressureSlider = document.getElementById('softPneumaticExtensionPressure');
+        const softPneumaticGripperPressureSlider = document.getElementById('softPneumaticGripperPressure');
+
+        const softPneumaticLeftPressureValue = document.getElementById('softPneumaticLeftPressureValue');
+        const softPneumaticRightPressureValue = document.getElementById('softPneumaticRightPressureValue');
+        const softPneumaticExtensionPressureValue = document.getElementById('softPneumaticExtensionPressureValue');
+        const softPneumaticGripperPressureValue = document.getElementById('softPneumaticGripperPressureValue');
+
+        // --- Soft Robot - Electro/Magnetic Controls ---
+        const softElectroMagneticLeftElectrodeStrengthSlider = document.getElementById('softElectroMagneticLeftElectrodeStrength');
+        const softElectroMagneticRightElectrodeStrengthSlider = document.getElementById('softElectroMagneticRightElectrodeStrength');
+        const softElectroMagneticUpElectrodeSlider = document.getElementById('softElectroMagneticUpElectrode'); 
+        const softElectroMagneticDownElectrodeSlider = document.getElementById('softElectroMagneticDownElectrode');
+        const softElectroMagneticGraspingForceSlider = document.getElementById('softElectroMagneticGraspingForce');
+
+        const softElectroMagneticLeftElectrodeStrengthValue = document.getElementById('softElectroMagneticLeftElectrodeStrengthValue');
+        const softElectroMagneticRightElectrodeStrengthValue = document.getElementById('softElectroMagneticRightElectrodeStrengthValue');
+        const softElectroMagneticUpElectrodeValue = document.getElementById('softElectroMagneticUpElectrodeValue');
+        const softElectroMagneticDownElectrodeValue = document.getElementById('softElectroMagneticDownElectrodeValue');
+        const softElectroMagneticGraspingForceValue = document.getElementById('softElectroMagneticGraspingForceValue');
+
+        const SOFT_ARM_INITIAL_LENGTH = 280;
+        const SOFT_ARM_LINE_WIDTH = 40;
+
+        // Common thresholds for robot grabbing
+        const GRAB_THRESHOLD_Y = 40;
+
+        // Rigid Robot Specific Thresholds
+        const GRABBABLE_RIGID_OPEN_THRESHOLD = 40;
+        const RIGID_GRAB_CLOSURE_THRESHOLD = 15;
+        const RIGID_OPEN_TO_GRAB_THRESHOLD = 20;
+        const RIGID_GRAB_RELEASE_THRESHOLD = RIGID_GRAB_CLOSURE_THRESHOLD + 10;
+
+        // Soft Robot Specific Thresholds
+        const GRAB_DISTANCE_THRESHOLD_SOFT = 60; // Adjusted for new ball sizes
+        const GRABBABLE_SOFT_OPEN_PRESSURE = 25;
+        const SOFT_GRAB_PRESSURE_THRESHOLD = 15;
+        const SOFT_OPEN_TO_GRAB_PRESSURE = 15;
+        const SOFT_GRAB_RELEASE_THRESHOLD = SOFT_GRAB_PRESSURE_THRESHOLD - 5;
+
+        const MIN_ELECTRO_MAGNETIC_GRASP_FORCE = 5;
+        const ELECTRO_MAGNETIC_OFF_THRESHOLD = 20;
+        const ELECTRO_MAGNETIC_RELEASE_THRESHOLD = MIN_ELECTRO_MAGNETIC_GRASP_FORCE - 5;
+
+
+        // Crushing thresholds for fragile ball
+        const FRAGILE_CRUSH_RIGID_THRESHOLD = 8;
+        const FRAGILE_CRUSH_PNEUMATIC_THRESHOLD = 70;
+
+
+        // --- Drawing Functions ---
+
+        function resetObjectPosition() {
+            isObjectGrabbed = false;
+            objectCrushed = false;
+            
+            prevRigidGripperOpen = 0;
+            prevSoftPneumaticGripperPressure = 0;
+            prevSoftElectroMagneticGraspingForce = 0;
+            hasScoredThisGrab = false;
+            ballVisible = true;
+
+            // Set objectRadius based on currentBallType
+            if (currentBallType === 'drug') {
+                objectRadius = 18; // Bigger for drug
+            } else if (currentBallType === 'fibroblast' || currentBallType === 'red_blood_cell') {
+                objectRadius = 15; // Smaller for cells
+            } else {
+                objectRadius = 20; // Fallback
+            }
+
+            // Ensure canvas has a minimum valid size for calculations, even if offsetWidth/Height are 0 initially
+            const effectiveCanvasWidth = canvas.offsetWidth > 0 ? canvas.offsetWidth : 600;
+            const effectiveCanvasHeight = canvas.offsetHeight > 0 ? canvas.offsetHeight : 400;
+
+            canvas.width = effectiveCanvasWidth;
+            canvas.height = effectiveCanvasHeight;
+
+            // Define safe spawn area for the ball based on effective dimensions
+            const minX = objectRadius + 50; 
+            const maxX = effectiveCanvasWidth - objectRadius - 150; 
+            const minY = objectRadius + 50; 
+            const maxY = effectiveCanvasHeight - objectRadius - 150; 
+
+            // Ensure min/max are valid before calculating random position
+            if (maxX > minX && maxY > minY) {
+                objectX = Math.random() * (maxX - minX) + minX;
+                objectY = Math.random() * (maxY - minY) + minY;
+            } else {
+                // Fallback to center if calculated range is invalid (e.g., canvas too small)
+                objectX = effectiveCanvasWidth / 2;
+                objectY = effectiveCanvasHeight / 2;
+            }
+
+            if (gameActive) {
+                startRoundTimer();
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            console.log(`Canvas resized to: ${canvas.width}x${canvas.height}`);
+            // Reinitialize background particles on resize
+            backgroundParticles.length = 0; // Clear existing particles
+            for (let i = 0; i < MAX_BG_PARTICLES; i++) {
+                backgroundParticles.push(createBackgroundParticle());
+            }
+            drawRobot(); // Redraw after resizing
+            if (inTutorialMode && !resumeTutorialButton.classList.contains('hidden')) {
+                // If in tutorial and "Try it out!" is active, hide pointer
+                tutorialPointer.style.display = 'none';
+            } else if (inTutorialMode) {
+                // If in tutorial explanation, reposition pointer
+                positionTutorialPointer();
+            }
+        }
+
+        // Function to create a single background particle
+        function createBackgroundParticle() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 3 + 2, // Radius between 2 and 5 (more visible)
+                vx: (Math.random() - 0.5) * 0.8, // Slightly faster movement
+                vy: (Math.random() - 0.5) * 0.8, // Slightly faster movement
+                alpha: Math.random() * 0.7 + 0.3 // Opacity between 0.3 and 1.0 (more visible)
+            };
+        }
+
+        // Function to update and draw background particles
+        function drawBackgroundParticles() {
+            ctx.fillStyle = '#edfcf2'; // Very light green background color
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = backgroundParticles.length - 1; i >= 0; i--) {
+                const p = backgroundParticles[i];
+
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.001; // Slowly fade out
+
+                // Wrap particles around the canvas
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+
+                // If particle fades out, re-create it
+                if (p.alpha <= 0) {
+                    backgroundParticles.splice(i, 1);
+                    backgroundParticles.push(createBackgroundParticle());
+                }
+
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = `rgba(144, 238, 144, ${p.alpha})`; // Light green particles
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+
+        function drawRobot() {
+            // Clear and draw dynamic background particles
+            drawBackgroundParticles();
+            
+            let gripperTipWorldX_actual, gripperTipWorldY_actual;
+
+            // Calculate gripperTipWorldX_actual and gripperTipWorldY_actual first (absolute world coordinates)
+            ctx.save(); // Save the initial canvas transform (0,0)
+            ctx.translate(canvas.width / 2, canvas.height - 80); // Move to robot base (temporary for calculation)
+
+            if (currentRobotType === 'rigid') {
+                const baseRot = parseFloat(rigidBaseRotationSlider.value);
+                const shoulderAng = parseFloat(rigidShoulderAngleSlider.value);
+                const elbowAng = parseFloat(rigidElbowAngleSlider.value);
+                const gripperExt = parseFloat(rigidGripperExtensionSlider.value);
+                const rigidGripperOpenClose = parseFloat(rigidGripperOpenCloseSlider.value);
+                const jawThickness = 8; 
+                const jawFingerLength = 15;
+
+                ctx.rotate(baseRot * Math.PI / 180);
+                ctx.translate(0, -RIGID_ARM_SEGMENT_LENGTH);
+                ctx.rotate(shoulderAng * Math.PI / 180);
+                ctx.translate(0, -RIGID_ARM_SEGMENT_LENGTH);
+                ctx.rotate(elbowAng * Math.PI / 180);
+                ctx.translate(0, RIGID_GRIPPER_LENGTH);
+                ctx.translate(0, gripperExt);
+
+                const currentTransform = ctx.getTransform();
+                const gripperTipLocalX = 0;
+                const gripperTipLocalY = jawThickness + jawFingerLength / 2; 
+                gripperTipWorldX_actual = currentTransform.a * gripperTipLocalX + currentTransform.c * gripperTipLocalY + currentTransform.e;
+                gripperTipWorldY_actual = currentTransform.b * gripperTipLocalX + currentTransform.d * gripperTipLocalY + currentTransform.f;
+
+            } else { // Soft robots
+                let bendFactor = 0;
+                if (currentRobotType === 'soft_pneumatic') {
+                    const leftPressure = parseFloat(softPneumaticLeftPressureSlider.value);
+                    const rightPressure = parseFloat(softPneumaticRightPressureSlider.value);
+                    bendFactor = (rightPressure - leftPressure) / 100;
+                } else { // soft_electro_magnetic
+                    const leftElectrodeStrength = parseFloat(softElectroMagneticLeftElectrodeStrengthSlider.value);
+                    const rightElectrodeStrength = parseFloat(softElectroMagneticRightElectrodeStrengthSlider.value);
+                    bendFactor = (rightElectrodeStrength - leftElectrodeStrength) / 100;
+                }
+
+                let extensionFactor = 0;
+                if (currentRobotType === 'soft_pneumatic') {
+                    extensionFactor = parseFloat(softPneumaticExtensionPressureSlider.value) / 100;
+                } else { // soft_electro_magnetic
+                    const upElectrode = parseFloat(softElectroMagneticUpElectrodeSlider.value);
+                    const downElectrode = parseFloat(softElectroMagneticDownElectrodeSlider.value);
+                    extensionFactor = (upElectrode - downElectrode) / 100;
+                }
+
+                // Reduced extension factor to keep arm within bounds
+                const currentLength = SOFT_ARM_INITIAL_LENGTH * (1 + extensionFactor * 0.3); 
+                const numSegments = 20;
+                const totalAngle = bendFactor * (Math.PI * 1.0);
+                const segmentAngle = totalAngle / numSegments;
+                const segmentLength = currentLength / numSegments;
+
+                for (let i = 0; i < numSegments; i++) {
+                    ctx.translate(0, -segmentLength); 
+                    ctx.rotate(segmentAngle); 
+                }
+                const finalArmTransform = ctx.getTransform();
+                gripperTipWorldX_actual = finalArmTransform.e;
+                gripperTipWorldY_actual = finalArmTransform.f;
+            }
+            ctx.restore(); // Restore to initial canvas transform (0,0)
+
+
+            const robotBaseY = canvas.height - 80; // Define robotBaseY here
+
+            // Wound properties
+            const woundX = canvas.width - 100; // X position of the wound center
+            const woundY = canvas.height / 2; // Y position of the wound center
+            
+            let woundGlow = false;
+
+            // Check distance to wound for glow effect
+            const distToWound = Math.sqrt(
+                Math.pow(gripperTipWorldX_actual - woundX, 2) +
+                Math.pow(gripperTipWorldY_actual - woundY, 2)
+            );
+
+            if (distToWound < WOUND_GLOW_THRESHOLD) {
+                woundGlow = true;
+            }
+
+            // Draw the Wound
+            ctx.save();
+            ctx.translate(woundX, woundY);
+
+            ctx.strokeStyle = '#8b0000'; // Dark red for wound border
+            ctx.lineWidth = 5;
+            
+            if (woundGlow) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ff4500'; // Orange-red glow
+            }
+
+            ctx.beginPath();
+            // Draw an irregular wound shape using Bezier curves
+            ctx.moveTo(0, -WOUND_EFFECTIVE_RADIUS); // Top point
+            ctx.bezierCurveTo(WOUND_EFFECTIVE_RADIUS * 0.8, -WOUND_EFFECTIVE_RADIUS * 0.8, WOUND_EFFECTIVE_RADIUS * 1.2, -WOUND_EFFECTIVE_RADIUS * 0.2, WOUND_EFFECTIVE_RADIUS, 0); // Right side
+            ctx.bezierCurveTo(WOUND_EFFECTIVE_RADIUS * 0.8, WOUND_EFFECTIVE_RADIUS * 0.8, WOUND_EFFECTIVE_RADIUS * 0.2, WOUND_EFFECTIVE_RADIUS * 1.2, 0, WOUND_EFFECTIVE_RADIUS); // Bottom point
+            ctx.bezierCurveTo(-WOUND_EFFECTIVE_RADIUS * 0.8, WOUND_EFFECTIVE_RADIUS * 0.8, -WOUND_EFFECTIVE_RADIUS * 1.2, WOUND_EFFECTIVE_RADIUS * 0.2, -WOUND_EFFECTIVE_RADIUS, 0); // Left side
+            ctx.bezierCurveTo(-WOUND_EFFECTIVE_RADIUS * 0.8, -WOUND_EFFECTIVE_RADIUS * 0.8, -WOUND_EFFECTIVE_RADIUS * 0.2, -WOUND_EFFECTIVE_RADIUS * 1.2, 0, -WOUND_EFFECTIVE_RADIUS); // Back to top
+            ctx.closePath();
+            ctx.stroke();
+
+            ctx.shadowBlur = 0; // Reset shadow for subsequent drawings
+            ctx.shadowColor = 'transparent'; // Reset shadow for subsequent drawings
+
+            // Draw wound interior
+            ctx.fillStyle = 'rgba(139, 0, 0, 0.5)'; // Dark red, semi-transparent
+            ctx.fill();
+            ctx.restore();
+
+
+            // Now draw the robot based on its type
+            ctx.save(); // Save context before drawing robot
+            ctx.translate(canvas.width / 2, robotBaseY); // Move to robot base for drawing
+
+            let isObjectGrabbable = false;
+
+            if (currentRobotType === 'rigid') {
+                const baseRot = parseFloat(rigidBaseRotationSlider.value);
+                const shoulderAng = parseFloat(rigidShoulderAngleSlider.value);
+                const elbowAng = parseFloat(rigidElbowAngleSlider.value);
+                const gripperExt = parseFloat(rigidGripperExtensionSlider.value);
+                const rigidGripperOpenClose = parseFloat(rigidGripperOpenCloseSlider.value); // Get value here
+                const rigidJawWidth = 15 + rigidGripperOpenClose; // Use the value
+                const jawThickness = 8;
+                const jawFingerLength = 15;
+                const jawFingerOffset = 4; // Moved here for single declaration
+
+                rigidBaseRotationValue.textContent = `${baseRot}°`;
+                rigidShoulderAngleValue.textContent = `${shoulderAng}°`;
+                rigidElbowAngleValue.textContent = `${elbowAng}°`;
+                rigidGripperOpenCloseValue.textContent = `${rigidGripperOpenClose} units`; // Use the correct variable
+                rigidGripperExtensionValue.textContent = `${gripperExt} units`;
+
+                // Draw the base with shadow
+                ctx.save();
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+                ctx.fillStyle = '#607d8b'; // Blue-grey
+                ctx.fillRect(-30, -15, 60, 15);
+                ctx.beginPath();
+                ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                ctx.rotate(baseRot * Math.PI / 180);
+
+                // Draw the first arm segment (shoulder) with shadow
+                ctx.save();
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+                ctx.fillStyle = '#4caf50'; // Green
+                ctx.fillRect(-12, -RIGID_ARM_SEGMENT_LENGTH, 24, RIGID_ARM_SEGMENT_LENGTH);
+                ctx.beginPath();
+                ctx.arc(0, -RIGID_ARM_SEGMENT_LENGTH, 15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                ctx.translate(0, -RIGID_ARM_SEGMENT_LENGTH);
+
+                // Draw the second arm segment (elbow) with shadow
+                ctx.rotate(shoulderAng * Math.PI / 180);
+                ctx.save();
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+                ctx.fillStyle = '#ff9800'; // Orange
+                ctx.fillRect(-8, -RIGID_ARM_SEGMENT_LENGTH, 16, RIGID_ARM_SEGMENT_LENGTH);
+                ctx.beginPath();
+                ctx.arc(0, -RIGID_ARM_SEGMENT_LENGTH, 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                ctx.translate(0, -RIGID_ARM_SEGMENT_LENGTH);
+
+                // Draw the wrist/gripper base with shadow
+                ctx.rotate(elbowAng * Math.PI / 180);
+                ctx.save();
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+                ctx.fillStyle = '#9e9e9e'; // Grey
+                ctx.fillRect(-8, 0, 16, RIGID_GRIPPER_LENGTH);
+                ctx.restore();
+
+                ctx.translate(0, RIGID_GRIPPER_LENGTH);
+
+                // Draw the gripper extension with shadow
+                ctx.save();
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+                ctx.fillStyle = '#795548'; // Brown
+                ctx.fillRect(-5, 0, 10, gripperExt);
+                ctx.restore();
+
+                ctx.translate(0, gripperExt);
+
+                // Draw the gripper jaws with shadow
+                ctx.save();
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+                ctx.fillStyle = '#2196f3'; // Blue
+                ctx.fillRect(-rigidJawWidth / 2, 0, rigidJawWidth, jawThickness);
+                ctx.fillRect(-rigidJawWidth / 2, jawThickness, jawFingerOffset, jawFingerLength);
+                ctx.fillRect(rigidJawWidth / 2 - jawFingerOffset, jawThickness, jawFingerOffset, jawFingerLength);
+                ctx.restore();
+
+                const objCanvasX = objectX;
+                const objCanvasY = objectY;
+
+                const isGripperOverObject = Math.abs(objCanvasY - gripperTipWorldY_actual) < GRAB_THRESHOLD_Y &&
+                                            objCanvasX > (gripperTipWorldX_actual - rigidJawWidth / 2 - objectRadius) &&
+                                            objCanvasX < (gripperTipWorldX_actual + rigidJawWidth / 2 + objectRadius);
+
+                if (isGripperOverObject && rigidGripperOpenClose > GRABBABLE_RIGID_OPEN_THRESHOLD && !isObjectGrabbed && ballVisible) { // Use rigidGripperOpenClose
+                    isObjectGrabbable = true;
+                    if (gameActive) { // Only show message during active game
+                        showMessage('Close quickly to grab!', 700);
+                    }
+                }
+
+                if (!isObjectGrabbed && isGripperOverObject && ballVisible) {
+                    if (prevRigidGripperOpen > RIGID_OPEN_TO_GRAB_THRESHOLD && rigidGripperOpenClose < RIGID_GRAB_CLOSURE_THRESHOLD) { // Use rigidGripperOpenClose
+                        // Check if current ball type is fragile (fibroblast or red blood cell)
+                        if (rigidGripperOpenClose < FRAGILE_CRUSH_RIGID_THRESHOLD && (currentBallType === 'fibroblast' || currentBallType === 'red_blood_cell')) { // Use rigidGripperOpenClose
+                            objectCrushed = true;
+                            showMessage('Object Crushed! Cell Respawning.', 2000, 'error');
+                            ballVisible = false;
+                            isObjectGrabbed = false;
+                            stopRoundTimer();
+                            // Add crushed particles
+                            for (let i = 0; i < 25; i++) {
+                                activeParticles.push({
+                                    x: objectX + (Math.random() - 0.5) * 10,
+                                    y: objectY + (Math.random() - 0.5) * 10,
+                                    vx: (Math.random() - 0.5) * 6,
+                                    vy: (Math.random() - 0.5) * 6,
+                                    life: 50,
+                                    color: `hsl(0, 0%, ${Math.random() * 30 + 10}%)` // Dark grey/black particles
+                                });
+                            }
+                            setTimeout(resetObjectPosition, 2000);
+                        } else {
+                            objectCrushed = false;
+                            isObjectGrabbed = true;
+                            showMessage('Object Grabbed!', 1500, 'success');
+                        }
+                    }
+                } else if (isObjectGrabbed) {
+                    if (rigidGripperOpenClose > RIGID_GRAB_RELEASE_THRESHOLD || !isGripperOverObject) { // Use rigidGripperOpenClose
+                        isObjectGrabbed = false;
+                        // Check if object entered the wound
+                        const isObjectInWound = (Math.abs(objectX - woundX) < WOUND_EFFECTIVE_RADIUS) &&
+                                             (Math.abs(objectY - woundY) < WOUND_EFFECTIVE_RADIUS);
+
+                        if (isObjectInWound && !hasScoredThisGrab) {
+                            let pointsEarned = 0;
+                            if (currentBallType === 'drug') {
+                                pointsEarned = 10;
+                            } else if (currentBallType === 'fibroblast' || currentBallType === 'red_blood_cell') {
+                                pointsEarned = 20; // Fragile cells give more points
+                            }
+                            pointsEarned += Math.max(0, timeLeft);
+                            score += pointsEarned;
+                            scoreValueDisplay.textContent = score;
+                            showMessage(`Object Entered Wound! +${pointsEarned} points!`, 2000, 'success');
+                            playScoreSound();
+                            
+                            // Visual Feedback: Score Pop-up and Particles
+                            activeScorePopups.push({ x: woundX, y: woundY - WOUND_EFFECTIVE_RADIUS - 20, value: pointsEarned, opacity: 1, vy: -0.5 });
+                            for (let i = 0; i < 30; i++) { // Increased particles
+                                activeParticles.push({
+                                    x: woundX + (Math.random() - 0.5) * 20, // Spread particles around wound
+                                    y: woundY + (Math.random() - 0.5) * 20,
+                                    vx: (Math.random() - 0.5) * 7, // Faster initial spread
+                                    vy: (Math.random() - 0.5) * 7 - 3, // More upward motion
+                                    life: 70, // frames
+                                    color: `hsl(${Math.random() * 60 + 30}, 100%, 70%)` // Yellow to orange
+                                });
+                            }
+
+                            ballVisible = false;
+                            isObjectGrabbed = false;
+                            stopRoundTimer();
+                            setTimeout(resetObjectPosition, 2000);
+                            hasScoredThisGrab = true;
+                        } else if (!isObjectInWound) {
+                            showMessage('Object Dropped Outside Wound!', 2000);
+                        }
+                        if (!isObjectInWound) {
+                            hasScoredThisGrab = false;
+                        }
+                    }
+                }
+                if (objectCrushed) {
+                    isObjectGrabbed = false;
+                }
+                prevRigidGripperOpen = rigidGripperOpenClose; // Use rigidGripperOpenClose
+
+            } else { // currentRobotType is one of the soft robots
+                // Draw the base with shadow
+                ctx.save();
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+                ctx.fillStyle = '#607d8b'; // Blue-grey
+                ctx.fillRect(-30, -15, 60, 15);
+                ctx.beginPath();
+                ctx.arc(0, 0, 15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                let bendFactor = 0;
+                let extensionFactor = 0;
+                let gripperValue = 0;
+
+                if (currentRobotType === 'soft_pneumatic') {
+                    const leftPressure = parseFloat(softPneumaticLeftPressureSlider.value);
+                    const rightPressure = parseFloat(softPneumaticRightPressureSlider.value);
+                    bendFactor = (rightPressure - leftPressure) / 100; // Normalize difference to -1 to 1
+                    extensionFactor = parseFloat(softPneumaticExtensionPressureSlider.value) / 100;
+                    gripperValue = parseFloat(softPneumaticGripperPressureSlider.value);
+
+                    softPneumaticLeftPressureValue.textContent = `${leftPressure} units`;
+                    softPneumaticRightPressureValue.textContent = `${rightPressure} units`;
+                    softPneumaticExtensionPressureValue.textContent = `${extensionFactor * 100} units`;
+                    softPneumaticGripperPressureValue.textContent = `${gripperValue} units`;
+
+                } else if (currentRobotType === 'soft_electro_magnetic') {
+                    const leftElectrodeStrength = parseFloat(softElectroMagneticLeftElectrodeStrengthSlider.value);
+                    const rightElectrodeStrength = parseFloat(softElectroMagneticRightElectrodeStrengthSlider.value);
+                    bendFactor = (rightElectrodeStrength - leftElectrodeStrength) / 100;
+                    
+                    const upElectrode = parseFloat(softElectroMagneticUpElectrodeSlider.value);
+                    const downElectrode = parseFloat(softElectroMagneticDownElectrodeSlider.value);
+                    extensionFactor = (upElectrode - downElectrode) / 100; // Calculate extension based on differential electrodes
+
+                    gripperValue = parseFloat(softElectroMagneticGraspingForceSlider.value);
+
+                    softElectroMagneticLeftElectrodeStrengthValue.textContent = `${leftElectrodeStrength} units`;
+                    softElectroMagneticRightElectrodeStrengthValue.textContent = `${rightElectrodeStrength} units`;
+                    softElectroMagneticUpElectrodeValue.textContent = `${upElectrode} units`;
+                    softElectroMagneticDownElectrodeValue.textContent = `${downElectrode} units`;
+                    softElectroMagneticGraspingForceValue.textContent = `${gripperValue}%`;
+                }
+
+                const initialLength = SOFT_ARM_INITIAL_LENGTH;
+                // Reduced extension factor to keep arm within bounds
+                const currentLength = initialLength * (1 + extensionFactor * 0.3); 
+
+                const numSegments = 20;
+                const totalAngle = bendFactor * (Math.PI * 1.0);
+                const segmentAngle = totalAngle / numSegments;
+                const segmentLength = currentLength / numSegments;
+
+                // Save the context before drawing the arm segments
+                ctx.save(); 
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+
+                ctx.fillStyle = '#8bc34a'; // Soft arm color
+                for (let i = 0; i < numSegments; i++) {
+                    ctx.fillRect(-SOFT_ARM_LINE_WIDTH / 2, -segmentLength, SOFT_ARM_LINE_WIDTH, segmentLength);
+                    ctx.translate(0, -segmentLength); 
+                    ctx.rotate(segmentAngle); 
+                }
+                // At this point, the context is already translated and rotated to the tip of the arm.
+                // Now, draw the gripper relative to the current context (arm tip).
+                
+                // Rotate the gripper to match the arm's tip orientation
+                const finalArmTransform = ctx.getTransform(); // Get the transform after arm drawing
+                const armRotation = Math.atan2(finalArmTransform.b, finalArmTransform.a);
+                ctx.rotate(armRotation);
+
+                // Apply visual offset to move the gripper slightly above the arm's tip
+                const gripperVisualOffset = SOFT_ARM_LINE_WIDTH / 2; // Half the arm's thickness
+                ctx.translate(0, -gripperVisualOffset); 
+
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+
+                if (currentRobotType === 'soft_pneumatic') {
+                    ctx.fillStyle = '#ffc107'; // Yellowish color for pneumatic gripper
+                    const gripperBaseWidth = 40;
+                    const gripperSqueeze = gripperValue / 100 * 20;
+                    const jawGap = 10 - (gripperSqueeze / 2);
+                    const gripperHeight = 20;
+
+                    // Draw the pneumatic gripper, starting from the arm tip (0,0) and extending upwards
+                    // The lowest point of the gripper (where it "grabs") is at Y=0 (the arm tip)
+                    ctx.beginPath();
+                    ctx.moveTo(-gripperBaseWidth / 2, -gripperHeight); // Top-left of the gripper shape
+                    ctx.lineTo(-gripperBaseWidth / 2 + gripperSqueeze, 0); // Bottom-left, at arm tip
+                    ctx.lineTo(-gripperBaseWidth / 2 + gripperSqueeze + jawGap, 0);
+                    ctx.lineTo(gripperBaseWidth / 2 - gripperSqueeze - jawGap, 0);
+                    ctx.lineTo(gripperBaseWidth / 2 - gripperSqueeze, 0); // Bottom-right, at arm tip
+                    ctx.closePath();
+                    ctx.fill();
+
+                } else if (currentRobotType === 'soft_electro_magnetic') {
+                    ctx.fillStyle = '#800080'; // Purple for electromagnetic gripper
+                    const gripperRectHeight = 10;
+                    const gripperArcRadius = 10;
+                    
+                    // Draw the rectangle part of the gripper. Its bottom should align with Y=0.
+                    ctx.fillRect(-20, 0, 40, gripperRectHeight); // Now starts at Y=0
+
+                    // Draw the circular part. Its center should be positioned above the rectangle.
+                    // The top of the rectangle is at Y = -gripperRectHeight.
+                    // The circle's center should be at Y = -gripperRectHeight - gripperArcRadius.
+                    ctx.beginPath();
+                    ctx.arc(0, -gripperRectHeight - gripperArcRadius, gripperArcRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore(); // Restore context after drawing all segments and gripper
+
+                const objCanvasX = objectX;
+                const objCanvasY = objectY;
+
+                let currentGrabConditionMet = false;
+
+                if (currentRobotType === 'soft_pneumatic') {
+                    const isGripperOverObject = Math.abs(objCanvasY - gripperTipWorldY_actual) < GRAB_DISTANCE_THRESHOLD_SOFT &&
+                                                Math.abs(objCanvasX - gripperTipWorldX_actual) < GRAB_DISTANCE_THRESHOLD_SOFT;
+
+                    if (isGripperOverObject && gripperValue < GRABBABLE_SOFT_OPEN_PRESSURE && !isObjectGrabbed && ballVisible) {
+                        isObjectGrabbable = true;
+                        if (gameActive) { // Only show message during active game
+                            showMessage('Close quickly to grab!', 700);
+                        }
+                    }
+
+                    if (!isObjectGrabbed && isGripperOverObject && ballVisible) {
+                        // Check if current ball type is fragile (fibroblast or red blood cell)
+                        if (prevSoftPneumaticGripperPressure < SOFT_OPEN_TO_GRAB_PRESSURE && gripperValue > SOFT_GRAB_PRESSURE_THRESHOLD) {
+                            if ((currentBallType === 'fibroblast' || currentBallType === 'red_blood_cell') && gripperValue > FRAGILE_CRUSH_PNEUMATIC_THRESHOLD) {
+                                objectCrushed = true;
+                                showMessage('Object Crushed! Cell Respawning.', 2000, 'error');
+                                ballVisible = false;
+                                isObjectGrabbed = false;
+                                stopRoundTimer();
+                                // Add crushed particles
+                                for (let i = 0; i < 25; i++) {
+                                    activeParticles.push({
+                                        x: objectX + (Math.random() - 0.5) * 10,
+                                        y: objectY + (Math.random() - 0.5) * 10,
+                                        vx: (Math.random() - 0.5) * 6,
+                                        vy: (Math.random() - 0.5) * 6,
+                                        life: 50,
+                                        color: `hsl(0, 0%, ${Math.random() * 30 + 10}%)` // Dark grey/black particles
+                                    });
+                                }
+                                setTimeout(resetObjectPosition, 2000);
+                            } else {
+                                currentGrabConditionMet = true;
+                            }
+                        }
+                    }
+                    prevSoftPneumaticGripperPressure = gripperValue;
+
+                } else if (currentRobotType === 'soft_electro_magnetic') {
+                    const GRAB_DISTANCE_THRESHOLD_ELECTRO_MAGNETIC = objectRadius + 15;
+
+                    const isGripperOverObject = Math.abs(objCanvasY - gripperTipWorldY_actual) < GRAB_DISTANCE_THRESHOLD_ELECTRO_MAGNETIC &&
+                                                Math.abs(objCanvasX - gripperTipWorldX_actual) < GRAB_DISTANCE_THRESHOLD_ELECTRO_MAGNETIC;
+
+                    if (isGripperOverObject && gripperValue < GRABBABLE_SOFT_OPEN_PRESSURE && !isObjectGrabbed && ballVisible) {
+                        isObjectGrabbable = true;
+                        if (gameActive) { // Only show message during active game
+                            showMessage('Close quickly to grab!', 700);
+                        }
+                    }
+
+                    if (currentBallType === 'red_blood_cell' && gripperValue > 0 && !isObjectGrabbed && ballVisible) {
+                        const dx = gripperTipWorldX_actual - objectX;
+                        const dy = gripperTipWorldY_actual - objectY; // Pull Y towards gripper
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const driftSpeedFactor = 0.005;
+                        const maxDriftDistance = 150;
+
+                        // Prevent division by zero or non-finite values if distance is 0 or very small
+                        if (distance > 0.1 && Number.isFinite(distance) && distance > objectRadius && distance < maxDriftDistance) {
+                            const normalizedDx = dx / distance;
+                            const normalizedDy = dy / distance;
+                            
+                            // Ensure normalizedDx and normalizedDy are finite before applying
+                            if (Number.isFinite(normalizedDx) && Number.isFinite(normalizedDy)) {
+                                const driftAmount = gripperValue * driftSpeedFactor;
+                                objectX += normalizedDx * driftAmount; // Pull X towards gripper
+                                objectY += normalizedDy * driftAmount; // Pull Y towards gripper
+                                
+                                // Clamp objectX and objectY to stay within canvas bounds
+                                objectX = Math.max(objectRadius, Math.min(canvas.width - objectRadius, objectX));
+                                objectY = Math.max(objectRadius, Math.min(canvas.height - objectRadius, objectY));
+                            } else {
+                                console.warn("Non-finite normalizedDx or normalizedDy detected. Skipping object movement.");
+                            }
+                        }
+                    }
+
+                    if (!isObjectGrabbed && isGripperOverObject && ballVisible) {
+                        if (prevSoftElectroMagneticGraspingForce < ELECTRO_MAGNETIC_OFF_THRESHOLD && gripperValue >= MIN_ELECTRO_MAGNETIC_GRASP_FORCE) {
+                            currentGrabConditionMet = true;
+                        }
+                    }
+                    prevSoftElectroMagneticGraspingForce = gripperValue;
+                }
+
+                if (!isObjectGrabbed && currentGrabConditionMet) {
+                    isObjectGrabbed = true;
+                    showMessage('Object Grabbed!', 1500, 'success');
+                } else if (isObjectGrabbed) {
+                    let releaseCondition = false;
+                    if (currentRobotType === 'soft_pneumatic' && gripperValue < SOFT_GRAB_RELEASE_THRESHOLD) {
+                        releaseCondition = true;
+                    } else if (currentRobotType === 'soft_electro_magnetic' && gripperValue < ELECTRO_MAGNETIC_RELEASE_THRESHOLD) {
+                        releaseCondition = true;
+                    }
+
+                    const distToGripperTip = Math.sqrt(
+                        Math.pow(objectX - gripperTipWorldX_actual, 2) +
+                        Math.pow(objectY - gripperTipWorldY_actual, 2)
+                    );
+                    if (distToGripperTip > objectRadius + 30) {
+                        releaseCondition = true;
+                    }
+
+                    if (releaseCondition) {
+                        isObjectGrabbed = false;
+                        // Check if object entered the wound
+                        const isObjectInWound = (Math.abs(objectX - woundX) < WOUND_EFFECTIVE_RADIUS) &&
+                                             (Math.abs(objectY - woundY) < WOUND_EFFECTIVE_RADIUS);
+
+                        if (isObjectInWound && !hasScoredThisGrab) {
+                            let pointsEarned = 0;
+                            if (currentBallType === 'drug') {
+                                pointsEarned = 10;
+                            } else if (currentBallType === 'fibroblast' || currentBallType === 'red_blood_cell') {
+                                pointsEarned = 20; // Fragile cells give more points
+                            }
+                            pointsEarned += Math.max(0, timeLeft);
+                            score += pointsEarned;
+                            scoreValueDisplay.textContent = score;
+                            showMessage(`Object Entered Wound! +${pointsEarned} points!`, 2000, 'success');
+                            playScoreSound();
+                            
+                            // Visual Feedback: Score Pop-up and Particles
+                            activeScorePopups.push({ x: woundX, y: woundY - WOUND_EFFECTIVE_RADIUS - 20, value: pointsEarned, opacity: 1, vy: -0.5 });
+                            for (let i = 0; i < 30; i++) { // Increased particles
+                                activeParticles.push({
+                                    x: woundX + (Math.random() - 0.5) * 20, // Spread particles around wound
+                                    y: woundY + (Math.random() - 0.5) * 20,
+                                    vx: (Math.random() - 0.5) * 7, // Faster initial spread
+                                    vy: (Math.random() - 0.5) * 7 - 3, // More upward motion
+                                    life: 70, // frames
+                                    color: `hsl(${Math.random() * 60 + 30}, 100%, 70%)` // Yellow to orange
+                                });
+                            }
+
+                            ballVisible = false;
+                            isObjectGrabbed = false;
+                            stopRoundTimer();
+                            setTimeout(resetObjectPosition, 2000);
+                            hasScoredThisGrab = true;
+                        } else if (!isObjectInWound) {
+                            showMessage('Object Dropped Outside Wound!', 2000);
+                        }
+                        if (!isObjectInWound) {
+                            hasScoredThisGrab = false;
+                        }
+                    }
+                }
+                if (objectCrushed) {
+                    isObjectGrabbed = false;
+                }
+            }
+
+            if (isObjectGrabbed) {
+                objectX = gripperTipWorldX_actual;
+                objectY = gripperTipWorldY_actual;
+            }
+
+            ctx.restore(); // Restore the initial canvas transform (before robot drawing)
+
+            // Ensure objectX and objectY are finite before creating the gradient
+            if (!Number.isFinite(objectX) || !Number.isFinite(objectY)) {
+                console.error("objectX or objectY is non-finite, resetting position.");
+                resetObjectPosition(); // Reset to a valid state
+                return; // Skip drawing this frame to avoid the error
+            }
+
+            if (ballVisible) {
+                ctx.beginPath();
+                
+                let objColor = objectColors[currentBallType];
+                if (objectCrushed) {
+                    objColor = crushedColor;
+                } else if (isObjectGrabbed) {
+                    objColor = grabbedColor;
+                } else if (isObjectGrabbable) {
+                    objColor = grabbableColor;
+                }
+
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+
+                if (currentBallType === 'drug') {
+                    // Draw a capsule shape for the drug with half blue, half white
+                    const capsuleWidth = objectRadius * 2.5; // Make it longer
+                    const capsuleHeight = objectRadius * 1.2;
+                    const capsuleRadius = capsuleHeight / 2;
+
+                    ctx.save();
+                    ctx.translate(objectX, objectY);
+                    ctx.rotate(Math.PI / 4); // Rotate slightly for visual interest
+
+                    // Create the capsule path
+                    ctx.beginPath();
+                    ctx.arc(-capsuleWidth / 2 + capsuleRadius, 0, capsuleRadius, Math.PI / 2, Math.PI * 3 / 2); // Left end cap
+                    ctx.lineTo(capsuleWidth / 2 - capsuleRadius, -capsuleHeight / 2); // Top line
+                    ctx.arc(capsuleWidth / 2 - capsuleRadius, 0, capsuleRadius, Math.PI * 3 / 2, Math.PI / 2); // Right end cap
+                    ctx.lineTo(-capsuleWidth / 2 + capsuleRadius, capsuleHeight / 2); // Bottom line
+                    ctx.closePath();
+                    
+                    // Fill with gradient
+                    const drugGradient = ctx.createLinearGradient(-capsuleWidth / 2, 0, capsuleWidth / 2, 0);
+                    drugGradient.addColorStop(0, objColor); // Blue side
+                    drugGradient.addColorStop(0.5, objColor); // Blue side
+                    drugGradient.addColorStop(0.5, '#FFFFFF'); // White side
+                    drugGradient.addColorStop(1, '#FFFFFF'); // White side
+                    ctx.fillStyle = drugGradient;
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+
+                } else if (currentBallType === 'fibroblast') {
+                    // Draw an irregular, amoeba-like shape for fibroblast with a nucleus
+                    ctx.save();
+                    ctx.translate(objectX, objectY);
+                    ctx.scale(objectRadius / 20, objectRadius / 20); // Scale based on objectRadius
+
+                    // Body of the fibroblast (more elongated oval/spindle-like)
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 25, 15, Math.PI / 6, 0, Math.PI * 2); // Elongated oval
+                    ctx.closePath();
+                    ctx.fillStyle = objColor;
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Nucleus
+                    const nucleusRadius = 5;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, nucleusRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // Darker color for nucleus
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.restore();
+
+                } else if (currentBallType === 'red_blood_cell') {
+                    // Draw a biconcave disc for red blood cell
+                    const outerRadius = objectRadius;
+                    const innerRadius = objectRadius * 0.7; // Smaller inner circle for concavity effect
+                    const highlightRadius = objectRadius * 0.4; // For a central highlight
+
+                    // Outer shape
+                    ctx.beginPath();
+                    ctx.arc(objectX, objectY, outerRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = objColor;
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Inner concavity (darker center)
+                    const innerGradient = ctx.createRadialGradient(
+                        objectX, objectY, 0,
+                        objectX, objectY, innerRadius
+                    );
+                    innerGradient.addColorStop(0, 'rgba(0,0,0,0.6)'); // Darker center
+                    innerGradient.addColorStop(1, 'rgba(0,0,0,0)'); // Transparent towards edge
+
+                    ctx.fillStyle = innerGradient;
+                    ctx.beginPath();
+                    ctx.arc(objectX, objectY, innerRadius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Subtle highlight
+                    const highlightGradient = ctx.createRadialGradient(
+                        objectX - outerRadius * 0.3, objectY - outerRadius * 0.3, 0,
+                        objectX - outerRadius * 0.3, objectY - outerRadius * 0.3, highlightRadius
+                    );
+                    highlightGradient.addColorStop(0, 'rgba(255,255,255,0.9)'); // Brighter highlight
+                    highlightGradient.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.fillStyle = highlightGradient;
+                    ctx.beginPath();
+                    ctx.arc(objectX - outerRadius * 0.3, objectY - outerRadius * 0.3, highlightRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // --- Draw Score Pop-ups ---
+            for (let i = activeScorePopups.length - 1; i >= 0; i--) {
+                const popup = activeScorePopups[i];
+                popup.y += popup.vy;
+                popup.opacity -= 0.01; // Fade out speed
+
+                if (popup.opacity <= 0) {
+                    activeScorePopups.splice(i, 1); // Remove if fully faded
+                } else {
+                    ctx.save();
+                    ctx.font = `bold ${20 * popup.opacity}px Inter`; // Size and fade
+                    ctx.fillStyle = `rgba(0, 0, 0, ${popup.opacity})`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`+${popup.value}`, popup.x, popup.y);
+                    ctx.restore();
+                }
+            }
+
+            // --- Draw Particles ---
+            for (let i = activeParticles.length - 1; i >= 0; i--) {
+                const particle = activeParticles[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.life--;
+
+                if (particle.life <= 0) {
+                    activeParticles.splice(i, 1);
+                } else {
+                    ctx.save();
+                    ctx.globalAlpha = particle.life / 70; // Fade out based on new life
+                    ctx.fillStyle = particle.color;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, 3, 0, Math.PI * 2); // Small circle particles
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+        }
+
+        // --- Animation Loop ---
+        function animate() {
+            drawRobot();
+            requestAnimationFrame(animate);
+        }
+
+        // Function to start the round timer
+        function startRoundTimer() {
+            stopRoundTimer();
+            timeLeft = roundTimeLimit;
+            timeDisplay.textContent = timeLeft;
+            timerInterval = setInterval(() => {
+                if (gameActive) {
+                    timeLeft--;
+                    timeDisplay.textContent = timeLeft;
+                    if (timeLeft <= 0) {
+                        stopRoundTimer();
+                        showGameOverScreenUI(); // Show game over screen
+                    }
+                }
+            }, 1000);
+        }
+
+        // Function to stop the round timer
+        function stopRoundTimer() {
+            clearInterval(timerInterval);
+        }
+
+        // Add event listeners to sliders to redraw the arm on change
+        rigidBaseRotationSlider.addEventListener('input', () => { rigidBaseRotationValue.textContent = `${parseFloat(rigidBaseRotationSlider.value)}°`; });
+        rigidShoulderAngleSlider.addEventListener('input', () => { rigidShoulderAngleValue.textContent = `${parseFloat(rigidShoulderAngleSlider.value)}°`; });
+        rigidElbowAngleSlider.addEventListener('input', () => { rigidElbowAngleValue.textContent = `${parseFloat(rigidElbowAngleSlider.value)}°`; });
+        rigidGripperOpenCloseSlider.addEventListener('input', () => { rigidGripperOpenCloseValue.textContent = `${parseFloat(rigidGripperOpenCloseSlider.value)} units`; });
+        rigidGripperExtensionSlider.addEventListener('input', () => { rigidGripperExtensionValue.textContent = `${parseFloat(rigidGripperExtensionSlider.value)} units`; });
+
+        // New event listeners for soft pneumatic
+        softPneumaticLeftPressureSlider.addEventListener('input', () => { softPneumaticLeftPressureValue.textContent = `${parseFloat(softPneumaticLeftPressureSlider.value)} units`; });
+        softPneumaticRightPressureSlider.addEventListener('input', () => { softPneumaticRightPressureValue.textContent = `${parseFloat(softPneumaticRightPressureSlider.value)} units`; });
+
+        softPneumaticExtensionPressureSlider.addEventListener('input', () => { softPneumaticExtensionPressureValue.textContent = `${parseFloat(softPneumaticExtensionPressureSlider.value)} units`; });
+        softPneumaticGripperPressureSlider.addEventListener('input', () => { softPneumaticGripperPressureValue.textContent = `${parseFloat(softPneumaticGripperPressureSlider.value)} units`; });
+
+        // New event listeners for soft electro-magnetic
+        softElectroMagneticLeftElectrodeStrengthSlider.addEventListener('input', () => { softElectroMagneticLeftElectrodeStrengthValue.textContent = `${parseFloat(softElectroMagneticLeftElectrodeStrengthSlider.value)} units`; });
+        softElectroMagneticRightElectrodeStrengthSlider.addEventListener('input', () => { softElectroMagneticRightElectrodeStrengthValue.textContent = `${parseFloat(softElectroMagneticRightElectrodeStrengthSlider.value)} units`; });
+        softElectroMagneticUpElectrodeSlider.addEventListener('input', () => { softElectroMagneticUpElectrodeValue.textContent = `${parseFloat(softElectroMagneticUpElectrodeSlider.value)} units`; });
+        softElectroMagneticDownElectrodeSlider.addEventListener('input', () => { softElectroMagneticDownElectrodeValue.textContent = `${parseFloat(softElectroMagneticDownElectrodeSlider.value)} units`; });
+        softElectroMagneticGraspingForceSlider.addEventListener('input', () => { softElectroMagneticGraspingForceValue.textContent = `${parseFloat(softElectroMagneticGraspingForceSlider.value)}%`; });
+
+
+        // Function to update control panel visibility
+        function updateControlPanelVisibility() {
+            controlsPanel.classList.remove('rigid-active', 'soft-pneumatic-active', 'soft-electro-magnetic-active');
+            if (currentRobotType === 'rigid') {
+                controlsPanel.classList.add('rigid-active');
+            } else if (currentRobotType === 'soft_pneumatic') {
+                controlsPanel.classList.add('soft-pneumatic-active');
+            } else if (currentRobotType === 'soft_electro_magnetic') {
+                controlsPanel.classList.add('soft-electro-magnetic-active');
+            }
+
+            // Highlight controls only if in tutorial mode
+            if (inTutorialMode) {
+                controlsPanel.classList.add('tutorial-highlight');
+            } else {
+                controlsPanel.classList.remove('tutorial-highlight');
+            }
+        }
+
+        // Function to enable/disable all sliders in the controls panel
+        function setSlidersEnabled(enabled) {
+            const sliders = controlsPanel.querySelectorAll('input[type="range"]');
+            sliders.forEach(slider => {
+                slider.disabled = !enabled;
+            });
+        }
+
+        // Event listeners for robot type selection
+        robotSelectionGroup.addEventListener('change', (event) => {
+            if (event.target.name === 'robotType') {
+                currentRobotType = event.target.value;
+                updateControlPanelVisibility();
+                resetObjectPosition();
+            }
+        });
+
+        // Event listeners for ball type selection
+        ballSelectionGroup.addEventListener('change', (event) => {
+            if (event.target.name === 'ballType') {
+                currentBallType = event.target.value;
+                resetObjectPosition();
+            }
+        });
+
+        // --- Core Screen Management Functions ---
+        function showGameUI() {
+            welcomeScreen.classList.add('hidden'); // Hide the entire overlay
+            gameOverScreen.classList.add('hidden'); // Hide game over screen
+            gameUI.classList.remove('hidden'); // Show the main game UI
+            
+            // Re-enable robot and ball selection for game play
+            document.querySelectorAll('input[name="robotType"]').forEach(radio => radio.disabled = false);
+            document.querySelectorAll('input[name="ballType"]').forEach(radio => radio.disabled = false);
+
+            setSlidersEnabled(true); // Enable sliders for gameplay
+            gameActive = true;
+            scoreValueDisplay.parentElement.classList.remove('hidden'); // Show score
+            timeDisplay.parentElement.classList.remove('hidden'); // Show timer
+            endGameButton.classList.remove('hidden'); // Show end game button
+            score = 0; // Reset score for new game
+            scoreValueDisplay.textContent = score;
+            startRoundTimer();
+            resetObjectPosition(); // Reset ball for new game/resumed game
+            animate(); // Ensure animation loop is running
+            updateShowInfoButtonText(); // Update button text
+            tutorialPointer.style.display = 'none'; // Hide tutorial pointer
+        }
+
+        function showWelcomeScreenUI() {
+            welcomeScreen.classList.remove('hidden'); // Show the transparent overlay
+            mainWelcomeContent.classList.remove('hidden'); // Show main welcome content
+            tutorialContent.classList.add('hidden'); // Hide tutorial content
+            gameOverScreen.classList.add('hidden'); // Hide game over screen
+            gameUI.classList.add('hidden'); // Hide the main game UI
+            
+            // Re-enable robot and ball selection
+            document.querySelectorAll('input[name="robotType"]').forEach(radio => radio.disabled = false);
+            document.querySelectorAll('input[name="ballType"]').forEach(radio => radio.disabled = false);
+
+            setSlidersEnabled(false); // Disable sliders when welcome screen is active
+            gameActive = false; // Pause game
+            stopRoundTimer();
+            updateShowInfoButtonText(); // Update button text
+            tutorialPointer.style.display = 'none'; // Hide tutorial pointer
+        }
+
+        function showTutorialUI() {
+            welcomeScreen.classList.remove('hidden'); // Keep overlay visible
+            mainWelcomeContent.classList.add('hidden'); // Hide main welcome content
+            tutorialContent.classList.remove('hidden'); // Show tutorial content
+            gameOverScreen.classList.add('hidden'); // Hide game over screen
+            gameUI.classList.remove('hidden'); // Hide game UI behind tutorial (it's not interactive in this state)
+            
+            // Disable robot type selection during tutorial explanation
+            document.querySelectorAll('input[name="robotType"]').forEach(radio => radio.disabled = true);
+            // Ball selection can remain enabled, but is not used in tutorial
+            document.querySelectorAll('input[name="ballType"]').forEach(radio => radio.disabled = false);
+
+            setSlidersEnabled(false); // Sliders disabled for tutorial explanation
+            gameActive = false; // Game is paused during tutorial
+            stopRoundTimer(); // Ensure timer is stopped in tutorial
+            scoreValueDisplay.parentElement.classList.add('hidden'); // Hide score
+            timeDisplay.parentElement.classList.add('hidden'); // Hide timer
+            endGameButton.classList.add('hidden'); // Hide end game button
+            animate(); // Ensure animation loop is running
+            updateShowInfoButtonText(); // Update button text
+        }
+
+        function resumeTutorial() {
+            welcomeScreen.classList.add('hidden'); // Hide the entire overlay
+            gameUI.classList.remove('hidden'); // Show game UI
+            setSlidersEnabled(true); // Sliders enabled for tutorial interaction
+            tutorialPointer.style.display = 'none'; // Hide pointer when trying it out
+            updateShowInfoButtonText(); // Update button text
+        }
+
+        function showGameOverScreenUI() {
+            gameOverScreen.classList.remove('hidden'); // Show game over screen
+            welcomeScreen.classList.add('hidden'); // Hide welcome screen
+            gameUI.classList.add('hidden'); // Hide game UI
+            mainWelcomeContent.classList.add('hidden'); // Hide main welcome content
+            tutorialContent.classList.add('hidden'); // Hide tutorial content
+
+            finalScoreValueDisplay.textContent = score; // Display final score
+            gameActive = false; // Ensure game is not active
+            stopRoundTimer(); // Ensure timer is stopped
+            tutorialPointer.style.display = 'none'; // Hide tutorial pointer
+        }
+
+        // Function to update the text of the "Show Info" button dynamically
+        function updateShowInfoButtonText() {
+            if (inTutorialMode) {
+                showInfoButton.textContent = 'Return to Tutorial';
+            } else {
+                showInfoButton.textContent = 'Show Info';
+            }
+        }
+
+        // --- Tutorial Logic ---
+        function startTutorialMode() { // Renamed to avoid confusion with startTutorialButton
+            inTutorialMode = true;
+            currentTutorialRobotIndex = 0;
+            showTutorialUI(); // Show tutorial overlay and game UI behind it
+            showTutorialStep();
+        }
+
+        function positionTutorialPointer() {
+            const currentTutorial = tutorialRobots[currentTutorialRobotIndex];
+            const activeControlGroup = controlsPanel.querySelector(`.${currentTutorial.controlGroupClass}`);
+            
+            if (activeControlGroup) {
+                const controlsPanelRect = controlsPanel.getBoundingClientRect();
+                const controlGroupRect = activeControlGroup.getBoundingClientRect();
+
+                // Position the pointer relative to the controlsPanel
+                // Place it slightly to the right of the control group
+                tutorialPointer.style.left = `${(controlGroupRect.right - controlsPanelRect.left) + 10}px`;
+                tutorialPointer.style.top = `${(controlGroupRect.top - controlsPanelRect.top) + (controlGroupRect.height / 2) - (tutorialPointer.offsetHeight / 2)}px`;
+                tutorialPointer.style.display = 'block';
+            } else {
+                tutorialPointer.style.display = 'none';
+            }
+        }
+
+        function showTutorialStep() {
+            const currentTutorial = tutorialRobots[currentTutorialRobotIndex];
+            tutorialText.textContent = `Robot Type: ${currentTutorial.name}. ${currentTutorial.explanation}`;
+            
+            // Select the correct radio button for the current tutorial robot
+            const radioToSelect = document.getElementById(`${currentTutorial.type}RobotRadio`);
+            if (radioToSelect) { 
+                radioToSelect.checked = true;
+            }
+            currentRobotType = currentTutorial.type; // Update global robot type
+            updateControlPanelVisibility(); // Update controls panel to show relevant controls
+
+            // Update "Next Robot" button text for the last step
+            if (currentTutorialRobotIndex === tutorialRobots.length - 1) {
+                nextTutorialButton.textContent = 'Finish Tutorial';
+                // Show resume button on the last step of the tutorial
+                resumeTutorialButton.classList.remove('hidden'); 
+            } else {
+                nextTutorialButton.textContent = 'Next Robot';
+                resumeTutorialButton.classList.remove('hidden'); // Show resume button
+            }
+
+            // Reset object position for each tutorial step
+            resetObjectPosition();
+            setSlidersEnabled(false); // Disable sliders during explanation
+            positionTutorialPointer(); // Position pointer for current step
+        }
+
+        function advanceTutorial() {
+            if (currentTutorialRobotIndex === tutorialRobots.length - 1) {
+                // Last step, finish tutorial
+                exitTutorial();
+            } else {
+                currentTutorialRobotIndex++;
+                showTutorialStep();
+            }
+        }
+
+        function exitTutorial() {
+            inTutorialMode = false;
+            // Return to the main welcome screen state
+            showWelcomeScreenUI();
+            
+            // Reset robot type to default (rigid) and update visibility
+            rigidRobotRadio.checked = true;
+            currentRobotType = 'rigid';
+            updateControlPanelVisibility();
+            resetObjectPosition(); // Reset ball for actual game
+            tutorialPointer.style.display = 'none'; // Hide tutorial pointer
+        }
+
+        // --- Event Listeners ---
+        startGameButton.addEventListener('click', showGameUI);
+        startTutorialButton.addEventListener('click', startTutorialMode); // Call the new tutorial start function
+        nextTutorialButton.addEventListener('click', advanceTutorial);
+        resumeTutorialButton.addEventListener('click', resumeTutorial); // New event listener for resume button
+        exitTutorialButton.addEventListener('click', exitTutorial);
+        
+        endGameButton.addEventListener('click', () => {
+            showGameOverScreenUI(); // Show game over screen
+        });
+
+        playAgainButton.addEventListener('click', () => {
+            showGameUI(); // Start a new game
+        });
+
+        showInfoButton.addEventListener('click', () => {
+            if (inTutorialMode) {
+                showTutorialUI(); // If in tutorial, bring back tutorial content
+            } else {
+                gameActive = false; // Pause game if active
+                stopRoundTimer();
+                showWelcomeScreenUI(); // If in game, bring back welcome content
+            }
+        });
+
+        // Initial setup on window load
+        document.addEventListener('DOMContentLoaded', function() {
+            showWelcomeScreenUI(); // Start with the welcome screen
+            console.log('DOMContentLoaded fired. Welcome screen displayed.');
+
+            // Initialize background particles
+            for (let i = 0; i < MAX_BG_PARTICLES; i++) {
+                backgroundParticles.push(createBackgroundParticle());
+            }
+
+            // Add resize listener for canvas
+            window.addEventListener('resize', resizeCanvas);
+        });
+    </script>
+
+  <script src="./assets/js/marked.min.js"></script>
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js"></script>
+</body>
+</html>

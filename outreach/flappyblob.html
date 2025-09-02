@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
+  <link rel="stylesheet" href="./assets/css/fonts.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>body{font-family: var(--font-sans-exo);}</style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Blob</title>
+<!-- Include Tone.js for sound effects -->
+<style>
+        /* Custom CSS for the game elements */
+        body {
+            font-family: "Inter", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f8ff; /* Alice Blue */
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+        .main-content-wrapper {
+            display: flex;
+            flex-direction: column; /* Default to column for small screens */
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        @media (min-width: 768px) { /* On medium screens and up, arrange in a row */
+            .main-content-wrapper {
+                flex-direction: row;
+                align-items: flex-start; /* Align items to the top when in row */
+            }
+        }
+        canvas {
+            background-color: #ffc0cb; /* Pink background */
+            display: block;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            touch-action: manipulation; /* Prevent default touch actions like zooming */
+            max-width: 95vw; /* Ensure it fits on smaller screens */
+            max-height: 90vh;
+            flex-shrink: 0; /* Prevent canvas from shrinking */
+            position: relative; /* For pause button positioning */
+        }
+        .message-box {
+            /* Changed to fixed positioning to cover the whole screen */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
+            color: white;
+            display: flex; /* Use flexbox to center content */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Ensure it's on top of everything */
+            display: none; /* Hidden by default */
+            font-size: 1.2rem;
+            padding: 20px; /* Add padding for content inside */
+            box-sizing: border-box; /* Include padding in width/height */
+        }
+        .message-content {
+            background-color: rgba(0, 0, 0, 0.85); /* Slightly darker background for content */
+            padding: 30px 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 90%; /* Ensure it fits on small screens */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .message-box h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .message-box p {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .message-box button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .message-box button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        .message-box button:active {
+            transform: translateY(0);
+            box-shadow: 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .adaptive-controls {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 200px;
+            max-width: 90vw; /* Ensure it fits on small screens */
+        }
+        .adaptive-controls h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            position: relative; /* For tooltips */
+        }
+        .control-group label {
+            font-weight: 600;
+            color: #555;
+            cursor: help; /* Indicate hoverable for tooltip */
+        }
+        .control-group .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+        .control-group label:hover + .tooltip {
+            opacity: 1;
+        }
+        .control-group input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none; /* Override default slider styles */
+            height: 8px;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .control-value {
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+        }
+        /* New CSS for score feedback animation */
+        #scoreText.score-animate {
+            animation: scorePop 0.5s ease-out forwards;
+        }
+        @keyframes scorePop {
+            0% { transform: scale(1); color: #333; }
+            50% { transform: scale(1.2); color: #4CAF50; }
+            100% { transform: scale(1); color: #333; }
+        }
+        .pause-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 100;
+            transition: background-color 0.3s ease;
+        }
+        .pause-button:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="main-content-wrapper">
+        <canvas id="gameCanvas"></canvas>
+        <button id="pauseButton" class="pause-button" style="display: none;">Pause</button>
+        <div class="adaptive-controls">
+            <h2>Adaptive Control</h2>
+            <div class="control-group">
+                <label for="gravitySlider">Gravity:</label>
+                <span class="tooltip">Controls the speed at which the blob falls. Higher value = faster fall.</span>
+                <input type="range" id="gravitySlider" min="0.1" max="1.0" value="0.2" step="0.05">
+                <span id="gravityValue" class="control-value">0.20</span>
+            </div>
+            <div class="control-group">
+                <label for="bounceStrengthSlider">Bounce Strength:</label>
+                <span class="tooltip">Adjusts the initial power of the blob's jump. More negative value = stronger jump.</span>
+                <input type="range" id="bounceStrengthSlider" min="-15" max="-5" value="-12" step="0.5">
+                <span id="bounceStrengthValue" class="control-value">-12.0</span>
+            </div>
+            <div class="control-group">
+                <label for="degradationSlider">Degradation (Jump Decay Rate):</label>
+                <span class="tooltip">The rate at which your jump strength weakens over time. Higher value = faster decay.</span>
+                <input type="range" id="degradationSlider" min="0.000" max="0.010" value="0.001" step="0.001">
+                <span id="degradationValue" class="control-value">0.001</span>
+            </div>
+        </div>
+        <div id="messageBox" class="message-box">
+            <div class="message-content">
+                <h3 id="messageTitle"></h3>
+                <p id="messageText"></p>
+                <button id="messageButton"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const messageBox = document.getElementById('messageBox');
+        const messageTitle = document.getElementById('messageTitle');
+        const messageText = document.getElementById('messageText');
+        const messageButton = document.getElementById('messageButton');
+        const pauseButton = document.getElementById('pauseButton');
+
+        // Sliders and their value displays
+        const gravitySlider = document.getElementById('gravitySlider');
+        const gravityValueSpan = document.getElementById('gravityValue');
+        const bounceStrengthSlider = document.getElementById('bounceStrengthSlider');
+        const bounceStrengthValueSpan = document.getElementById('bounceStrengthValue');
+        const degradationSlider = document.getElementById('degradationSlider'); // Re-added
+        const degradationValueSpan = document.getElementById('degradationValue'); // Re-added
+
+        // --- Constants ---
+        const BLOB_DEFAULT_RADIUS = 20;
+        const INITIAL_PIPE_SPEED = 2.5; // Base pipe speed
+        const MIN_PIPE_Y = 50;
+        const MIN_JUMP_STRENGTH_VALUE = -5;
+        const GRAVITY_SMOOTHING_DURATION = 400; // ms
+        const SCORE_POP_DURATION = 500; // ms
+        const SLIDER_FEEDBACK_DURATION = 1500; // ms for temporary slider feedback text
+
+        // Dynamic Pore Size Constants
+        const BASE_PORE_SIZE = 220;
+        const PORE_SIZE_VARIATION = 60; // How much it can vary from base
+        const PORE_SIZE_SPEED = 0.005; // How fast it oscillates
+
+        // Pipe Width Constants
+        const INITIAL_MIN_PIPE_WIDTH = 60;
+        const INITIAL_MAX_PIPE_WIDTH = 80; // Pipes can be slightly wider now
+        const PIPE_WIDTH_DIFFICULTY_FACTOR = 0.98; // Factor to narrow width range as difficulty increases
+
+        // Moving Pipe Constants
+        const INITIAL_PIPE_VERTICAL_AMPLITUDE = 20; // Initial vertical movement range
+        const INITIAL_PIPE_VERTICAL_SPEED = 0.002; // Initial vertical oscillation speed
+        const PIPE_VERTICAL_DIFFICULTY_FACTOR = 1.05; // Factor to increase amplitude/speed
+
+        // Trampoline/Bounce Gun Constants
+        const TRAMPOLINE_WIDTH = 100;
+        const TRAMPOLINE_HEIGHT = 45; // Slightly taller megaphone (increased from 40 to 45)
+        const TRAMPOLINE_BOUNCE_DURATION = 150; // ms
+        const TRAMPOLINE_PARTICLE_COUNT = 15; // Number of particles to emit on bounce
+        const TRAMPOLINE_PARTICLE_COLORS = ['rgba(255, 255, 0, 1)', 'rgba(255, 165, 0, 1)', 'rgba(255, 255, 255, 1)']; // Yellow, Orange, White
+
+        // --- Game State Object ---
+        const game = {
+            started: false,
+            over: false,
+            paused: false,
+            score: 0,
+            highScore: 0,
+            animationFrameId: null,
+            startTime: 0,
+            firstJumpMade: false,
+            blob: null,
+            pipes: [],
+            lastScore: -1,
+            scorePopTimer: 0,
+            hintMessage: '',
+            hintTimer: 0,
+            dynamicPoreSize: BASE_PORE_SIZE,
+            trampoline: null,
+            // New state for slider feedback
+            gravityFeedbackText: null,
+            gravityFeedbackTimer: null,
+            bounceFeedbackText: null,
+            bounceFeedbackTimer: null,
+            degradationFeedbackText: null, // New feedback for degradation
+            degradationFeedbackTimer: null, // New feedback for degradation
+            currentPipeSpeed: INITIAL_PIPE_SPEED, // Track current pipe speed
+            currentMinPipeWidth: INITIAL_MIN_PIPE_WIDTH,
+            currentMaxPipeWidth: INITIAL_MAX_PIPE_WIDTH,
+            currentPipeVerticalAmplitude: INITIAL_PIPE_VERTICAL_AMPLITUDE,
+            currentPipeVerticalSpeed: INITIAL_PIPE_VERTICAL_SPEED,
+        };
+
+        // --- Sound Effects ---
+        const jumpSynth = new Tone.Synth().toDestination();
+        const scoreSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 }
+        }).toDestination();
+        const gameOverNoise = new Tone.NoiseSynth({
+            envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.3 }
+        }).toDestination();
+
+        function playJumpSound() { jumpSynth.triggerAttackRelease("C4", "8n"); }
+        function playScoreSound() { scoreSynth.triggerAttackRelease(["C5", "E5", "G5"], "16n"); }
+        function playGameOverSound() { gameOverNoise.triggerAttackRelease("4n"); }
+
+        // --- Blob Class (Cell-like structure) ---
+        class Blob {
+            constructor(x, y, radius, color) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.velocityY = 0;
+                this.gravity = parseFloat(gravitySlider.value);
+                this.baseJumpStrength = parseFloat(bounceStrengthSlider.value);
+                this.currentJumpStrength = this.baseJumpStrength * 0.8;
+                this.currentJumpStrength = Math.max(this.currentJumpStrength, MIN_JUMP_STRENGTH_VALUE);
+                this.color = color; // Main cytoplasm color
+                this.nucleusColor = '#4b0082'; // Indigo
+                this.organelleColors = ['#ff6347', '#ffd700', '#00ced1', '#8a2be2']; // Tomato, Gold, DarkTurquoise, BlueViolet
+                this.organelles = [];
+                this.initOrganelles();
+                this.startFallTime = null;
+            }
+
+            initOrganelles() {
+                for (let i = 0; i < 5; i++) { // 5 organelles
+                    this.organelles.push({
+                        xOffset: (Math.random() - 0.5) * this.radius * 1.2,
+                        yOffset: (Math.random() - 0.5) * this.radius * 1.2,
+                        radius: Math.random() * (this.radius * 0.15) + (this.radius * 0.05),
+                        color: this.organelleColors[Math.floor(Math.random() * this.organelleColors.length)],
+                        angle: Math.random() * Math.PI * 2,
+                        speed: Math.random() * 0.05 + 0.01 // Slow movement within cell
+                    });
+                }
+            }
+
+            draw(ctx) {
+                let squishX = 1;
+                let squishY = 1;
+
+                const maxAbsVel = Math.max(Math.abs(this.baseJumpStrength), this.gravity * 20);
+                const normalizedVel = this.velocityY / maxAbsVel;
+
+                const squishAmount = 0.3;
+                const velocityThreshold = 0.1;
+
+                if (Math.abs(normalizedVel) > velocityThreshold) {
+                    squishY = 1 - Math.min(squishAmount, Math.abs(normalizedVel) * squishAmount * 2);
+                    squishX = 1 + Math.min(squishAmount, Math.abs(normalizedVel) * squishAmount * 2);
+                }
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.scale(squishX, squishY);
+
+                // Draw main cell body (cytoplasm)
+                ctx.fillStyle = this.color;
+                ctx.strokeStyle = '#4682b4'; // Cell membrane color
+                ctx.lineWidth = 3 / Math.max(squishX, squishY);
+
+                // Use a more organic, irregular shape for the cell membrane
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2); // Base circle
+                ctx.arc(this.radius * 0.6, this.radius * 0.4, this.radius * 0.4, 0, Math.PI * 2);
+                ctx.arc(-this.radius * 0.5, this.radius * 0.3, this.radius * 0.35, 0, Math.PI * 2);
+                ctx.arc(this.radius * 0.3, -this.radius * 0.5, this.radius * 0.3, 0, Math.PI * 2);
+                ctx.arc(-this.radius * 0.7, -this.radius * 0.2, this.radius * 0.25, 0, Math.PI * 2);
+                ctx.arc(this.radius * 0.2, this.radius * 0.7, this.radius * 0.2, 0, Math.PI * 2);
+                ctx.arc(this.radius * 0.8, -this.radius * 0.1, this.radius * 0.15, 0, Math.PI * 2);
+                ctx.arc(-this.radius * 0.1, -this.radius * 0.8, this.radius * 0.2, 0, Math.PI * 2);
+                ctx.arc(-this.radius * 0.4, this.radius * 0.6, this.radius * 0.18, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.closePath();
+
+                // Draw nucleus
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius * 0.4, 0, Math.PI * 2); // Nucleus is 40% of main radius
+                ctx.fillStyle = this.nucleusColor;
+                ctx.fill();
+                ctx.strokeStyle = '#191970'; // Nucleus outline
+                ctx.lineWidth = 2 / Math.max(squishX, squishY);
+                ctx.stroke();
+                ctx.closePath();
+
+                // Draw organelles
+                this.organelles.forEach(organelle => {
+                    ctx.beginPath();
+                    ctx.arc(organelle.xOffset, organelle.yOffset, organelle.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = organelle.color;
+                    ctx.fill();
+                });
+
+                ctx.restore();
+            }
+
+            update(currentTime, firstJumpMade) {
+                if (this.startFallTime === null) { this.startFallTime = currentTime; }
+                const timeSinceFallStart = currentTime - this.startFallTime;
+                const smoothingFactor = Math.min(1, timeSinceFallStart / GRAVITY_SMOOTHING_DURATION);
+                this.velocityY += this.gravity * smoothingFactor;
+                if (firstJumpMade) {
+                    this.currentJumpStrength = Math.min(MIN_JUMP_STRENGTH_VALUE, this.currentJumpStrength + parseFloat(degradationSlider.value));
+                }
+
+                this.y += this.velocityY;
+
+                if (this.y - this.radius < 0) {
+                    this.y = this.radius;
+                    this.velocityY = 0;
+                }
+                if (this.y + this.radius > canvas.height) {
+                    this.y = canvas.height - this.radius;
+                    game.over = true;
+                    return true;
+                }
+
+                // Update organelle positions (simple internal movement)
+                this.organelles.forEach(organelle => {
+                    organelle.angle += organelle.speed;
+                    organelle.xOffset = Math.cos(organelle.angle) * (this.radius * 0.3); // Keep within cytoplasm
+                    organelle.yOffset = Math.sin(organelle.angle) * (this.radius * 0.3);
+                });
+
+                return false;
+            }
+
+            jump() {
+                this.velocityY = this.currentJumpStrength;
+                playJumpSound();
+                if (game.trampoline) {
+                    game.trampoline.emitJumpParticles(); // Emit particles from megaphone
+                }
+            }
+        }
+
+        // --- Pipe Class (Thatched Membrane with a hole) ---
+        class Pipe {
+            constructor(x, y, width, poreSize, canvasHeight, verticalAmplitude, verticalSpeed, spawnTime) {
+                this.x = x;
+                this.initialY = y; // Store initial Y for vertical movement
+                this.width = width; // New: Pipe width
+                this.poreSize = poreSize;
+                this.canvasHeight = canvasHeight;
+                this.passed = false;
+                this.spawnTime = spawnTime;
+                this.verticalAmplitude = verticalAmplitude; // Vertical movement amplitude
+                this.verticalSpeed = verticalSpeed; // Vertical movement speed
+                this.currentY = y; // Current Y, will oscillate
+            }
+
+            draw(ctx) {
+                const thatchColor = 'rgba(255, 255, 255, 0.7)'; // Whitish for thatch, semi-transparent
+                const thatchStroke = 'rgba(139, 69, 19, 1)'; // Light brown for outline (SaddleBrown)
+                const thatchLineLength = 8;
+                const thatchLineSpacing = 4;
+                const cornerRadius = 10;
+
+                function drawThatchPattern(context, rectX, rectY, rectWidth, rectHeight) {
+                    context.save();
+                    context.beginPath();
+                    context.rect(rectX, rectY, rectWidth, rectHeight);
+                    context.clip();
+
+                    context.strokeStyle = thatchStroke;
+                    context.lineWidth = 1;
+
+                    for (let i = -rectWidth; i < rectWidth + rectHeight; i += thatchLineSpacing) {
+                        context.beginPath();
+                        context.moveTo(rectX + i, rectY);
+                        context.lineTo(rectX + i + thatchLineLength, rectY + rectHeight);
+                        context.stroke();
+                    }
+                    context.restore();
+                }
+
+                // Draw Top Pipe
+                ctx.fillStyle = thatchColor;
+                ctx.beginPath();
+                ctx.roundRect(this.x, 0, this.width, this.currentY, cornerRadius); // Use this.width
+                ctx.fill();
+                drawThatchPattern(ctx, this.x, 0, this.width, this.currentY); // Use this.width
+
+                // Draw Bottom Pipe
+                const bottomPipeY = this.currentY + this.poreSize;
+                const bottomPipeHeight = this.canvasHeight - bottomPipeY;
+                ctx.fillStyle = thatchColor;
+                ctx.beginPath();
+                ctx.roundRect(this.x, bottomPipeY, this.width, bottomPipeHeight, cornerRadius); // Use this.width
+                ctx.fill();
+                drawThatchPattern(ctx, this.x, bottomPipeY, this.width, bottomPipeHeight); // Use this.width
+
+                // Add a darker border to the pipes for definition
+                ctx.strokeStyle = thatchStroke;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(this.x, 0, this.width, this.currentY, cornerRadius); // Use this.width
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.roundRect(this.x, bottomPipeY, this.width, bottomPipeHeight, cornerRadius); // Use this.width
+                ctx.stroke();
+            }
+
+            update(currentTime) {
+                // Horizontal movement
+                this.x -= game.currentPipeSpeed; // Use dynamic pipe speed
+
+                // Vertical oscillation
+                const timeElapsed = currentTime - this.spawnTime;
+                this.currentY = this.initialY + Math.sin(timeElapsed * this.verticalSpeed) * this.verticalAmplitude;
+
+                // Ensure pipes stay within vertical bounds
+                const maxPipeY = this.canvasHeight - this.poreSize - MIN_PIPE_Y;
+                this.currentY = Math.max(MIN_PIPE_Y, Math.min(maxPipeY, this.currentY));
+            }
+
+            isOffscreen() {
+                return this.x + this.width < 0; // Use this.width
+            }
+
+            collidesWith(blob) {
+                const blobLeft = blob.x - blob.radius;
+                const blobRight = blob.x + blob.radius;
+                const blobTop = blob.y - blob.radius;
+                const blobBottom = blob.y + blob.radius;
+
+                // Check if blob is horizontally within pipe
+                if (blobRight > this.x && blobLeft < this.x + this.width) { // Use this.width
+                    // Check if blob is vertically colliding with top or bottom pipe
+                    if (blobTop < this.currentY || blobBottom > this.currentY + this.poreSize) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        // --- Particle Class (Generic for all systems) ---
+        class Particle {
+            constructor(x, y, size, color, vx, vy, alpha, decay) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.color = color;
+                this.vx = vx;
+                this.vy = vy;
+                this.alpha = alpha;
+                this.decay = decay;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+                this.size *= 0.99;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.alpha <= 0 || this.size <= 0.5;
+            }
+        }
+
+        // --- Trampoline/Bounce Gun Class ---
+        class Trampoline {
+            constructor(x, y, width, height, color, blobX) {
+                this.x = x;
+                this.y = y;
+                this.width = width; // This is the effective width (horizontal extent)
+                this.height = height; // This is the effective height (vertical extent)
+                this.color = color;
+                // this.isBouncing = false; // Removed
+                // this.bounceStartTime = 0; // Removed
+                this.bounceOffset = 0; // Keep for potential future use or if other animations use it
+                this.jumpParticles = []; // Particles for the jump effect
+                this.blobX = blobX; // Store blob's fixed X for alignment
+            }
+
+            draw(ctx) {
+                ctx.save();
+                // Translate to the center of the megaphone's base
+                ctx.translate(this.x + this.width / 2, this.y + this.height);
+                // Apply bounce offset vertically (will be 0 now)
+                ctx.translate(0, this.bounceOffset);
+
+                // Megaphone body
+                ctx.beginPath();
+                // Handle (base of the megaphone)
+                const handleWidth = this.width * 0.4;
+                const handleHeight = this.height * 0.2;
+                ctx.rect(-handleWidth / 2, -handleHeight, handleWidth, handleHeight);
+
+                // Cone (main part of the megaphone)
+                const coneBaseWidth = this.width * 0.8;
+                const coneHeight = this.height - handleHeight;
+                const mouthWidth = this.width;
+
+                ctx.moveTo(-coneBaseWidth / 2, -handleHeight);
+                ctx.lineTo(-mouthWidth / 2, -this.height);
+                ctx.lineTo(mouthWidth / 2, -this.height);
+                ctx.lineTo(coneBaseWidth / 2, -handleHeight);
+                ctx.closePath();
+
+                // Create a radial gradient for the cone
+                const gradient = ctx.createRadialGradient(
+                    0, -this.height * 0.5, this.width * 0.1, // Inner circle (center, radius)
+                    0, -this.height * 0.5, this.width * 0.6 // Outer circle (center, radius)
+                );
+                gradient.addColorStop(0, '#66bb6a'); // Lighter green center
+                gradient.addColorStop(1, this.color); // Main green color
+
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.strokeStyle = '#333'; // Darker outline
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Add some highlights/shadows for depth
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; // Highlight
+                ctx.beginPath();
+                ctx.moveTo(-mouthWidth / 2 + 5, -this.height + 5);
+                ctx.lineTo(mouthWidth / 2 - 5, -this.height + 5);
+                ctx.lineTo(coneBaseWidth / 2 - 5, -handleHeight + 5);
+                ctx.lineTo(-coneBaseWidth / 2 + 5, -handleHeight + 5);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Shadow
+                ctx.beginPath();
+                ctx.moveTo(-coneBaseWidth / 2, -handleHeight);
+                ctx.lineTo(-mouthWidth / 2, -this.height);
+                ctx.lineTo(-mouthWidth / 2 + 10, -this.height);
+                ctx.lineTo(-coneBaseWidth / 2 + 10, -handleHeight);
+                ctx.closePath();
+                ctx.fill();
+
+
+                ctx.restore();
+            }
+
+            // animateBounce() { // Removed
+            //     this.isBouncing = true;
+            //     this.bounceStartTime = Date.now();
+            // }
+
+            emitJumpParticles() {
+                // Emit particles from the "mouth" of the megaphone (top center)
+                const mouthX = this.x + this.width / 2;
+                const mouthY = this.y; // Top edge of the megaphone
+
+                for (let i = 0; i < TRAMPOLINE_PARTICLE_COUNT; i++) {
+                    const x = mouthX + (Math.random() - 0.5) * (this.width * 0.4); // Spread across megaphone's top
+                    const y = mouthY;
+                    const size = Math.random() * 5 + 2;
+                    const color = TRAMPOLINE_PARTICLE_COLORS[Math.floor(Math.random() * TRAMPOLINE_PARTICLE_COLORS.length)];
+                    const vx = (Math.random() - 0.5) * 2; // Small horizontal spread
+                    const vy = -(Math.random() * 5 + 3); // Strong upwards movement
+                    const alpha = 1;
+                    const decay = Math.random() * 0.02 + 0.01;
+                    this.jumpParticles.push(new Particle(x, y, size, color, vx, vy, alpha, decay));
+                }
+            }
+
+            update() {
+                // if (this.isBouncing) { // Removed
+                //     const elapsed = Date.now() - this.bounceStartTime;
+                //     if (elapsed < TRAMPOLINE_BOUNCE_DURATION) {
+                //         this.bounceOffset = -Math.sin((elapsed / TRAMPOLINE_BOUNCE_DURATION) * Math.PI) * (this.height * 0.5);
+                //     } else {
+                //         this.isBouncing = false;
+                //         this.bounceOffset = 0;
+                //     }
+                // }
+                this.bounceOffset = 0; // Ensure it's always 0 if no bounce animation
+
+                // Update and remove jump particles
+                for (let i = this.jumpParticles.length - 1; i >= 0; i--) {
+                    const particle = this.jumpParticles[i];
+                    particle.update();
+                    if (particle.isDead()) {
+                        this.jumpParticles.splice(i, 1);
+                    }
+                }
+            }
+
+            drawJumpParticles(ctx) {
+                this.jumpParticles.forEach(particle => particle.draw(ctx));
+            }
+        }
+
+
+        // --- Game Initialization and Core Logic ---
+
+        function resizeCanvas() {
+            canvas.width = Math.max(300, window.innerWidth * 0.6);
+            canvas.height = Math.max(400, window.innerHeight * 0.7);
+
+            // Re-position trampoline on resize to align with blob's fixed x
+            if (game.trampoline && game.blob) {
+                game.trampoline.x = game.blob.x - TRAMPOLINE_WIDTH / 2; // Centered horizontally below blob
+                game.trampoline.y = canvas.height - TRAMPOLINE_HEIGHT - 10; // 10px from bottom, using TRAMPOLINE_HEIGHT
+            }
+
+            if (!game.started && game.blob) {
+                game.blob.y = canvas.height / 2;
+            }
+            if (game.blob) {
+                draw();
+            }
+        }
+
+        function initGame() {
+            // Set blob's initial color to light blue
+            game.blob = new Blob(100, canvas.height / 2, BLOB_DEFAULT_RADIUS, '#add8e6'); // Light Blue
+
+            game.pipes.length = 0;
+            game.score = 0;
+            game.lastScore = -1;
+            game.started = false;
+            game.over = false;
+            game.paused = false;
+            game.startTime = Date.now(); // Game starts immediately
+            game.firstJumpMade = false;
+            game.hintMessage = '';
+            game.hintTimer = 0;
+
+            game.blob.gravity = parseFloat(gravitySlider.value);
+            game.blob.baseJumpStrength = parseFloat(bounceStrengthSlider.value);
+            game.blob.currentJumpStrength = game.blob.baseJumpStrength * 0.8;
+            game.blob.currentJumpStrength = Math.max(game.blob.currentJumpStrength, MIN_JUMP_STRENGTH_VALUE);
+            // Degradation is now controlled by slider value directly in Blob.update()
+
+            // Reset difficulty parameters
+            game.currentPipeSpeed = INITIAL_PIPE_SPEED;
+            game.currentMinPipeWidth = INITIAL_MIN_PIPE_WIDTH;
+            game.currentMaxPipeWidth = INITIAL_MAX_PIPE_WIDTH;
+            game.currentPipeVerticalAmplitude = INITIAL_PIPE_VERTICAL_AMPLITUDE;
+            game.currentPipeVerticalSpeed = INITIAL_PIPE_VERTICAL_SPEED;
+
+
+            // Initialize trampoline aligned with blob's fixed X position
+            game.trampoline = new Trampoline(
+                game.blob.x - TRAMPOLINE_WIDTH / 2, // Centered horizontally below blob
+                canvas.height - TRAMPOLINE_HEIGHT - 10, // 10px from bottom
+                TRAMPOLINE_WIDTH,
+                TRAMPOLINE_HEIGHT,
+                '#008000', // Green color for megaphone
+                game.blob.x // Pass blob's x for alignment
+            );
+
+            messageBox.style.display = 'none';
+            canvas.style.display = 'block';
+            pauseButton.style.display = 'block';
+        }
+
+        function startGame() {
+            if (game.animationFrameId) {
+                cancelAnimationFrame(game.animationFrameId);
+            }
+
+            initGame();
+            game.started = true;
+            gameLoop();
+        }
+
+        function endGame(reason) {
+            game.over = true;
+            game.started = false;
+            cancelAnimationFrame(game.animationFrameId);
+            playGameOverSound();
+
+            if (game.score > game.highScore) {
+                game.highScore = game.score;
+                localStorage.setItem('flappyBlobHighScore', game.highScore);
+            }
+
+            showMessageBox("Game Over!", `${reason}<br>Your Score: ${game.score}<br>High Score: ${game.highScore}`, "Play Again");
+            pauseButton.style.display = 'none';
+        }
+
+        function showMessageBox(title, text, buttonText) {
+            messageTitle.textContent = title;
+            messageText.innerHTML = text;
+            messageButton.textContent = buttonText;
+            messageBox.style.display = 'flex';
+            canvas.style.display = 'none';
+        }
+
+        function showWelcomeScreen() {
+            showMessageBox(
+                "Welcome to Flappy Cell!", // Updated to Flappy Cell
+                `
+                    <p>Help the cell navigate through pipes!</p>
+                    <p>Click or press **Space** to make the cell jump.</p>
+                    <p>The **megaphone** below the cell will give it a boost!</p>
+                    <p>Adjust the game's difficulty using the "Adaptive Control" sliders, which tune your megaphone!</p>
+                    <p>Pore size, pipe movement, and pipe widths will change dynamically as you play!</p>
+                `,
+                "Start Game"
+            );
+        }
+
+        function togglePause() {
+            if (!game.started || game.over) return;
+
+            game.paused = !game.paused;
+            if (game.paused) {
+                cancelAnimationFrame(game.animationFrameId);
+                draw();
+            } else {
+                gameLoop();
+            }
+        }
+
+        function handleJump() {
+            if (!game.started && !game.over) {
+                startGame();
+            } else if (game.started && !game.over && !game.paused) {
+                game.blob.jump();
+                game.firstJumpMade = true; // Ensure firstJumpMade is set for degradation
+            }
+        }
+
+        function updateScoreAnimation(currentTime) {
+            if (game.score > game.lastScore) {
+                game.scorePopTimer = currentTime;
+                game.lastScore = game.score;
+                playScoreSound();
+            }
+        }
+
+        // --- Adaptive Control Hint Logic ---
+        function checkAdaptiveControlHints() {
+            const currentScore = game.score;
+            const gravity = parseFloat(gravitySlider.value);
+            const bounceStrength = parseFloat(bounceStrengthSlider.value);
+            const degradation = parseFloat(degradationSlider.value); // Degradation re-added
+
+            if (game.hintTimer > 0 && Date.now() - game.hintTimer > 5000) {
+                game.hintMessage = '';
+                game.hintTimer = 0;
+            }
+
+            // Hints based on score milestones
+            if (currentScore > 0 && currentScore % 10 === 0 && game.hintMessage === '') {
+                const randomHint = Math.floor(Math.random() * 4); // 4 types of hints (Degradation added)
+
+                switch(randomHint) {
+                    case 0:
+                        if (gravity < 0.8) {
+                            game.hintMessage = "Feeling confident? Increase Gravity for a faster fall!";
+                        } else {
+                            game.hintMessage = "Cell falling too fast? Decrease Gravity for more control!"; // Updated for cell
+                        }
+                        break;
+                    case 1:
+                        if (bounceStrength < -8) {
+                            game.hintMessage = "Mastering the jumps? Reduce Bounce Strength for precision!";
+                        } else {
+                            game.hintMessage = "Need more lift? Increase Bounce Strength for higher jumps!";
+                        }
+                        break;
+                    case 2:
+                        if (degradation < 0.005) {
+                            game.hintMessage = "Want a harder challenge? Increase Degradation for quicker jump decay!";
+                        } else {
+                            game.hintMessage = "Jumps weakening too fast? Decrease Degradation for more persistent bounce!";
+                        }
+                        break;
+                    case 3:
+                         game.hintMessage = "Pore size, pipe speed, and movement are changing dynamically! Adapt your jumps!";
+                         break;
+                }
+                game.hintTimer = Date.now();
+            }
+        }
+
+        function drawHintMessage(ctx) {
+            if (game.hintMessage) {
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '18px "Inter", sans-serif'; // Slightly smaller font for hints
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fillText(game.hintMessage, canvas.width / 2, canvas.height - 30); // Adjusted position
+                ctx.restore();
+            }
+        }
+
+        function drawSliderFeedback(ctx) {
+            const currentTime = Date.now();
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.font = '20px "Inter", sans-serif';
+
+            // Gravity feedback
+            if (game.gravityFeedbackText && currentTime - game.gravityFeedbackTimer < SLIDER_FEEDBACK_DURATION) {
+                const alpha = 1 - (currentTime - game.gravityFeedbackTimer) / SLIDER_FEEDBACK_DURATION;
+                ctx.fillStyle = `rgba(50, 50, 50, ${alpha})`;
+                ctx.fillText(game.gravityFeedbackText, canvas.width - 100, 100); // Position below score
+            }
+
+            // Bounce feedback
+            if (game.bounceFeedbackText && currentTime - game.bounceFeedbackTimer < SLIDER_FEEDBACK_DURATION) {
+                const alpha = 1 - (currentTime - game.bounceFeedbackTimer) / SLIDER_FEEDBACK_DURATION;
+                ctx.fillStyle = `rgba(50, 50, 50, ${alpha})`;
+                ctx.fillText(game.bounceFeedbackText, game.trampoline.x + game.trampoline.width / 2, game.trampoline.y - 20); // Position above megaphone
+            }
+
+            // Degradation feedback (new)
+            if (game.degradationFeedbackText && currentTime - game.degradationFeedbackTimer < SLIDER_FEEDBACK_DURATION) {
+                const alpha = 1 - (currentTime - game.degradationFeedbackTimer) / SLIDER_FEEDBACK_DURATION;
+                ctx.fillStyle = `rgba(50, 50, 50, ${alpha})`;
+                ctx.fillText(game.degradationFeedbackText, canvas.width - 100, 130); // Position below gravity feedback
+            }
+            ctx.restore();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // No background particle system now
+
+            if (game.blob) {
+                game.pipes.forEach(pipe => pipe.draw(ctx));
+                game.blob.draw(ctx);
+            }
+
+            // Draw trampoline
+            if (game.trampoline) {
+                game.trampoline.draw(ctx);
+                game.trampoline.drawJumpParticles(ctx); // Draw trampoline's emitted particles
+            }
+
+            ctx.font = '24px "Inter", sans-serif';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'right';
+            const rightMargin = 20;
+
+            const currentTime = Date.now();
+            if (game.scorePopTimer && currentTime - game.scorePopTimer < SCORE_POP_DURATION) {
+                const progress = (currentTime - game.scorePopTimer) / SCORE_POP_DURATION;
+                const scale = 1 + Math.sin(progress * Math.PI) * 0.2;
+                ctx.save();
+                ctx.translate(canvas.width - rightMargin, 40);
+                ctx.scale(scale, scale);
+                ctx.fillStyle = `rgba(76, 175, 80, ${1 - progress})`;
+                ctx.fillText('Score: ' + game.score, 0, 0);
+                ctx.restore();
+            } else {
+                 ctx.fillStyle = '#333';
+                 ctx.fillText('Score: ' + game.score, canvas.width - rightMargin, 40);
+            }
+
+            ctx.fillStyle = '#333';
+            ctx.fillText('High Score: ' + game.highScore, canvas.width - rightMargin, 70);
+            ctx.textAlign = 'left';
+
+            if (game.paused) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 48px "Inter", sans-serif';
+                ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+                ctx.font = '24px "Inter", sans-serif';
+                ctx.fillText('Press P or click Pause to resume', canvas.width / 2, canvas.height / 2 + 50);
+            }
+
+            drawHintMessage(ctx);
+            drawSliderFeedback(ctx); // Draw slider feedback messages
+        }
+
+        function updateGame() {
+            if (game.over || !game.started || game.paused) return;
+
+            const currentTime = Date.now();
+
+            if (game.blob.update(currentTime, game.firstJumpMade)) {
+                endGame("You hit the ground!");
+                return;
+            }
+
+            if (game.trampoline) {
+                game.trampoline.update(); // Update trampoline animation state and its particles
+            }
+
+            // --- Difficulty Curve Logic ---
+            // Increase pipe speed based on score
+            game.currentPipeSpeed = INITIAL_PIPE_SPEED + Math.floor(game.score / 20) * 0.2; // Increase speed every 20 points
+
+            // Dynamic Pore Size Calculation (already exists, but can be influenced by score)
+            // Make pore size oscillation more extreme as score increases
+            const difficultyFactor = 1 + Math.floor(game.score / 15) * 0.05; // Increase variation every 15 points
+            game.dynamicPoreSize = BASE_PORE_SIZE + Math.sin(currentTime * PORE_SIZE_SPEED) * (PORE_SIZE_VARIATION * difficultyFactor);
+            game.dynamicPoreSize = Math.max(100, Math.min(300, game.dynamicPoreSize)); // Clamp values
+
+            // Adjust pipe width range
+            game.currentMinPipeWidth = Math.max(40, INITIAL_MIN_PIPE_WIDTH * (1 - Math.floor(game.score / 30) * 0.05)); // Narrow min width
+            game.currentMaxPipeWidth = Math.max(60, INITIAL_MAX_PIPE_WIDTH * (1 - Math.floor(game.score / 30) * 0.05)); // Narrow max width
+            // Ensure min is always less than max
+            if (game.currentMinPipeWidth > game.currentMaxPipeWidth) {
+                game.currentMinPipeWidth = game.currentMaxPipeWidth - 10;
+            }
+
+
+            // Adjust vertical movement of pipes
+            game.currentPipeVerticalAmplitude = INITIAL_PIPE_VERTICAL_AMPLITUDE + Math.floor(game.score / 25) * 5; // Increase amplitude
+            game.currentPipeVerticalSpeed = INITIAL_PIPE_VERTICAL_SPEED + Math.floor(game.score / 25) * 0.0005; // Increase speed
+
+
+            // Pipe generation
+            if (currentTime - (game.pipes.length > 0 ? game.pipes[game.pipes.length - 1].spawnTime : 0) > 1500) {
+                const poreSizeToUse = game.dynamicPoreSize;
+                const maxPipeY = canvas.height - poreSizeToUse - MIN_PIPE_Y;
+                const pipeY = Math.random() * (maxPipeY - MIN_PIPE_Y) + MIN_PIPE_Y;
+
+                // Random pipe width for the new pipe
+                const newPipeWidth = Math.random() * (game.currentMaxPipeWidth - game.currentMinPipeWidth) + game.currentMinPipeWidth;
+
+                game.pipes.push(new Pipe(
+                    canvas.width,
+                    pipeY,
+                    newPipeWidth, // Pass the new random width
+                    poreSizeToUse,
+                    canvas.height,
+                    game.currentPipeVerticalAmplitude, // Pass dynamic amplitude
+                    game.currentPipeVerticalSpeed, // Pass dynamic speed
+                    currentTime // Pass spawn time for vertical oscillation
+                ));
+            }
+
+            for (let i = 0; i < game.pipes.length; i++) {
+                const pipe = game.pipes[i];
+                pipe.update(currentTime); // Pass currentTime for vertical movement
+
+                if (pipe.collidesWith(game.blob)) {
+                    endGame("You hit a pipe!");
+                    return;
+                }
+
+                if (pipe.x + pipe.width < game.blob.x && !pipe.passed) { // Use pipe.width
+                    game.score++;
+                    updateScoreAnimation(currentTime);
+                    pipe.passed = true;
+                    checkAdaptiveControlHints();
+                }
+
+                if (pipe.isOffscreen()) {
+                    game.pipes.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        function gameLoop() {
+            updateGame();
+            draw();
+            game.animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function loadHighScore() {
+            const storedHighScore = localStorage.getItem('flappyBlobHighScore');
+            if (storedHighScore) {
+                game.highScore = parseInt(storedHighScore, 10);
+            }
+        }
+
+        // --- Event Listeners ---
+        messageButton.addEventListener('click', startGame);
+        canvas.addEventListener('click', handleJump);
+        pauseButton.addEventListener('click', togglePause);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                handleJump();
+            } else if (e.code === 'KeyP') {
+                e.preventDefault();
+                togglePause();
+            }
+        });
+
+        gravitySlider.addEventListener('input', (event) => {
+            if (game.blob) { game.blob.gravity = parseFloat(event.target.value); }
+            gravityValueSpan.textContent = parseFloat(event.target.value).toFixed(2);
+
+            // Visual feedback for gravity slider
+            game.gravityFeedbackText = `Gravity: ${parseFloat(event.target.value).toFixed(2)}`;
+            game.gravityFeedbackTimer = Date.now();
+        });
+
+        bounceStrengthSlider.addEventListener('input', (event) => {
+            if (game.blob) {
+                game.blob.baseJumpStrength = parseFloat(event.target.value);
+                // No need to reset currentJumpStrength here if game is running,
+                // it will degrade based on baseJumpStrength
+                if (!game.started || game.over) { // Only set initial currentJumpStrength if game not started or over
+                    game.blob.currentJumpStrength = game.blob.baseJumpStrength * 0.8;
+                    game.blob.currentJumpStrength = Math.max(game.blob.currentJumpStrength, MIN_JUMP_STRENGTH_VALUE);
+                }
+            }
+            bounceStrengthValueSpan.textContent = parseFloat(event.target.value).toFixed(1);
+
+            // Visual feedback for bounce strength slider
+            game.bounceFeedbackText = `Bounce: ${parseFloat(event.target.value).toFixed(1)}`;
+            game.bounceFeedbackTimer = Date.now();
+        });
+
+        // Degradation slider event listener (re-added)
+        degradationSlider.addEventListener('input', (event) => {
+            degradationValueSpan.textContent = parseFloat(event.target.value).toFixed(3);
+            // Visual feedback for degradation slider
+            game.degradationFeedbackText = `Degradation: ${parseFloat(event.target.value).toFixed(3)}`;
+            game.degradationFeedbackTimer = Date.now();
+        });
+
+        // --- Initial Setup ---
+        window.onload = function() {
+            loadHighScore();
+            initGame();
+            resizeCanvas(); // Initialize trampoline here
+            showWelcomeScreen();
+        };
+
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+
+  <script src="./assets/js/marked.min.js"></script>
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js"></script>
+  <script src="./assets/js/Tone.min.js"></script>
+</body>
+</html>

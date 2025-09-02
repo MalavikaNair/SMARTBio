@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
+  <link rel="stylesheet" href="./assets/css/fonts.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>body{font-family: var(--font-sans-exo);}</style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponge Snake 2D Enhanced</title>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+        .game-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 95vw; /* Responsive width */
+            box-sizing: border-box;
+        }
+        .game-content {
+            display: flex;
+            flex-direction: row; /* Arrange canvas and legend side-by-side */
+            gap: 20px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            justify-content: center;
+            align-items: flex-start;
+        }
+        #gameCanvas {
+            border: 2px solid #a0a0a0;
+            border-radius: 10px;
+            display: block;
+            touch-action: none; /* Disable default touch actions like scrolling/zooming */
+            background-color: #e0e0e0; /* Path color */
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        }
+        .button {
+            padding: 12px 25px;
+            background: linear-gradient(145deg, #6a82fb, #8b9efb);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+        }
+        .button:hover {
+            background: linear-gradient(145deg, #5a71e0, #7a8ce0);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+        .button:active {
+            background: linear-gradient(145deg, #4a61d0, #6a7cdf0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transform: translateY(0);
+        }
+        .score-display {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+            width: 100%;
+        }
+        /* High Score Display */
+        .high-score-display {
+            font-size: 1em;
+            font-weight: bold;
+            color: #555;
+            margin-top: 10px;
+            text-align: center;
+            width: 100%;
+        }
+        /* Enhanced message box styles */
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.98); /* Semi-transparent white */
+            color: #333;
+            padding: 20px 30px; /* Reduced padding */
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.2em; /* Reduced font size */
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+            border: 2px solid #6a82fb; /* Blue border */
+            max-width: 600px; /* Reduced max-width */
+            line-height: 1.5; /* Better readability */
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .message-box h2 {
+            font-size: 1.8em; /* Reduced font size */
+            color: #6a82fb;
+            margin-bottom: 15px; /* Reduced margin */
+        }
+        .message-box p {
+            margin-bottom: 10px; /* Reduced margin */
+        }
+        .mobile-controls {
+            display: grid;
+            grid-template-areas:
+                ". up ."
+                "left . right"
+                ". down .";
+            gap: 10px;
+            margin-top: 20px;
+            width: 200px; /* Adjust as needed */
+            height: 200px;
+            max-width: 80vw;
+            max-height: 80vw;
+        }
+        .mobile-controls .control-button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 50%; /* Make them circular */
+            font-size: 1.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+        .mobile-controls .control-button:active {
+            background-color: #45a049;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .mobile-controls .up { grid-area: up; }
+        .mobile-controls .down { grid-area: down; }
+        .mobile-controls .left { grid-area: left; }
+        .mobile-controls .right { grid-area: right; }
+
+        /* Legend styles */
+        .game-sidebar {
+            background-color: #f8f8f8;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            min-width: 150px;
+            max-width: 200px;
+            box-sizing: border-box;
+        }
+        .legend h3 {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            color: #555;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        /* Updated legend colors */
+        .grow-food-color {
+            background-color: #FFD700; /* Gold/Yellow */
+        }
+        .shrink-food-color {
+            background-color: #32CD32; /* Lime Green */
+        }
+        .bonus-food-color { /* New style for bonus food */
+            background-color: #800080; /* Purple */
+            box-shadow: 0 0 8px #800080; /* Glowing effect */
+        }
+
+        /* Porosity selector styles */
+        .porosity-selector, .metabolism-selector {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .porosity-selector label, .metabolism-selector label {
+            font-size: 1em;
+            font-weight: bold;
+            color: #333;
+        }
+        .porosity-selector select, .metabolism-selector select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+            font-size: 1em;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .porosity-selector select:focus, .metabolism-selector select:focus {
+            border-color: #6a82fb;
+        }
+
+        /* Snake head animation */
+        .snake-head-anim {
+            animation: headPulse 0.5s infinite alternate;
+        }
+        @keyframes headPulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        /* Fade in animation for message box */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        /* Hide mobile controls on larger screens */
+        @media (min-width: 768px) {
+            .mobile-controls {
+                display: none;
+            }
+        }
+        /* Hide desktop controls on smaller screens */
+        @media (max-width: 767px) {
+            .controls .button:not(#restartButton):not(#pauseButton) { /* Keep restart and pause visible */
+                display: none;
+            }
+            .game-content {
+                flex-direction: column; /* Stack canvas and legend on small screens */
+                align-items: center;
+            }
+            .game-sidebar {
+                margin-top: 20px;
+                width: 100%; /* Full width on small screens */
+                max-width: 300px; /* Limit max width even on full width */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="game-wrapper">
+        <div class="score-display" id="scoreDisplay" aria-live="polite">Length: 1</div>
+        <div class="high-score-display" id="maxLengthHighScoreDisplay" aria-live="polite">Max Length: 0</div>
+        <div class="high-score-display" id="maxTimeHighScoreDisplay" aria-live="polite">Max Time: 0s</div>
+        <div class="game-content">
+            <canvas id="gameCanvas" role="img" aria-label="Sponge Snake Game Area"></canvas>
+            <div class="game-sidebar">
+                <div class="legend">
+                    <h3>Legend</h3>
+                    <div class="legend-item">
+                        <span class="legend-color grow-food-color"></span>
+                        <span>Grow Food (Square)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color shrink-food-color"></span>
+                        <span>Shrink Food (Triangle)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color bonus-food-color"></span>
+                        <span>External Nutrient Stimulus (Star)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="pauseButton" class="button" style="display: none;">Pause</button>
+            <button id="restartButton" class="button" style="display: none;">Restart Game</button>
+        </div>
+
+        <div class="mobile-controls">
+            <button class="control-button up" data-direction="up" aria-label="Move Up">⬆️</button>
+            <button class="control-button left" data-direction="left" aria-label="Move Left">⬅️</button>
+            <button class="control-button right" data-direction="right" aria-label="Move Right">➡️</button>
+            <button class="control-button down" data-direction="down" aria-label="Move Down">⬇️</button>
+        </div>
+    </div>
+
+    <div id="messageBox" class="message-box" role="dialog" aria-labelledby="messageBoxTitle" aria-describedby="messageBoxDescription">
+        <h2 id="messageBoxTitle">Welcome to Sponge Snake!</h2>
+        <div id="messageBoxContent">
+            <!-- Content will be dynamically loaded here by showMessage function -->
+        </div>
+    </div>
+
+    <script>
+        // Get the canvas element and its 2D rendering context
+        const gameCanvas = document.getElementById('gameCanvas');
+        const ctx = gameCanvas.getContext('2d');
+
+        // --- Constants (Code Quality: Define all magic numbers) ---
+        const GRID_SIZE = 20; // Size of each cell in pixels
+        const TILE_COUNT_X = 35; // Number of cells horizontally
+        const TILE_COUNT_Y = 25; // Number of cells vertically
+        const INITIAL_SNAKE_LENGTH = 1;
+        const INITIAL_GAME_SPEED = 150; // Milliseconds per frame (lower is faster)
+        const INITIAL_FOOD_COUNT = 3;
+        const BONUS_FOOD_SPEED = 1; // Tiles per game update for bonus food
+        const BONUS_PULSE_SPEED = 0.05; // How fast the bonus food pulses
+        const BONUS_MIN_PULSE = 0.5; // Minimum alpha for bonus food
+        const BONUS_MAX_PULSE = 1.0; // Maximum alpha for pulsing bonus food
+        const EYE_RADIUS = GRID_SIZE * 0.1; // Radius for snake eyes
+
+        // Define metabolism levels (game updates per shrink)
+        const METABOLISM_LEVELS = {
+            low: 75,    // Shrink every 75 updates (slower)
+            medium: 50, // Shrink every 50 updates (normal)
+            high: 25    // Shrink every 25 updates (faster)
+        };
+
+        // Define porosity levels (density of walls)
+        const POROSITY_LEVELS = {
+            low: 0.15,    // Fewer walls, easier
+            medium: 0.25, // Normal walls
+            high: 0.35    // More walls, harder
+        };
+
+        // Set canvas dimensions
+        const CANVAS_WIDTH = TILE_COUNT_X * GRID_SIZE;
+        const CANVAS_HEIGHT = TILE_COUNT_Y * GRID_SIZE;
+        gameCanvas.width = CANVAS_WIDTH;
+        gameCanvas.height = CANVAS_HEIGHT;
+
+        // --- Game state variables ---
+        let snake = [];
+        let foodGrowPositions = []; // Array for multiple grow food positions
+        let foodShrinkPositions = []; // Array for multiple shrink food positions
+        let bonusFood = null; // Stores { x, y, direction } for the moving bonus food
+        let bonusFoodActive = false; // Flag to prevent multiple bonus foods at once
+        let pulseValue = BONUS_MIN_PULSE; // Initial alpha for pulsing bonus food
+        let pulseDirection = 1; // 1 for increasing, -1 for decreasing
+        let currentDirection = 'right'; // Current movement direction
+        let nextDirection = 'right'; // Pending direction change
+        let score = INITIAL_SNAKE_LENGTH;
+        let gameOver = false;
+        let gamePaused = false; // New state for pause
+        let gameInterval;
+        let gameSpeed = INITIAL_GAME_SPEED; // Milliseconds per frame (lower is faster)
+        let currentWallDensity = POROSITY_LEVELS.medium; // Default medium porosity
+        let gameStartTime = 0; // To track time for high score
+        let currentMaxGameLength = INITIAL_SNAKE_LENGTH; // Tracks max length achieved in current game
+
+        // High score variables
+        let maxLengthHighScore = 0;
+        let maxTimeHighScore = 0; // in seconds
+
+        // Time-based shrinking variables
+        let shrinkTimer = 0; // Counts game updates until next shrink
+        let shrinkIntervalDuration = METABOLISM_LEVELS.medium; // Will be set by metabolism level
+
+        // Maze representation: 0 for path, 1 for wall
+        let maze = [];
+
+        // --- UI elements ---
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const maxLengthHighScoreDisplay = document.getElementById('maxLengthHighScoreDisplay');
+        const maxTimeHighScoreDisplay = document.getElementById('maxTimeHighScoreDisplay');
+        const pauseButton = document.getElementById('pauseButton');
+        const restartButton = document.getElementById('restartButton'); // Get the new restart button
+        const messageBox = document.getElementById('messageBox');
+        const messageBoxContent = document.getElementById('messageBoxContent');
+        const mobileControls = document.querySelector('.mobile-controls');
+
+        /**
+         * Converts grid coordinates to 2D canvas coordinates.
+         * @param {number} gridX - X coordinate on the grid.
+         * @param {number} gridY - Y coordinate on the grid.
+         * @returns {object} An object with x and y canvas coordinates.
+         */
+        function gridTo2D(gridX, gridY) {
+            return { x: gridX * GRID_SIZE, y: gridY * GRID_SIZE };
+        }
+
+        /**
+         * Displays a message in the message box.
+         * @param {string} title - The title of the message.
+         * @param {string} contentHtml - The HTML content of the message body.
+         */
+        function showMessage(title, contentHtml) {
+            document.getElementById('messageBoxTitle').textContent = title;
+            messageBoxContent.innerHTML = contentHtml; // Set innerHTML of the new content div
+            messageBox.style.display = 'block';
+
+            // Dynamically attach event listeners to buttons/selects inside the message box
+            const startButtonInBox = messageBoxContent.querySelector('#startButtonInBox');
+            if (startButtonInBox) {
+                startButtonInBox.onclick = startGame;
+            }
+
+            const dismissButtonInBox = messageBoxContent.querySelector('#dismissButtonInBox');
+            if (dismissButtonInBox) {
+                dismissButtonInBox.onclick = () => {
+                    hideMessage();
+                    showWelcomeMessage(); // Re-show initial welcome message after dismiss
+                };
+            }
+
+            // Re-attach event listeners for porosity and metabolism selectors
+            const porosityLevelSelect = messageBoxContent.querySelector('#porosityLevel');
+            if (porosityLevelSelect) {
+                // Ensure the select box reflects the current game setting
+                const currentPorosityKey = Object.keys(POROSITY_LEVELS).find(key => POROSITY_LEVELS[key] === currentWallDensity);
+                if (currentPorosityKey) {
+                    porosityLevelSelect.value = currentPorosityKey;
+                }
+                porosityLevelSelect.onchange = () => {
+                    currentWallDensity = POROSITY_LEVELS[porosityLevelSelect.value];
+                    generateMaze(currentWallDensity);
+                    drawGame(); // Redraw static maze for preview
+                };
+            }
+
+            const metabolismLevelSelect = messageBoxContent.querySelector('#metabolismLevel');
+            if (metabolismLevelSelect) {
+                // Ensure the select box reflects the current game setting
+                const currentMetabolismKey = Object.keys(METABOLISM_LEVELS).find(key => METABOLISM_LEVELS[key] === shrinkIntervalDuration);
+                if (currentMetabolismKey) {
+                    metabolismLevelSelect.value = currentMetabolismKey;
+                }
+                metabolismLevelSelect.onchange = () => {
+                    shrinkIntervalDuration = METABOLISM_LEVELS[metabolismLevelSelect.value];
+                };
+            }
+        }
+
+        /**
+         * Hides the message box.
+         */
+        function hideMessage() {
+            messageBox.style.display = 'none';
+        }
+
+        /**
+         * Generates a sponge-like maze.
+         * @param {number} density - The density of walls in the maze (0 to 1).
+         */
+        function generateMaze(density) {
+            maze = [];
+            for (let y = 0; y < TILE_COUNT_Y; y++) {
+                maze[y] = [];
+                for (let x = 0; x < TILE_COUNT_X; x++) {
+                    // Create a border of walls
+                    if (x === 0 || x === TILE_COUNT_X - 1 || y === 0 || y === TILE_COUNT_Y - 1) {
+                        maze[y][x] = 1; // Wall
+                    } else {
+                        maze[y][x] = Math.random() < density ? 1 : 0; // Randomly place walls based on density
+                    }
+                }
+            }
+        }
+
+        /**
+         * Places a food item randomly on the canvas, avoiding snake and walls.
+         * @param {string} type - 'grow' or 'shrink'.
+         * @returns {object} The position of the placed food.
+         */
+        function placeFood(type) {
+            let newFood;
+            let validPosition = false;
+            while (!validPosition) {
+                newFood = {
+                    x: Math.floor(Math.random() * TILE_COUNT_X),
+                    y: Math.floor(Math.random() * TILE_COUNT_Y)
+                };
+
+                validPosition = true;
+                // Check if position is occupied by snake
+                for (let i = 0; i < snake.length; i++) {
+                    if (snake[i].x === newFood.x && newFood.y === snake[i].y) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+                // Check if position is a wall
+                if (validPosition && maze[newFood.y][newFood.x] === 1) {
+                    validPosition = false;
+                }
+                // Check if position is occupied by other food (grow or shrink)
+                if (validPosition) {
+                    for (let i = 0; i < foodShrinkPositions.length; i++) {
+                        if (foodShrinkPositions[i].x === newFood.x && foodShrinkPositions[i].y === newFood.y) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                }
+                if (validPosition) {
+                    for (let i = 0; i < foodGrowPositions.length; i++) {
+                        if (foodGrowPositions[i].x === newFood.x && foodGrowPositions[i].y === newFood.y) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                }
+                // Check if position is occupied by bonus food
+                if (validPosition && bonusFood && bonusFood.x === newFood.x && bonusFood.y === newFood.y) {
+                    validPosition = false;
+                }
+            }
+
+            if (type === 'grow') {
+                foodGrowPositions.push(newFood);
+            } else {
+                foodShrinkPositions.push(newFood);
+            }
+            return newFood;
+        }
+
+        /**
+         * Draws a 2D star shape on the canvas.
+         * @param {CanvasRenderingContext2D} context - The 2D rendering context.
+         * @param {number} cx - Center X coordinate.
+         * @param {number} cy - Center Y coordinate.
+         * @param {number} outerRadius - Radius to the outer points.
+         * @param {number} innerRadius - Radius to the inner points.
+         * @param {number} points - Number of points on the star.
+         */
+        function drawStar(context, cx, cy, outerRadius, innerRadius, points) {
+            context.beginPath();
+            for (let i = 0; i < points; i++) {
+                let outerX = cx + outerRadius * Math.cos(i * Math.PI * 2 / points - Math.PI / 2);
+                let outerY = cy + outerRadius * Math.sin(i * Math.PI * 2 / points - Math.PI / 2);
+                if (i === 0) {
+                    context.moveTo(outerX, outerY);
+                } else {
+                    context.lineTo(outerX, outerY);
+                }
+                let innerX = cx + innerRadius * Math.cos(i * Math.PI * 2 / points + Math.PI / points - Math.PI / 2);
+                let innerY = cy + innerRadius * Math.sin(i * Math.PI * 2 / points + Math.PI / points - Math.PI / 2);
+                context.lineTo(innerX, innerY);
+            }
+            context.closePath();
+            context.fill();
+        }
+
+        /**
+         * Draws a 2D triangle shape on the canvas.
+         * @param {CanvasRenderingContext2D} context - The 2D rendering context.
+         * @param {number} cx - Center X coordinate.
+         * @param {number} cy - Center Y coordinate.
+         * @param {number} size - Size of the triangle (from center to vertex).
+         */
+        function drawTriangle(context, cx, cy, size) {
+            context.beginPath();
+            context.moveTo(cx, cy - size); // Top vertex
+            context.lineTo(cx + size * Math.cos(Math.PI / 6), cy + size * Math.sin(Math.PI / 6)); // Bottom right vertex
+            context.lineTo(cx - size * Math.cos(Math.PI / 6), cy + size * Math.sin(Math.PI / 6)); // Bottom left vertex
+            context.closePath();
+            context.fill();
+        }
+
+        /**
+         * Creates initial food items for the game.
+         */
+        function createInitialFood() {
+            foodGrowPositions = [];
+            foodShrinkPositions = [];
+            for (let i = 0; i < INITIAL_FOOD_COUNT; i++) {
+                placeFood('grow');
+                placeFood('shrink');
+            }
+        }
+
+        /**
+         * Creates and launches an External Nutrient Stimulus (bonus food) item.
+         */
+        function launchBonusFood() {
+            if (bonusFoodActive || gameOver || gamePaused) {
+                return; // Only one bonus food at a time, and not if game is over or paused
+            }
+
+            bonusFoodActive = true;
+            let startX, startY, moveDirection;
+
+            // Randomly choose a starting edge (top, right, bottom, left)
+            const edge = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+
+            switch (edge) {
+                case 0: // Top edge
+                    startX = Math.floor(Math.random() * TILE_COUNT_X);
+                    startY = 0;
+                    moveDirection = 'down';
+                    break;
+                case 1: // Right edge
+                    startX = TILE_COUNT_X - 1;
+                    startY = Math.floor(Math.random() * TILE_COUNT_Y);
+                    moveDirection = 'left';
+                    break;
+                case 2: // Bottom edge
+                    startX = Math.floor(Math.random() * TILE_COUNT_X);
+                    startY = TILE_COUNT_Y - 1;
+                    moveDirection = 'up';
+                    break;
+                case 3: // Left edge
+                    startX = 0;
+                    startY = Math.floor(Math.random() * TILE_COUNT_Y);
+                    moveDirection = 'right';
+                    break;
+            }
+
+            bonusFood = {
+                x: startX,
+                y: startY,
+                direction: moveDirection,
+            };
+            playSFX('bonusSpawn'); // Play bonus food spawn sound
+        }
+
+        /**
+         * Updates the position and checks collision for the bonus food.
+         */
+        function updateBonusFood() {
+            if (!bonusFood || !bonusFoodActive) return;
+
+            let newBonusX = bonusFood.x;
+            let newBonusY = bonusFood.y;
+
+            // Move bonus food based on its direction
+            switch (bonusFood.direction) {
+                case 'right':
+                    newBonusX += BONUS_FOOD_SPEED;
+                    break;
+                case 'left':
+                    newBonusX -= BONUS_FOOD_SPEED;
+                    break;
+                case 'up':
+                    newBonusY -= BONUS_FOOD_SPEED;
+                    break;
+                case 'down':
+                    newBonusY += BONUS_FOOD_SPEED;
+                    break;
+            }
+
+            // Check if bonus food went off-screen
+            if (newBonusX < 0 || newBonusX >= TILE_COUNT_X || newBonusY < 0 || newBonusY >= TILE_COUNT_Y) {
+                bonusFood = null;
+                bonusFoodActive = false;
+                return;
+            }
+
+            // Check for collision with ANY snake segment
+            for (let i = 0; i < snake.length; i++) {
+                if (newBonusX === snake[i].x && newBonusY === snake[i].y) {
+                    score++; // Grow snake
+                    // Add new segment at bonus food location (makes it appear that it was consumed by the snake's body)
+                    snake.unshift({ x: newBonusX, y: newHeadY }); // Fix: use newHeadY instead of newBonusY
+                    bonusFood = null;
+                    bonusFoodActive = false;
+                    scoreDisplay.textContent = `Length: ${score}`;
+                    if (score > currentMaxGameLength) {
+                        currentMaxGameLength = score;
+                    }
+                    playSFX('bonusEat'); // Play bonus food eaten sound
+                    return; // Exit after collision
+                }
+            }
+
+            bonusFood.x = newBonusX;
+            bonusFood.y = newBonusY;
+        }
+
+        /**
+         * Initializes the game state.
+         */
+        function initGame() {
+            snake = [{ x: Math.floor(TILE_COUNT_X / 4), y: Math.floor(TILE_COUNT_Y / 2) }];
+            score = INITIAL_SNAKE_LENGTH;
+            currentDirection = 'right';
+            nextDirection = 'right';
+            gameOver = false;
+            gamePaused = false;
+            gameSpeed = INITIAL_GAME_SPEED;
+            gameStartTime = Date.now();
+            currentMaxGameLength = INITIAL_SNAKE_LENGTH;
+
+            // Retrieve selected metabolism level
+            const metabolismLevelSelect = messageBoxContent.querySelector('#metabolismLevel');
+            if (metabolismLevelSelect) {
+                shrinkIntervalDuration = METABOLISM_LEVELS[metabolismLevelSelect.value];
+            } else {
+                shrinkIntervalDuration = METABOLISM_LEVELS.medium; // Fallback
+            }
+            shrinkTimer = shrinkIntervalDuration;
+
+            // Retrieve selected porosity level and generate maze
+            const porosityLevelSelect = messageBoxContent.querySelector('#porosityLevel');
+            if (porosityLevelSelect) {
+                currentWallDensity = POROSITY_LEVELS[porosityLevelSelect.value];
+            } else {
+                currentWallDensity = POROSITY_LEVELS.medium; // Fallback
+            }
+            generateMaze(currentWallDensity);
+
+            // Ensure initial snake area is clear of walls in the maze
+            for (let i = 0; i < snake.length; i++) {
+                maze[snake[i].y][snake[i].x] = 0;
+            }
+
+            scoreDisplay.textContent = `Length: ${score}`;
+            createInitialFood(); // Create/update food objects
+            bonusFood = null; // Clear any bonus food from previous game
+            bonusFoodActive = false;
+
+            hideMessage(); // Hide the message box when game starts
+            pauseButton.style.display = 'block'; // Show pause button
+            restartButton.style.display = 'block'; // Show restart button
+        }
+
+        /**
+         * Toggles the game pause state.
+         */
+        function togglePauseGame() {
+            if (gameOver) return; // Cannot pause if game is over
+
+            gamePaused = !gamePaused;
+            if (gamePaused) {
+                clearInterval(gameInterval);
+                pauseButton.textContent = 'Resume';
+                showMessage('Game Paused', '<p>Press "Resume" to continue.</p>');
+                restartButton.style.display = 'none'; // Hide restart button when paused
+            } else {
+                gameInterval = setInterval(update, gameSpeed);
+                pauseButton.textContent = 'Pause';
+                hideMessage();
+                restartButton.style.display = 'block'; // Show restart button when resumed
+            }
+        }
+
+        /**
+         * The main game logic loop.
+         */
+        function update() {
+            if (gameOver || gamePaused) return;
+
+            // Update bonus food (independent movement)
+            updateBonusFood();
+
+            // Handle time-based shrinking
+            shrinkTimer--;
+            if (shrinkTimer <= 0) {
+                if (score > 0) {
+                    score--;
+                    playSFX('shrink'); // Play shrink sound
+                }
+                const metabolismLevelSelect = messageBoxContent.querySelector('#metabolismLevel');
+                if (metabolismLevelSelect) {
+                    shrinkIntervalDuration = METABOLISM_LEVELS[metabolismLevelSelect.value];
+                } else {
+                    shrinkIntervalDuration = METABOLISM_LEVELS.medium; // Fallback
+                }
+                shrinkTimer = shrinkIntervalDuration;
+            }
+
+            // Check for game over if score drops to 0 due to time-based shrinking
+            if (score <= 0) {
+                endGame('Your snake disappeared due to its high metabolism!', true);
+                return;
+            }
+
+            // Apply pending direction change
+            currentDirection = nextDirection;
+            const head = { x: snake[0].x, y: snake[0].y };
+            let newHeadX = head.x;
+            let newHeadY = head.y;
+
+            switch (currentDirection) {
+                case 'up': newHeadY--; break;
+                case 'down': newHeadY++; break;
+                case 'left': newHeadX--; break;
+                case 'right': newHeadX++; break;
+            }
+
+            // Handle wall/boundary collision (snake stops, no game over here)
+            if (newHeadX < 0 || newHeadX >= TILE_COUNT_X || newHeadY < 0 || newHeadY >= TILE_COUNT_Y || maze[newHeadY][newHeadX] === 1) {
+                // The snake simply stops moving in this direction.
+                playSFX('hitWall'); // Play wall hit sound
+                return; // Do not move the snake if it hits a wall
+            }
+
+            // Add new head (snake always moves forward unless stopped by a wall)
+            snake.unshift({ x: newHeadX, y: newHeadY });
+
+            let foodEatenThisFrame = false;
+
+            // Check for grow food consumption
+            for (let i = 0; i < foodGrowPositions.length; i++) {
+                if (newHeadX === foodGrowPositions[i].x && newHeadY === foodGrowPositions[i].y) {
+                    score++;
+                    foodGrowPositions.splice(i, 1);
+                    placeFood('grow'); // Place a new grow food
+                    foodEatenThisFrame = true;
+                    playSFX('eatGrow'); // Play grow food eaten sound
+                    break;
+                }
+            }
+
+            // Check for shrink food consumption (only if no grow food was eaten at this spot)
+            if (!foodEatenThisFrame) {
+                for (let i = 0; i < foodShrinkPositions.length; i++) {
+                    if (newHeadX === foodShrinkPositions[i].x && newHeadY === foodShrinkPositions[i].y) {
+                        score--;
+                        foodShrinkPositions.splice(i, 1);
+                        placeFood('shrink'); // Place a new shrink food
+                        foodEatenThisFrame = true;
+                        playSFX('eatShrink'); // Play shrink food eaten sound
+                        break;
+                    }
+                }
+            }
+
+            // Adjust snake length to match score
+            while (snake.length > score) {
+                if (snake.length > 0) {
+                    snake.pop();
+                } else {
+                    break;
+                }
+            }
+
+            // Update currentMaxGameLength if current score is higher
+            if (score > currentMaxGameLength) {
+                currentMaxGameLength = score;
+            }
+
+            // Update UI and check for final game over condition (only for food-based death)
+            scoreDisplay.textContent = `Length: ${score}`;
+            if (score <= 0) {
+                endGame('Your snake disappeared from eating too much Shrink Food (Triangle)!', true);
+                return;
+            }
+        }
+
+        /**
+         * Draws the entire game state on the 2D canvas.
+         */
+        function drawGame() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); // Clear the entire canvas
+
+            // Draw walls
+            ctx.fillStyle = '#a0a0a0'; // Wall color
+            for (let y = 0; y < TILE_COUNT_Y; y++) {
+                for (let x = 0; x < TILE_COUNT_X; x++) {
+                    if (maze[y][x] === 1) {
+                        ctx.fillRect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                    }
+                }
+            }
+
+            // Draw grow food (Yellow Square)
+            ctx.fillStyle = '#FFD700'; // Gold/Yellow
+            foodGrowPositions.forEach(food => {
+                ctx.fillRect(food.x * GRID_SIZE + GRID_SIZE * 0.1, food.y * GRID_SIZE + GRID_SIZE * 0.1, GRID_SIZE * 0.8, GRID_SIZE * 0.8);
+            });
+
+            // Draw shrink food (Green Triangle)
+            ctx.fillStyle = '#32CD32'; // Lime Green
+            foodShrinkPositions.forEach(food => {
+                drawTriangle(ctx, food.x * GRID_SIZE + GRID_SIZE / 2, food.y * GRID_SIZE + GRID_SIZE / 2, GRID_SIZE * 0.4);
+            });
+
+            // Draw External Nutrient Stimulus (bonus food - Purple Star)
+            if (bonusFood && bonusFoodActive) {
+                ctx.fillStyle = `rgba(128, 0, 128, ${pulseValue})`; // Purple with pulsing alpha
+                drawStar(ctx, bonusFood.x * GRID_SIZE + GRID_SIZE / 2, bonusFood.y * GRID_SIZE + GRID_SIZE / 2, GRID_SIZE * 0.5, GRID_SIZE * 0.2, 5);
+            }
+
+            // Draw snake (Red with White Eyes)
+            snake.forEach((segment, index) => {
+                ctx.fillStyle = '#FF0000'; // Red
+                if (index === 0) { // Snake head
+                    ctx.save(); // Save context state before applying transform
+                    ctx.translate(segment.x * GRID_SIZE + GRID_SIZE / 2, segment.y * GRID_SIZE + GRID_SIZE / 2);
+
+                    let rotation = 0;
+                    if (currentDirection === 'up') rotation = -Math.PI / 2;
+                    else if (currentDirection === 'down') rotation = Math.PI / 2;
+                    else if (currentDirection === 'left') rotation = Math.PI;
+                    ctx.rotate(rotation);
+
+                    ctx.fillRect(-GRID_SIZE / 2, -GRID_SIZE / 2, GRID_SIZE, GRID_SIZE); // Draw head rectangle centered
+
+                    // Draw eyes
+                    ctx.fillStyle = 'white';
+                    const eyeOffset = GRID_SIZE * 0.2; // How far eyes are from center
+                    const eyeSpacing = GRID_SIZE * 0.15; // How far apart eyes are
+
+                    // Left eye (relative to snake's forward direction)
+                    ctx.beginPath();
+                    ctx.arc(eyeOffset, -eyeSpacing, EYE_RADIUS, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Right eye (relative to snake's forward direction)
+                    ctx.beginPath();
+                    ctx.arc(eyeOffset, eyeSpacing, EYE_RADIUS, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore(); // Restore context state
+                } else { // Snake body
+                    ctx.fillRect(segment.x * GRID_SIZE, segment.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                }
+            });
+        }
+
+        /**
+         * The main animation loop for the 2D canvas.
+         */
+        function animate() {
+            requestAnimationFrame(animate);
+            // Update bonus food pulsing (for visual effect even when game is paused)
+            if (bonusFoodActive) {
+                pulseValue += pulseDirection * BONUS_PULSE_SPEED;
+                if (pulseValue > BONUS_MAX_PULSE || pulseValue < BONUS_MIN_PULSE) {
+                    pulseDirection *= -1; // Reverse direction
+                    pulseValue = Math.max(BONUS_MIN_PULSE, Math.min(BONUS_MAX_PULSE, pulseValue)); // Clamp value
+                }
+            }
+            drawGame(); // Render the 2D game state
+        }
+
+        /**
+         * Plays a sound effect.
+         * @param {string} effectName - Name of the sound effect to play.
+         */
+        function playSFX(effectName) {
+            let audio;
+            switch (effectName) {
+                case 'eatGrow':
+                    audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+                    break;
+                case 'eatShrink':
+                    audio = new Audio('https://www.soundjay.com/button/beep-01a.wav');
+                    break;
+                case 'bonusSpawn':
+                    audio = new Audio('https://www.soundjay.com/misc/sounds/magic-chime-01.wav');
+                    break;
+                case 'bonusEat':
+                    audio = new Audio('https://www.soundjay.com/misc/sounds/level-up-01.wav');
+                    break;
+                case 'gameOver':
+                    audio = new Audio('https://www.soundjay.com/misc/sounds/fail-trombone-01.wav');
+                    break;
+                case 'shrink':
+                    audio = new Audio('https://www.soundjay.com/button/button-10.wav');
+                    break;
+                case 'hitWall':
+                    audio = new Audio('https://www.soundjay.com/button/button-16.wav');
+                    break;
+                default:
+                    return;
+            }
+            audio.volume = 0.5; // Adjust volume
+            audio.play().catch(e => console.error("Error playing sound:", e)); // Catch play errors
+        }
+
+        /**
+         * Ends the game and displays a message.
+         * @param {string} message - The game over message.
+         * @param {boolean} isGameOverState - True if it's a game over state.
+         */
+        function endGame(message, isGameOverState) {
+            gameOver = true;
+            clearInterval(gameInterval);
+            playSFX('gameOver'); // Play game over sound
+
+            // Calculate time survived
+            const timeSurvived = Math.floor((Date.now() - gameStartTime) / 1000); // in seconds
+
+            // Update high scores
+            if (currentMaxGameLength > maxLengthHighScore) {
+                maxLengthHighScore = currentMaxGameLength;
+                localStorage.setItem('maxLengthHighScore', maxLengthHighScore);
+            }
+            if (timeSurvived > maxTimeHighScore) {
+                maxTimeHighScore = timeSurvived;
+                localStorage.setItem('maxTimeHighScore', maxTimeHighScore);
+            }
+            updateHighScoreDisplays();
+
+            // Show game over message with a dismiss button to return to pre-game
+            const gameOverMessageHTML = `
+                <p>${message}</p>
+                <p>Your final length: ${score}</p>
+                <p>Time survived: ${timeSurvived}s</p>
+                <p class="mt-4 font-bold">Try again to beat your high scores!</p>
+                <button id="startButtonInBox" class="button mt-4">Play Again</button>
+                <button id="dismissButtonInBox" class="button mt-2">Dismiss</button>
+            `;
+            showMessage('Game Over!', gameOverMessageHTML);
+            pauseButton.style.display = 'none'; // Hide pause button on game over
+            restartButton.style.display = 'none'; // Hide restart button on game over
+        }
+
+        /**
+         * Updates the high score displays in the UI.
+         */
+        function updateHighScoreDisplays() {
+            maxLengthHighScoreDisplay.textContent = `Max Length: ${maxLengthHighScore}`;
+            maxTimeHighScoreDisplay.textContent = `Max Time: ${maxTimeHighScore}s`;
+        }
+
+        /**
+         * Loads high scores from local storage.
+         */
+        function loadHighScores() {
+            try {
+                const storedMaxLength = localStorage.getItem('maxLengthHighScore');
+                const storedMaxTime = localStorage.getItem('maxTimeHighScore');
+
+                if (storedMaxLength) {
+                    maxLengthHighScore = parseInt(storedMaxLength, 10);
+                }
+                if (storedMaxTime) {
+                    maxTimeHighScore = parseInt(storedMaxTime, 10);
+                }
+            } catch (e) {
+                console.warn("Local storage not available or access denied:", e);
+                // Gracefully handle cases where localStorage might be blocked or unavailable
+            }
+            updateHighScoreDisplays();
+        }
+
+        /**
+         * Starts the game.
+         */
+        function startGame() {
+            clearInterval(gameInterval);
+            initGame();
+            gameInterval = setInterval(update, gameSpeed);
+
+            // Get selected settings for display
+            const porosityLevelSelect = messageBoxContent.querySelector('#porosityLevel');
+            const metabolismLevelSelect = messageBoxContent.querySelector('#metabolismLevel');
+            const currentPorosityName = porosityLevelSelect ? porosityLevelSelect.options[porosityLevelSelect.selectedIndex].text : 'Medium';
+            const currentMetabolismName = metabolismLevelSelect ? metabolismLevelSelect.options[metabolismLevelSelect.selectedIndex].text : 'Medium';
+
+            // Display settings briefly
+            const settingsMessage = `Current Settings: Maze Porosity: <b>${currentPorosityName}</b>, Snake Metabolism: <b>${currentMetabolismName}</b>`;
+            const tempSettingsMessageBox = document.createElement('div');
+            tempSettingsMessageBox.className = 'message-box';
+            tempSettingsMessageBox.style.cssText = `
+                position: absolute;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: rgba(0, 0, 0, 0.7);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 10px;
+                font-size: 0.9em;
+                z-index: 1001;
+                opacity: 0;
+                transition: opacity 1s ease-out;
+            `;
+            tempSettingsMessageBox.innerHTML = settingsMessage;
+            document.body.appendChild(tempSettingsMessageBox);
+
+            // Fade in and out
+            setTimeout(() => {
+                tempSettingsMessageBox.style.opacity = '1';
+            }, 100); // Small delay to ensure it's rendered before transition
+
+            setTimeout(() => {
+                tempSettingsMessageBox.style.opacity = '0';
+                setTimeout(() => {
+                    tempSettingsMessageBox.remove();
+                }, 1000); // Remove after fade out
+            }, 3000); // Display for 3 seconds
+        }
+
+        /**
+         * Displays the initial welcome message with game settings.
+         */
+        function showWelcomeMessage() {
+            const welcomeMessageHTML = `
+                <p>Your goal is to grow your snake by eating <b>Grow Food (Square)</b>. But beware, your snake is always shrinking!</p>
+                <p>
+                    Use <b>Arrow Keys</b> or <b>Touch Controls</b> to move.
+                    You can also drag on the canvas to change your camera angle.
+                </p>
+                <p>
+                    Eat <b>Shrink Food (Triangle)</b> to shrink.
+                    Press <b>SPACEBAR</b> to summon an <b>External Nutrient Stimulus (Star)</b> for a quick growth boost!
+                </p>
+                <p class="font-bold text-red-600">
+                    Game Over if your length drops to 0 from eating Shrink Food (Triangle) or due to your snake's metabolism!
+                </p>
+                <div class="porosity-selector">
+                    <label for="porosityLevel">Maze Porosity:</label>
+                    <select id="porosityLevel">
+                        <option value="low">Low (Easy)</option>
+                        <option value="medium" selected>Medium (Normal)</option>
+                        <option value="high">High (Hard)</option>
+                    </select>
+                </div>
+                <div class="metabolism-selector">
+                    <label for="metabolismLevel">Snake Metabolism:</label>
+                    <select id="metabolismLevel">
+                        <option value="low">Low (Slow Shrink)</option>
+                        <option value="medium" selected>Medium (Normal Shrink)</option>
+                        <option value="high">High (Fast Shrink)</option>
+                    </select>
+                </div>
+                <p class="mt-4">Try to beat your <b>Max Length</b> and <b>Max Time</b> high scores!</p>
+                <button id="startButtonInBox" class="button mt-4">Start Game</button>
+            `;
+            showMessage('Welcome to Sponge Snake!', welcomeMessageHTML);
+        }
+
+
+        // --- Event Listeners ---
+
+        // Keyboard controls
+        document.addEventListener('keydown', e => {
+            if (gameOver || gamePaused) return; // Prevent input if game is over or paused
+            switch (e.key) {
+                case 'ArrowUp':
+                    if (currentDirection !== 'down') nextDirection = 'up';
+                    break;
+                case 'ArrowDown':
+                    if (currentDirection !== 'up') nextDirection = 'down';
+                    break;
+                case 'ArrowLeft':
+                    if (currentDirection !== 'right') nextDirection = 'left';
+                    break;
+                case 'ArrowRight':
+                    if (currentDirection !== 'left') nextDirection = 'right';
+                    break;
+                case ' ': // Spacebar for bonus food
+                    e.preventDefault();
+                    launchBonusFood();
+                    break;
+                case 'p': // P key for pause/resume
+                case 'P':
+                    togglePauseGame();
+                    break;
+            }
+        });
+
+        // Mobile controls
+        mobileControls.addEventListener('click', (e) => {
+            const target = e.target.closest('.control-button');
+            if (!target || gameOver || gamePaused) return;
+
+            const newDir = target.dataset.direction;
+            switch (newDir) {
+                case 'up':
+                    if (currentDirection !== 'down') nextDirection = 'up';
+                    break;
+                case 'down':
+                    if (currentDirection !== 'up') nextDirection = 'down';
+                    break;
+                case 'left':
+                    if (currentDirection !== 'right') nextDirection = 'left';
+                    break;
+                case 'right':
+                    if (currentDirection !== 'left') nextDirection = 'right';
+                    break;
+            }
+        });
+
+        // Pause button (always present in the main controls div)
+        pauseButton.addEventListener('click', togglePauseGame);
+
+        // Restart button
+        restartButton.addEventListener('click', startGame);
+
+        // Initial setup on window load
+        window.onload = function() {
+            loadHighScores();
+            showWelcomeMessage(); // Display the welcome message with settings and start button
+            // Initialize the maze and draw it once so it's visible behind the welcome screen
+            currentWallDensity = POROSITY_LEVELS.medium; // Use default for initial preview
+            generateMaze(currentWallDensity);
+            animate(); // Start the 2D animation loop to render the initial empty maze
+        };
+    </script>
+
+  <script src="./assets/js/marked.min.js"></script>
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js"></script>
+</body>
+</html>

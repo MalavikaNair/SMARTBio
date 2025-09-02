@@ -2,7 +2,6 @@
   "name": "smart-biomaterials-site",
   "private": true,
   "version": "1.0.0",
-  "description": "Static site with self-hosted assets (GitHub Pages + Actions)",
   "scripts": {
     "build:tailwind": "tailwindcss -i ./src/input.css -o ./assets/css/tailwind.css --minify",
     "vendor:copy": "node ./scripts/copy-vendor.js"
