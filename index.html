@@ -15,6 +15,13 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body class="antialiased" style="font-family: var(--font-sans-exo);">
+  <script>
+addEventListener('error', e => document.body.insertAdjacentHTML('afterbegin',
+  '<pre style="padding:8px;border:1px solid #ccc">JS error: ' + (e.message || e.error) + '</pre>'));
+addEventListener('unhandledrejection', e => document.body.insertAdjacentHTML('afterbegin',
+  '<pre style="padding:8px;border:1px solid #ccc">Promise rejection: ' +
+  (e.reason && (e.reason.stack || e.reason.message || e.reason)) + '</pre>'));
+</script>
   <div id="particles-js" aria-hidden="true"></div>
 
   <!-- (Keep all your header, sections, and footer content from original) -->
