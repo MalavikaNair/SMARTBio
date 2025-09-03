@@ -1,68 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART Biomaterials - University of Oxford</title>
-    <meta name="description" content="SMART Biomaterials Group at the University of Oxford - Engineering the future of medicine through intelligent materials that sense and respond to the body.">
-    <meta property="og:title" content="SMART Biomaterials - University of Oxford">
-    <meta property="og:description" content="Engineering the future of medicine through intelligent materials that sense and respond to the body.">
-    <meta property="og:type" content="website">
-    <link rel="stylesheet" href="./assets/css/tailwind.css">
-    <link rel="stylesheet" href="./assets/css/fonts.css">
-    <link rel="stylesheet" href="./style.css">
-    <script src="./assets/js/marked.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMART Biomaterials - University of Oxford</title>
+  <meta name="description" content="SMART Biomaterials Group at the University of Oxford - Engineering the future of medicine through intelligent materials that sense and respond to the body." />
+  <meta property="og:title" content="SMART Biomaterials - University of Oxford" />
+  <meta property="og:description" content="Engineering the future of medicine through intelligent materials that sense and respond to the body." />
+  <meta property="og:type" content="website" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./assets/css/tailwind.css" />
+  <link rel="stylesheet" href="./assets/css/fonts.css" />
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body class="antialiased" style="font-family: var(--font-sans-exo);">
-    <div id="particles-js" aria-hidden="true"></div>
-    <!-- (Keep all your header, sections, and footer content from original) -->
+  <div id="particles-js" aria-hidden="true"></div>
 
-    <!-- GDPR Transparency Banner -->
-    <div id="gdpr-consent-banner"
-         class="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 flex flex-col sm:flex-row items-center justify-between z-50 shadow-lg"
-         style="display: none;"
-         role="dialog"
-         aria-live="polite"
-         aria-label="Cookie and Privacy Notice">
-        <p class="text-sm mb-2 sm:mb-0">
-            This website itself does not use cookies or collect personal data.
-            However, some embedded third-party services (e.g. YouTube videos or social media links) may set cookies or collect limited data.
-            For details, see our <a href="#privacy" class="text-emerald-400 underline font-semibold">Privacy Notice</a>.
-        </p>
-        <button id="accept-cookies-btn"
-                class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">
-            OK
-        </button>
-    </div>
+  <!-- (Keep all your header, sections, and footer content from original) -->
 
-    <!-- Local vendor JS -->
-    <script src="./assets/js/three.min.js"></script>
-    <script src="./assets/js/OrbitControls.js"></script>
-    <script src="./assets/js/particles.min.js" defer></script>
-    <script src="./researchHub.js" defer></script>
-    <script src="./main.js" defer></script>
+  <!-- GDPR Transparency Banner -->
+  <div id="gdpr-consent-banner"
+       class="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 flex flex-col sm:flex-row items-center justify-between z-50 shadow-lg"
+       style="display: none;"
+       role="dialog"
+       aria-live="polite"
+       aria-label="Cookie and Privacy Notice">
+    <p class="text-sm mb-2 sm:mb-0">
+      This website itself does not use cookies or collect personal data.
+      However, some embedded third-party services (e.g. YouTube videos or social media links) may set cookies or collect limited data.
+      For details, see our <a href="#privacy" class="text-emerald-400 underline font-semibold">Privacy Notice</a>.
+    </p>
+    <button id="accept-cookies-btn"
+            class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">
+      OK
+    </button>
+  </div>
 
-    <!-- GDPR Banner Logic -->
-    <script>
+  <!-- === JS === -->
+
+  <!-- Three.js + OrbitControls (ES modules) -->
+  <!-- This block exposes THREE and OrbitControls to window for your existing scripts -->
+  <script type="module">
+    import * as THREE from './assets/js/three.module.js';
+    import { OrbitControls } from './assets/js/OrbitControls.js';
+
+    // Bridge to globals expected by your existing code
+    window.THREE = THREE;
+    window.OrbitControls = OrbitControls;
+  </script>
+
+  <!-- Vendor / app scripts (deferred) -->
+  <script defer src="./assets/js/marked.min.js"></script>
+  <script defer src="./assets/js/particles.min.js"></script>
+  <script defer src="./researchHub.js"></script>
+  <script defer src="./main.js"></script>
+
+  <!-- GDPR Banner Logic -->
+  <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const banner = document.getElementById("gdpr-consent-banner");
-        const acceptBtn = document.getElementById("accept-cookies-btn");
-        const KEY = "gdprBannerDismissedAt";
-        const DAYS_TO_RESHOW = 182;
-        const dismissedAt = localStorage.getItem(KEY);
-        const nowMs = Date.now();
-        let show = true;
-        if (dismissedAt) {
-            const last = new Date(dismissedAt).getTime();
-            const msWindow = DAYS_TO_RESHOW * 24 * 60 * 60 * 1000;
-            show = (nowMs - last) >= msWindow;
-        }
-        if (show) banner.style.display = "flex";
-        acceptBtn.addEventListener("click", () => {
-            banner.style.display = "none";
-            localStorage.setItem(KEY, new Date().toISOString());
-        });
+      const banner = document.getElementById("gdpr-consent-banner");
+      const acceptBtn = document.getElementById("accept-cookies-btn");
+      const KEY = "gdprBannerDismissedAt";
+      const DAYS_TO_RESHOW = 182;
+      const dismissedAt = localStorage.getItem(KEY);
+      const nowMs = Date.now();
+      let show = true;
+      if (dismissedAt) {
+        const last = new Date(dismissedAt).getTime();
+        const msWindow = DAYS_TO_RESHOW * 24 * 60 * 60 * 1000;
+        show = (nowMs - last) >= msWindow;
+      }
+      if (show) banner.style.display = "flex";
+      acceptBtn.addEventListener("click", () => {
+        banner.style.display = "none";
+        localStorage.setItem(KEY, new Date().toISOString());
+      });
     });
-    </script>
+  </script>
 </body>
 </html>
