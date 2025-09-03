@@ -85,5 +85,43 @@ addEventListener('unhandledrejection', e => document.body.insertAdjacentHTML('af
       });
     });
   </script>
+  <script>
+(function() {
+  function log(msg) {
+    document.body.insertAdjacentHTML(
+      'afterbegin',
+      '<pre style="background:#fee;border:1px solid #c00;padding:8px;margin:0;font-size:14px;white-space:pre-wrap;">'
+      + msg + '</pre>'
+    );
+  }
+
+  // Catch JS runtime errors
+  window.addEventListener('error', e => {
+    log('JS error: ' + (e.message || e.error) +
+        (e.filename ? '\nFile: ' + e.filename + ':' + e.lineno : ''));
+  });
+
+  // Catch unhandled promise rejections
+  window.addEventListener('unhandledrejection', e => {
+    log('Promise rejection: ' + (e.reason && (e.reason.stack || e.reason.message || e.reason)));
+  });
+
+  // Catch failed resource/network requests
+  const orig = console.error;
+  console.error = function() {
+    log('Console.error: ' + Array.from(arguments).join(' '));
+    return orig.apply(console, arguments);
+  };
+
+  // For fetch / XHR errors
+  const origFetch = window.fetch;
+  window.fetch = function() {
+    return origFetch.apply(this, arguments).catch(err => {
+      log('Fetch failed: ' + err);
+      throw err;
+    });
+  };
+})();
+</script>
 </body>
 </html>
