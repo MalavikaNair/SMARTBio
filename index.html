@@ -2,128 +2,64 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SMART Biomaterials - University of Oxford</title>
-  <meta name="description" content="SMART Biomaterials Group at the University of Oxford - Engineering the future of medicine through intelligent materials that sense and respond to the body." />
-  <meta property="og:title" content="SMART Biomaterials - University of Oxford" />
-  <meta property="og:description" content="Engineering the future of medicine through intelligent materials that sense and respond to the body." />
-  <meta property="og:type" content="website" />
+  <!-- SEO & Open Graph Meta Tags -->
+  <meta name="description" content="SMART Biomaterials Group at the University of Oxford - Engineering the future of medicine through intelligent materials that sense and respond to the body. Discover our research, team, news, and outreach.">
+  <meta property="og:title" content="SMART Biomaterials - University of Oxford">
+  <meta property="og:description" content="Engineering the future of medicine through intelligent materials that sense and respond to the body. Discover our research, team, news, and outreach.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta property="og:image:alt" content="SMART Biomaterials">
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="./assets/css/tailwind.css" />
-  <link rel="stylesheet" href="./assets/css/fonts.css" />
-  <link rel="stylesheet" href="./style.css" />
+  <!-- Local Tailwind build -->
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
+  <!-- Local Fonts -->
+  <link rel="stylesheet" href="./assets/css/fonts.css">
+  <!-- Your custom stylesheet -->
+  <link rel="stylesheet" href="./assets/css/style.css">
+
+  <!-- Local Marked.js -->
+  <script src="./assets/js/marked.min.js"></script>
 </head>
-<body class="antialiased" style="font-family: var(--font-sans-exo);">
-  <script>
-addEventListener('error', e => document.body.insertAdjacentHTML('afterbegin',
-  '<pre style="padding:8px;border:1px solid #ccc">JS error: ' + (e.message || e.error) + '</pre>'));
-addEventListener('unhandledrejection', e => document.body.insertAdjacentHTML('afterbegin',
-  '<pre style="padding:8px;border:1px solid #ccc">Promise rejection: ' +
-  (e.reason && (e.reason.stack || e.reason.message || e.reason)) + '</pre>'));
-</script>
+<body class="antialiased">
+  <!-- Particles.js background for visual effect -->
   <div id="particles-js" aria-hidden="true"></div>
 
-  <!-- (Keep all your header, sections, and footer content from original) -->
+  <!-- Header and Navigation -->
+  <header class="fixed top-0 left-0 right-0 z-50 header-glass" role="banner">
+    <!-- … your existing header/nav code … -->
+  </header>
 
-  <!-- GDPR Transparency Banner -->
-  <div id="gdpr-consent-banner"
-       class="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 flex flex-col sm:flex-row items-center justify-between z-50 shadow-lg"
-       style="display: none;"
-       role="dialog"
-       aria-live="polite"
-       aria-label="Cookie and Privacy Notice">
-    <p class="text-sm mb-2 sm:mb-0">
-      This website itself does not use cookies or collect personal data.
-      However, some embedded third-party services (e.g. YouTube videos or social media links) may set cookies or collect limited data.
-      For details, see our <a href="#privacy" class="text-emerald-400 underline font-semibold">Privacy Notice</a>.
-    </p>
-    <button id="accept-cookies-btn"
-            class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">
-      OK
-    </button>
+  <main role="main">
+    <!-- … all your existing sections (home, research, team, news, outreach, contact, privacy) … -->
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-6 border-t border-emerald-500/20">
+    <div class="container mx-auto px-6 text-center text-slate-500">
+      <p>© <span id="year"></span> SMART Biomaterials Group. All Rights Reserved.</p>
+      <p>University of Oxford</p>
+      <p class="text-xs text-slate-600 mt-2">This website was created with the aid of Google Gemini Flash 2.5</p>
+    </div>
+  </footer>
+
+  <!-- Scroll to Top Button -->
+  <button id="scroll-to-top-btn" aria-label="Scroll to top of page">↑</button>
+
+  <!-- Modals Container -->
+  <div id="modal-container">
+    <!-- … your existing modals … -->
   </div>
 
-  <!-- === JS === -->
+  <!-- Local vendor JS -->
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js" defer></script>
 
-  <!-- Three.js + OrbitControls (ES modules) -->
-  <!-- This block exposes THREE and OrbitControls to window for your existing scripts -->
-  
-  
-<script type="module">
-  import * as THREE from './assets/js/three.module.js';
-  import { OrbitControls } from './assets/js/OrbitControls.js';
-  window.THREE = THREE;
-  window.OrbitControls = OrbitControls;
-</script>
-
-
-
-  <!-- Vendor / app scripts (deferred) -->
-  <script defer src="./assets/js/marked.min.js"></script>
-  <script defer src="./assets/js/particles.min.js"></script>
-  <script defer src="./researchHub.js"></script>
-  <script defer src="./main.js"></script>
-
-  <!-- GDPR Banner Logic -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const banner = document.getElementById("gdpr-consent-banner");
-      const acceptBtn = document.getElementById("accept-cookies-btn");
-      const KEY = "gdprBannerDismissedAt";
-      const DAYS_TO_RESHOW = 182;
-      const dismissedAt = localStorage.getItem(KEY);
-      const nowMs = Date.now();
-      let show = true;
-      if (dismissedAt) {
-        const last = new Date(dismissedAt).getTime();
-        const msWindow = DAYS_TO_RESHOW * 24 * 60 * 60 * 1000;
-        show = (nowMs - last) >= msWindow;
-      }
-      if (show) banner.style.display = "flex";
-      acceptBtn.addEventListener("click", () => {
-        banner.style.display = "none";
-        localStorage.setItem(KEY, new Date().toISOString());
-      });
-    });
-  </script>
-  <script>
-(function() {
-  function log(msg) {
-    document.body.insertAdjacentHTML(
-      'afterbegin',
-      '<pre style="background:#fee;border:1px solid #c00;padding:8px;margin:0;font-size:14px;white-space:pre-wrap;">'
-      + msg + '</pre>'
-    );
-  }
-
-  // Catch JS runtime errors
-  window.addEventListener('error', e => {
-    log('JS error: ' + (e.message || e.error) +
-        (e.filename ? '\nFile: ' + e.filename + ':' + e.lineno : ''));
-  });
-
-  // Catch unhandled promise rejections
-  window.addEventListener('unhandledrejection', e => {
-    log('Promise rejection: ' + (e.reason && (e.reason.stack || e.reason.message || e.reason)));
-  });
-
-  // Catch failed resource/network requests
-  const orig = console.error;
-  console.error = function() {
-    log('Console.error: ' + Array.from(arguments).join(' '));
-    return orig.apply(console, arguments);
-  };
-
-  // For fetch / XHR errors
-  const origFetch = window.fetch;
-  window.fetch = function() {
-    return origFetch.apply(this, arguments).catch(err => {
-      log('Fetch failed: ' + err);
-      throw err;
-    });
-  };
-})();
-</script>
+  <!-- Your app scripts -->
+  <script src="./researchHub.js" defer></script>
+  <script src="./main.js" defer></script>
 </body>
 </html>
