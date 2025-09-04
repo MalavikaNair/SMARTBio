@@ -1,32 +1,21 @@
 name: build-assets
-
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 permissions:
-  contents: write    # keep ability to commit built files back to repo (as before)
-  pages: write       # needed for GitHub Pages deploy
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  contents: write   # allow the workflow to commit built files back to the repo
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # === Your original steps ===
       - name: Install deps
         run: npm ci || npm i
 
@@ -36,51 +25,10 @@ jobs:
       - name: Copy vendor JS locally
         run: npm run vendor:copy
 
-      # === Add three.js modules locally (kept in repo AND in dist) ===
-      - name: Ensure three is available
-        run: |
-          # Use npm to fetch the exact three release we want to serve locally
-          npm i three@0.150.1 --no-save
-
-      - name: Copy three.module.js and OrbitControls.js to assets/js
-        run: |
-          mkdir -p assets/js
-          cp node_modules/three/build/three.module.js assets/js/three.module.js
-          cp node_modules/three/examples/jsm/controls/OrbitControls.js assets/js/OrbitControls.js
-
-      - name: Patch OrbitControls import to relative path
-        run: |
-          # Rewrite: import ... from 'three'  -->  import ... from './three.module.js'
-          sed -i "s/from 'three'/from '.\\/three.module.js'/" assets/js/OrbitControls.js
-
-      # === Commit artifacts back to repo (preserves your prior behavior) ===
       - name: Commit build artifacts
         run: |
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
-          git add assets/css/tailwind.css assets/js/three.module.js assets/js/OrbitControls.js assets/js/*.js || true
-          git commit -m "Build assets via Actions (tailwind/vendor/three)" || echo "No changes to commit"
-          git push || true
-
-      # === Prepare dist for Pages deployment ===
-      - name: Prepare dist
-        run: |
-          rm -rf dist
-          mkdir -p dist
-          rsync -av             --exclude '.git'             --exclude '.github'             --exclude 'node_modules'             ./ dist/
-
-      - name: Upload artifact (dist)
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          git add assets/css/tailwind.css assets/js/*.js || true
+          git commit -m "Build assets via Actions" || echo "No changes to commit"
+          git push
