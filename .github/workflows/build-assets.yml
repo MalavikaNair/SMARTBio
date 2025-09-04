@@ -48,6 +48,11 @@ jobs:
           cp node_modules/three/build/three.module.js assets/js/three.module.js
           cp node_modules/three/examples/jsm/controls/OrbitControls.js assets/js/OrbitControls.js
 
+      - name: Patch OrbitControls import to relative path
+        run: |
+          # Rewrite: import ... from 'three'  -->  import ... from './three.module.js'
+          sed -i "s/from 'three'/from '.\\/three.module.js'/" assets/js/OrbitControls.js
+
       # === Commit artifacts back to repo (preserves your prior behavior) ===
       - name: Commit build artifacts
         run: |
