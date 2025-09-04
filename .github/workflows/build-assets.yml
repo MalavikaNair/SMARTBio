@@ -24,6 +24,44 @@ jobs:
 
       - name: Copy vendor JS locally
         run: npm run vendor:copy
+        
+      - name: Create SVG sprite (icons.svg)
+        run: |
+          mkdir -p assets/img
+          cat > assets/img/icons.svg <<'SVG'
+          <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+            <symbol id="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </symbol>
+            <symbol id="menu" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 6h16M4 12h16m-7 6h7"/>
+            </symbol>
+          </svg>
+          SVG
+
+      - name: Commit icon sprite
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/img/icons.svg || true
+          git commit -m "Add icons sprite" || echo "No changes to commit"
+          git push
+
+      - name: Commit icon sprite
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/img/icons.svg || true
+          git commit -m "Add icons sprite" || echo "No changes to commit"
+          git push
+      - name: Commit icon sprite
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/img/icons.svg || true
+          git commit -m "Add icons sprite" || echo "No changes to commit"
+          git push
 
       - name: Commit build artifacts
         run: |
