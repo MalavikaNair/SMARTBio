@@ -27,31 +27,321 @@
   <!-- Particles.js background for visual effect -->
   <div id="particles-js" aria-hidden="true"></div>
 
-  <!-- Header and Navigation -->
-  <header class="fixed top-0 left-0 right-0 z-50 header-glass" role="banner">
-    <!-- … your existing header/nav code … -->
-  </header>
+<!-- Header and Navigation -->
+    <header class="fixed top-0 left-0 right-0 z-50 header-glass" role="banner">
+        <div class="container mx-auto px-6 py-4">
+            <nav class="flex items-center justify-between" role="navigation" aria-label="Main navigation">
+                <div class="text-2xl font-bold tracking-wider text-light-text">
+                    <a href="#home" class="nav-link-header"><span class="text-primary">SMART</span> BIOMATERIALS</a>
+                </div>
+                <!-- Desktop Navigation -->
+                <div id="main-nav" class="hidden md:flex items-center space-x-8 text-light-text">
+                    <a href="#home" class="nav-link active" aria-current="page">Home</a>
+                    <a href="#research" class="nav-link">Research</a>
+                    <a href="#team" class="nav-link">Team</a>
+                    <a href="#news" class="nav-link">News</a>
+                    <a href="#outreach" class="nav-link">Dissemination</a>
+                    <a href="#contact" class="nav-link">Contact</a>
+                    <a href="#privacy" class="nav-link">Privacy</a>
+                </div>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="md:hidden text-2xl text-light-text" aria-label="Open mobile menu" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                </button>
+            </nav>
+        </div>
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 header-glass border-t border-emerald-500/20" role="navigation" aria-label="Mobile navigation">
+            <a href="#home" class="nav-link block py-2 text-light-text">Home</a>
+            <a href="#research" class="nav-link block py-2 text-light-text">Research</a>
+            <a href="#team" class="nav-link block py-2 text-light-text">Team</a>
+            <a href="#news" class="nav-link block py-2 text-light-text">News</a>
+            <a href="#outreach" class="nav-link block py-2 text-light-text">Dissemination</a>
+            <a href="#contact" class="nav-link block py-2 text-light-text">Contact</a>
+            <a href="#privacy" class="nav-link block py-2 text-light-text">Privacy</a>
+        </div>
+    </header>
 
-  <main role="main">
-    <!-- … all your existing sections (home, research, team, news, outreach, contact, privacy) … -->
-  </main>
+    <main role="main">
+        <!-- Home Page Section -->
+        <section id="home-page" class="page-section active">
+            <div class="hero-section flex items-center justify-center text-center">
+                <div class="z-10 px-4">
+                    <h1 class="text-5xl md:text-7xl font-bold mb-4 hero-title tracking-wide">SMART BIOMATERIALS</h1>
+                    <p class="text-xl md:text-2xl text-slate-200 max-w-4xl mx-auto">Engineering the future of medicine through intelligent materials that sense and respond to the body.</p>
+                </div>
+            </div>
 
-  <!-- Footer -->
-  <footer class="py-6 border-t border-emerald-500/20">
-    <div class="container mx-auto px-6 text-center text-slate-500">
-      <p>© <span id="year"></span> SMART Biomaterials Group. All Rights Reserved.</p>
-      <p>University of Oxford</p>
-      <p class="text-xs text-slate-600 mt-2">This website was created with the aid of Google Gemini Flash 2.5</p>
+            <!-- Interactive Research Hub Section -->
+            <div id="home-research-hub-section" class="py-28 bg-dark-bg/80 backdrop-blur-sm" aria-busy="true">
+                <div class="container mx-auto px-6 fade-in-section">
+                    <h2 class="text-4xl font-bold text-center mb-12 section-title">Interactive Research Hub</h2>
+                    <p class="text-center text-medium-text max-w-3xl mx-auto mb-12">Our research is built on five interconnected themes. Click on a theme node in the 3D model to explore related projects, publications, and team members. Click and drag to rotate the network.</p>
+                    <div id="research-hub-container" class="grid lg:grid-cols-2 gap-8 items-center">
+                        <div id="research-canvas-container" class="card p-2 relative">
+                            <!-- Added aria-label for accessibility to describe the interactive canvas -->
+                            <canvas id="research-canvas" aria-label="Interactive 3D research theme visualization. Click and drag to rotate, click nodes to explore themes."></canvas>
+                        </div>
+                        <div id="dynamic-content-panel" class="card p-6">
+                            <h3 id="dynamic-content-title" class="text-2xl font-bold text-primary mb-4">Select a theme to begin...</h3>
+                            <div id="dynamic-content-grid" class="space-y-4">
+                                <!-- Dynamic content will be loaded here by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Latest Updates Carousel Section -->
+            <div class="bg-dark-bg/80 backdrop-blur-sm py-12">
+                <div class="container mx-auto px-6">
+                     <h2 class="text-3xl font-bold text-center mb-8 section-title">Latest Updates</h2>
+                     <div class="carousel-container max-w-4xl mx-auto card">
+                         <!-- Carousel Navigation Buttons -->
+                         <button id="carousel-prev" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-dark-bg/50 hover:bg-dark-bg text-primary-dark hover:text-primary transition-colors duration-300" aria-label="Previous slide">
+                            ❮
+                         </button>
+                         <!-- Carousel Track for News Items -->
+                         <div id="news-carousel-track" class="carousel-track" role="region" aria-roledescription="carousel" aria-live="polite">
+                             <div class="loader" aria-label="Loading latest updates..."></div>
+                             <!-- News items will be dynamically loaded here by JavaScript -->
+                         </div>
+                         <button id="carousel-next" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-dark-bg/50 hover:bg-dark-bg text-primary-dark hover:text-primary transition-colors duration-300" aria-label="Next slide">
+                            ❯
+                         </button>
+                         <!-- Carousel Dots for Slide Indicators -->
+                         <div id="carousel-dots" class="carousel-dots" role="tablist" aria-label="News carousel slide indicators"></div>
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Research Page Section -->
+        <section id="research-page" class="page-section py-28" aria-busy="true">
+            <div class="container mx-auto px-6 fade-in-section">
+                <h2 class="text-4xl font-bold text-center mb-12 section-title">Our Research</h2>
+                <p class="text-center text-medium-text max-w-3xl mx-auto mb-12">Explore our cutting-edge research projects and publications below.</p>
+                <div id="research-content-grid" class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" aria-live="polite">
+                    <div class="loader" aria-label="Loading research items..."></div>
+                    <!-- Research items will be dynamically loaded here by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Page Section -->
+        <section id="team-page" class="page-section py-28" aria-busy="true">
+             <div class="container mx-auto px-6 fade-in-section">
+                <h2 class="text-4xl font-bold text-center mb-12 section-title">Meet the Team</h2>
+                <div id="team-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" aria-live="polite">
+                    <div class="loader" aria-label="Loading team members..."></div>
+                    <!-- Team members will be dynamically loaded here by JavaScript -->
+                </div>
+                <h2 class="text-3xl font-bold text-center mt-20 mb-12 section-title">Our Alumni Network</h2>
+                <div id="alumni-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" aria-live="polite">
+                    <div class="loader" aria-label="Loading alumni network..."></div>
+                    <!-- Alumni will be dynamically loaded here by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- News Page Section -->
+        <section id="news-page" class="page-section py-28" aria-busy="true">
+            <div class="container mx-auto px-6 fade-in-section">
+                <h2 class="text-4xl font-bold text-center mb-12 section-title">Latest News</h2>
+                <div id="news-list" class="space-y-8 max-w-4xl mx-auto" aria-live="polite">
+                    <div class="loader" aria-label="Loading news list..."></div>
+                    <!-- News articles will be dynamically loaded here by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Outreach Page Section -->
+        <section id="outreach-page" class="page-section py-28" aria-busy="true">
+            <div class="container mx-auto px-6 fade-in-section">
+                <h2 class="text-4xl font-bold text-center mb-12 section-title">Our Outreach</h2>
+
+                <!-- Academic Presentations Section -->
+                <div class="collapsible-section mb-8">
+                    <button class="collapsible-header" aria-expanded="false" aria-controls="academic-presentations-content">
+                        <h3 class="text-3xl font-bold text-light-text section-title">Academic Presentations</h3>
+                        <svg class="chevron w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="academic-presentations-content" class="collapsible-content">
+                        <div id="academic-presentations-grid" class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" aria-live="polite">
+                            <div class="loader" aria-label="Loading academic presentations..."></div>
+                            <!-- Academic presentations will be dynamically loaded here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outreach Talks Section -->
+                <div class="collapsible-section mb-8">
+                    <button class="collapsible-header" aria-expanded="false" aria-controls="outreach-talks-content">
+                        <h3 class="text-3xl font-bold text-light-text section-title">Outreach Talks</h3>
+                        <svg class="chevron w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="outreach-talks-content" class="collapsible-content">
+                        <div id="outreach-talks-grid" class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" aria-live="polite">
+                            <div class="loader" aria-label="Loading outreach talks..."></div>
+                            <!-- Outreach talks will be dynamically loaded here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outreach News Section -->
+                <div class="collapsible-section mb-8">
+                    <button class="collapsible-header" aria-expanded="false" aria-controls="outreach-news-content">
+                        <h3 class="text-3xl font-bold text-light-text section-title">Outreach News</h3>
+                        <svg class="chevron w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="outreach-news-content" class="collapsible-content">
+                        <div id="outreach-news-list" class="space-y-8 max-w-4xl mx-auto" aria-live="polite">
+                            <div class="loader" aria-label="Loading outreach news..."></div>
+                            <!-- Outreach news will be dynamically loaded here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Our Games Section -->
+                <div class="collapsible-section mb-8">
+                    <button class="collapsible-header" aria-expanded="false" aria-controls="games-content">
+                        <h3 class="text-3xl font-bold text-light-text section-title">Gamifying what we do!</h3>
+                        <svg class="chevron w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="games-content" class="collapsible-content">
+                        <p class="text-center text-medium-text max-w-3xl mx-auto mb-8">Explore our interactive games, talks, and news designed to educate and entertain!</p>
+                        <p class="text-center text-medium-text max-w-3xl mx-auto mb-8">Filter by research theme:</p>
+                        <div class="flex flex-wrap justify-center gap-2 mb-12" id="game-filters">
+                            <button class="filter-btn bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300 active" data-filter="all">All Games</button>
+                            <!-- Game filter buttons will be dynamically loaded here by JavaScript -->
+                        </div>
+                        <div id="games-grid" class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" aria-live="polite">
+                            <div class="loader" aria-label="Loading games..."></div>
+                            <!-- Games will be dynamically loaded here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Page Section -->
+        <section id="contact-page" class="page-section py-28">
+            <div class="container mx-auto px-6 text-center fade-in-section">
+                <h2 class="text-4xl font-bold text-center mb-12 section-title">Get In Touch</h2>
+                <p class="text-lg text-slate-200 mb-4">We are always looking for passionate students and collaborators.</p>
+                <p class="text-lg text-slate-200 mb-8">Interested in joining us or have a question? Reach out!</p>
+                <a href="mailto:contact@smartbiomaterials.ox.ac.uk" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/40">Email Us</a>
+                <address class="mt-12 text-medium-text not-italic">
+                    <p>SMART Biomaterials Group</p>
+                    <p>Institute of Biomedical Engineering - Marcela Botnar Wing</p>
+                    <p>Botnar Research Centre, University of Oxford</p>
+                    <p>Windmill Road, Headington, Oxford, OX3 7LD, UK</p>
+                </address>
+            </div>
+        </section>
+
+        <!-- Privacy Page Section -->
+        <section id="privacy-page" class="page-section py-28">
+            <div class="container mx-auto px-6 fade-in-section">
+                <h2 class="text-4xl font-bold text-center mb-12 section-title">Privacy Notice</h2>
+                <div id="privacy-notice-content" class="text-medium-text text-left max-w-4xl mx-auto space-y-4">
+                    <p>Loading privacy notice...</p>
+                    <!-- Privacy notice content will be dynamically loaded here by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 border-t border-emerald-500/20">
+        <div class="container mx-auto px-6 text-center text-slate-500">
+            <p>© <span id="year"></span> SMART Biomaterials Group. All Rights Reserved.</p>
+            <p>University of Oxford</p>
+            <p class="text-xs text-slate-600 mt-2">This website was created with the aid of Google Gemini Flash 2.5</p>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <button id="scroll-to-top-btn" aria-label="Scroll to top of page">↑</button>
+
+    <!-- Modals Container -->
+    <div id="modal-container">
+        <!-- Research Description Modal (Content will be dynamically updated) -->
+        <div id="research-description-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="research-modal-title" aria-describedby="research-modal-description">
+            <div class="modal-content flex flex-col md:flex-row gap-8 items-center md:items-start">
+                <button class="modal-close" aria-label="Close research details modal">×</button>
+                <div id="research-modal-media-container" class="w-full md:w-1/2 flex-shrink-0">
+                    <div id="research-modal-media">
+                        <!-- Media (image/video) will be dynamically loaded here -->
+                    </div>
+                    <p id="research-modal-caption" class="text-sm text-medium-text mt-2 text-center"></p>
+                    <p id="research-modal-credit" class="text-xs text-slate-500 mt-1 text-center"></p>
+                </div>
+                <div id="research-modal-content-text" class="w-full md:w-1/2">
+                    <h2 id="research-modal-title" class="text-3xl font-bold text-light-text mb-4"></h2>
+                    <p id="research-modal-description" class="text-medium-text mb-4"></p>
+                    <div id="research-modal-team-members" class="mt-4 text-sm text-medium-text"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Description Modal (Content will be dynamically updated) -->
+        <div id="news-description-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="news-modal-title" aria-describedby="news-modal-description">
+            <div class="modal-content flex flex-col md:flex-row gap-8 items-center md:items-start">
+                <button class="modal-close" aria-label="Close news details modal">×</button>
+                <div id="news-modal-media-container" class="w-full md:w-1/2 flex-shrink-0">
+                    <img id="news-modal-image" src="" alt="News Image" class="w-full h-auto rounded-md object-cover border border-primary-dark" loading="lazy">
+                </div>
+                <div id="news-modal-content-text" class="w-full md:w-1/2">
+                    <h2 id="news-modal-title" class="text-3xl font-bold text-light-text mb-4"></h2>
+                    <p id="news-modal-date" class="text-medium-text text-sm mb-4"></p>
+                    <p id="news-modal-description" class="text-medium-text mb-4"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outreach Talk Description Modal (Content will be dynamically updated) -->
+        <div id="outreach-talk-description-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="outreach-talk-modal-title" aria-describedby="outreach-talk-modal-description">
+            <div class="modal-content flex flex-col md:flex-row gap-8 items-center md:items-start">
+                <button class="modal-close" aria-label="Close outreach talk details modal">×</button>
+                <div id="outreach-talk-modal-media-container" class="w-full md:w-1/2 flex-shrink-0">
+                    <div id="outreach-talk-modal-media"></div>
+                </div>
+                <div id="outreach-talk-modal-content-text" class="w-full md:w-1/2">
+                    <h2 id="outreach-talk-modal-title" class="text-3xl font-bold text-light-text mb-4"></h2>
+                    <p id="outreach-talk-modal-date" class="text-medium-text text-sm mb-2"></p>
+                    <p id="outreach-talk-modal-description" class="text-medium-text mb-4"></p>
+                    <div id="outreach-talk-modal-speakers" class="mt-4 text-sm text-medium-text"></div>
+                    <div id="outreach-talk-modal-link" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Presentation Description Modal (Content will be dynamically updated) -->
+        <div id="academic-presentation-description-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="academic-presentation-modal-title" aria-describedby="academic-presentation-modal-description">
+            <div class="modal-content flex flex-col md:flex-row gap-8 items-center md:items-start">
+                <button class="modal-close" aria-label="Close academic presentation details modal">×</button>
+                <div id="academic-presentation-modal-media-container" class="w-full md:w-1/2 flex-shrink-0">
+                    <div id="academic-presentation-modal-media"></div>
+                </div>
+                <div id="academic-presentation-modal-content-text" class="w-full md:w-1/2">
+                    <h2 id="academic-presentation-modal-title" class="text-3xl font-bold text-light-text mb-4"></h2>
+                    <p id="academic-presentation-modal-date" class="text-medium-text text-sm mb-2"></p>
+                    <p id="academic-presentation-modal-description" class="text-medium-text mb-4"></p>
+                    <div id="academic-presentation-modal-speakers" class="mt-4 text-sm text-medium-text"></div>
+                    <div id="academic-presentation-modal-link" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
     </div>
-  </footer>
 
-  <!-- Scroll to Top Button -->
-  <button id="scroll-to-top-btn" aria-label="Scroll to top of page">↑</button>
+    <!-- GDPR Consent Banner -->
+    <div id="gdpr-consent-banner" class="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 flex flex-col sm:flex-row items-center justify-between z-50 shadow-lg" style="display: none;" role="dialog" aria-live="polite" aria-label="Cookie Consent Banner">
+        <p class="text-sm mb-2 sm:mb-0">This website itself does not use cookies or collect personal data.
+      However, some embedded third-party services (e.g. YouTube videos or social media links) may set cookies or collect limited data.
+      For details, see our <a href="#privacy" class="text-emerald-400 underline font-semibold">Privacy Notice</a></p>
+        <button id="accept-cookies-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">Accept Cookies</button>
+    </div>
 
-  <!-- Modals Container -->
-  <div id="modal-container">
-    <!-- … your existing modals … -->
-  </div>
+
 
   <!-- Local vendor JS -->
   <script src="./assets/js/three.min.js"></script>
