@@ -15,6 +15,13 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body class="antialiased" style="font-family: var(--font-sans-exo);">
+  <script>
+addEventListener('error', e => document.body.insertAdjacentHTML('afterbegin',
+  '<pre style="padding:8px;border:1px solid #ccc">JS error: ' + (e.message || e.error) + '</pre>'));
+addEventListener('unhandledrejection', e => document.body.insertAdjacentHTML('afterbegin',
+  '<pre style="padding:8px;border:1px solid #ccc">Promise rejection: ' +
+  (e.reason && (e.reason.stack || e.reason.message || e.reason)) + '</pre>'));
+</script>
   <div id="particles-js" aria-hidden="true"></div>
 
   <!-- (Keep all your header, sections, and footer content from original) -->
@@ -39,19 +46,12 @@
 
   <!-- === JS === -->
 
-  <!-- Import map so OrbitControls (module) can resolve its bare 'three' import -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "./assets/js/three.module.js"
-    }
-  }
-  </script>
-
-  <!-- ES-module bridge: import locally, then expose to window for your existing scripts -->
+  <!-- Three.js + OrbitControls (ES modules) -->
+  <!-- This block exposes THREE and OrbitControls to window for your existing scripts -->
   <script type="module">
-    import * as THREE from 'three';
+    import * as THREE from './assets/js/three.module.js';
     import { OrbitControls } from './assets/js/OrbitControls.js';
+
     // Bridge to globals expected by your existing code
     window.THREE = THREE;
     window.OrbitControls = OrbitControls;
@@ -85,5 +85,43 @@
       });
     });
   </script>
+  <script>
+(function() {
+  function log(msg) {
+    document.body.insertAdjacentHTML(
+      'afterbegin',
+      '<pre style="background:#fee;border:1px solid #c00;padding:8px;margin:0;font-size:14px;white-space:pre-wrap;">'
+      + msg + '</pre>'
+    );
+  }
+
+  // Catch JS runtime errors
+  window.addEventListener('error', e => {
+    log('JS error: ' + (e.message || e.error) +
+        (e.filename ? '\nFile: ' + e.filename + ':' + e.lineno : ''));
+  });
+
+  // Catch unhandled promise rejections
+  window.addEventListener('unhandledrejection', e => {
+    log('Promise rejection: ' + (e.reason && (e.reason.stack || e.reason.message || e.reason)));
+  });
+
+  // Catch failed resource/network requests
+  const orig = console.error;
+  console.error = function() {
+    log('Console.error: ' + Array.from(arguments).join(' '));
+    return orig.apply(console, arguments);
+  };
+
+  // For fetch / XHR errors
+  const origFetch = window.fetch;
+  window.fetch = function() {
+    return origFetch.apply(this, arguments).catch(err => {
+      log('Fetch failed: ' + err);
+      throw err;
+    });
+  };
+})();
+</script>
 </body>
 </html>
