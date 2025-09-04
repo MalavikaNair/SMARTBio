@@ -48,14 +48,14 @@ addEventListener('unhandledrejection', e => document.body.insertAdjacentHTML('af
 
   <!-- Three.js + OrbitControls (ES modules) -->
   <!-- This block exposes THREE and OrbitControls to window for your existing scripts -->
+  
   <script type="module">
     import * as THREE from './assets/js/three.module.js';
     import { OrbitControls } from './assets/js/OrbitControls.js';
-
-    // Bridge to globals expected by your existing code
     window.THREE = THREE;
     window.OrbitControls = OrbitControls;
   </script>
+
 
   <!-- Vendor / app scripts (deferred) -->
   <script defer src="./assets/js/marked.min.js"></script>
