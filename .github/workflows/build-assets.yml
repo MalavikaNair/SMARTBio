@@ -1,4 +1,4 @@
-name: Build & Deploy (GitHub Pages)
+name: build-assets
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
+  contents: write    # keep ability to commit built files back to repo (as before)
+  pages: write       # needed for GitHub Pages deploy
   id-token: write
 
 concurrency:
@@ -24,28 +24,47 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
-      - name: Install three
+      # === Your original steps ===
+      - name: Install deps
+        run: npm ci || npm i
+
+      - name: Build Tailwind CSS
+        run: npm run build:tailwind
+
+      - name: Copy vendor JS locally
+        run: npm run vendor:copy
+
+      # === Add three.js modules locally (kept in repo AND in dist) ===
+      - name: Ensure three is available
         run: |
-          npm init -y >/dev/null 2>&1 || true
-          npm i three@0.150.1
+          # Use npm to fetch the exact three release we want to serve locally
+          npm i three@0.150.1 --no-save
 
+      - name: Copy three.module.js and OrbitControls.js to assets/js
+        run: |
+          mkdir -p assets/js
+          cp node_modules/three/build/three.module.js assets/js/three.module.js
+          cp node_modules/three/examples/jsm/controls/OrbitControls.js assets/js/OrbitControls.js
+
+      # === Commit artifacts back to repo (preserves your prior behavior) ===
+      - name: Commit build artifacts
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/css/tailwind.css assets/js/three.module.js assets/js/OrbitControls.js assets/js/*.js || true
+          git commit -m "Build assets via Actions (tailwind/vendor/three)" || echo "No changes to commit"
+          git push || true
+
+      # === Prepare dist for Pages deployment ===
       - name: Prepare dist
         run: |
           rm -rf dist
           mkdir -p dist
-          # Copy site source into dist (exclude infra folders)
           rsync -av             --exclude '.git'             --exclude '.github'             --exclude 'node_modules'             ./ dist/
 
-          # Ensure assets/js exists
-          mkdir -p dist/assets/js
-
-          # Copy ES module build + OrbitControls from node_modules
-          cp node_modules/three/build/three.module.js dist/assets/js/three.module.js
-          cp node_modules/three/examples/jsm/controls/OrbitControls.js dist/assets/js/OrbitControls.js
-
-      - name: Upload artifact
+      - name: Upload artifact (dist)
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
