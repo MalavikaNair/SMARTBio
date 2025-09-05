@@ -4,7 +4,8 @@
         "role": "Associate Professor of Biomaterials",
         "image": "./assets/img/malavika-nair.jpg",
         "bio": "Malavika Nair is an Associate Professor in Biomaterials at the Institute of Biomedical Engineering. Malavika is a materials scientist by training, obtaining a BA, MSci in Natural Sciences (2012-2016) and a PhD (2016-2019) from the University of Cambridge. Malavika's doctoral work was focused on the multiscale characterisation of ice, collagen, and ice-templated collagen scaffolds for tissue engineering. This was followed by post-doctoral research in 2020 combining machine learning techniques with experimental biomaterials datasets, and the award of a research fellowship at Emmanuel College where Malavika began working on electroactive biomaterials for tissue regeneration. In 2022, Malavika moved to the Oxford Institute of Biomedical Engineering to establish the SMART Biomaterials Team within the Biomaterials Cluster of the IBME, focused on the development of novel biomaterials with the sensing, modulating, adaptive, regenerative and therapeutic functionalities. Malavika also holds several leadership positions representing UK Biomaterials and Biomedical Engineering, including as the Chair of the UK Joint Biomedical Engineering Steering Group, Membership Secretary of the IOM3 Biomedical Materials Division, and as of 2025, Malavika is also a Henry Royce Institute Research Area Lead for Biomedical Materials",
-        "themes": ["Sensing", "Modulating", "Adaptive", "Regenerative", "Therapeutic"]
+        "themes": ["Sensing", "Modulating", "Adaptive", "Regenerative", "Therapeutic"],
+        "googleScholar": "FVKgcAsAAAAJ"
     },
     {
         "id": "veronica-lucian",
@@ -12,7 +13,8 @@
         "role": "DPhil Student",
         "image": "./assets/img/veronica-lucian.jpg",
         "bio": "Veronica Lucian graduated summa cum laude from the United States Military Academy at West Point in 2022, obtaining a BS in Life Science with a minor in Nuclear Science.  Her undergraduate research focused on novel synthesis techniques for biocompatible conductive aerogels and cell alignment in tissue engineering applications. She joined the BUBBL Group in October 2022 as a DPhil student under the joint supervision of Prof Constantin Coussios and Prof Malavika Nair. Her project focuses on utilising ultrasound to engineer vascularised skin constructs. Veronica's DPhil is funded by a Rhodes scholarship.",
-        "themes": ["Regenerative"]
+        "themes": ["Regenerative"],
+       "googleScholar": "f_jvkdQAAAAJ"
     },
 {
         "id": "matthew-burgess",
@@ -20,7 +22,8 @@
         "role": "DPhil Student",
         "image": "./assets/img/matthew-burgess.png",
         "bio": "Matthew Burgess is a DPhil (PhD) student at the University of Oxford. He received his MEng in Biomedical Engineering from Swansea University, focusing on biomaterials in biomedical engineering for regenerative scaffolds. He is currently completing his doctoral studies under the supervision of Professor Malavika Nair in the Institute of Biomedical Engineering. His project aims to enhance the electroactivity of tissue derived biomaterials for regenerative and therapeutic soft robotics.",
-        "themes": ["Modulating","Regenerative","Sensing"]
+        "themes": ["Modulating","Regenerative","Sensing"],
+         "googleScholar": "DYqEpwQAAAAJ"
     },
     {
         "id": "ryan-murray",
