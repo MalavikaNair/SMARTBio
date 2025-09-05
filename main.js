@@ -116,6 +116,18 @@ const Utils = (() => {
         `;
     }
 
+    function toAbsoluteUrl(url) {
+      if (!url) return "";
+      return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    }
+    
+    function normalizeScholar(urlOrId) {
+      if (!urlOrId) return "";
+      // Accept full URLs or just the scholar "user" ID
+      if (/^https?:\/\//i.test(urlOrId)) return urlOrId;
+      return `https://scholar.google.com/citations?user=${encodeURIComponent(urlOrId)}`;
+    }
+
     /**
      * Toggles the visibility of full/truncated text.
      * @param {string} id - The ID of the text block to toggle.
@@ -513,15 +525,33 @@ function createNewsCarouselSlideHtml(item) {
      * @returns {string} HTML string for the team card.
      */
     function createTeamCardHtml(member) {
-        return `
-            <div class="card rounded-lg p-6 text-center">
-                <img src="${member.image}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-primary" alt="${member.name}" loading="lazy">
-                <h3 class="text-xl font-bold text-light-text">${member.name}</h3>
-                <p class="text-primary font-semibold">${member.role}</p>
-                <button data-modal-target="${member.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
-            </div>
-        `;
+      const scholarHref = member.googleScholar ? normalizeScholar(member.googleScholar) : "";
+      const linksRow = scholarHref
+        ? `<div class="mt-3 flex justify-center gap-2">
+             <a href="${scholarHref}"
+                target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
+                aria-label="Open ${member.name}'s Google Scholar profile">
+               <!-- Google Scholar icon (SVG) -->
+               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                 <path d="M10.1 2.1a1 1 0 0 1 1.27 0l9 7.2a1 1 0 0 1 0 1.57l-9 7.2a1 1 0 0 1-1.6-.78V14a7 7 0 1 1 0-4v-2.3a1 1 0 0 1 .33-.75zM9 12a5 5 0 1 0 0 .02V12z"/>
+               </svg>
+               Scholar
+             </a>
+           </div>`
+        : "";
+    
+      return `
+        <div class="card rounded-lg p-6 text-center">
+          <img src="${member.image}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-primary" alt="${member.name}" loading="lazy">
+          <h3 class="text-xl font-bold text-light-text">${member.name}</h3>
+          <p class="text-primary font-semibold">${member.role}</p>
+          ${linksRow}
+          <button data-modal-target="${member.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
+        </div>
+      `;
     }
+
 
     /**
      * Creates an HTML string for an alumni member card.
@@ -546,29 +576,44 @@ function createNewsCarouselSlideHtml(item) {
      * @returns {string} HTML string for the person modal.
      */
     function createPersonModalHtml(person, borderColorClass) {
-        // Get associated content for this person
-        const associatedContentHtml = getAssociatedContentForPerson(person.id);
-
-        return `
-            <div id="${person.id}" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="${person.id}-title" aria-describedby="${person.id}-bio">
-                <div class="modal-content flex flex-col md:flex-row items-center gap-8">
-                    <button class="modal-close" aria-label="Close ${person.name} bio modal">×</button>
-                    <img src="${person.image}" class="w-48 h-48 rounded-full border-4 ${borderColorClass}" alt="${person.name}" loading="lazy">
-                    <div class="text-center md:text-left">
-                        <h2 id="${person.id}-title" class="text-3xl font-bold text-light-text">${person.name}</h2>
-                        <p class="text-primary font-semibold text-xl mb-4">${person.role}</p>
-                        <p id="${person.id}-bio" class="text-medium-text">${person.bio}</p>
-                        ${associatedContentHtml}
-                        <div class="mt-4 text-left">
-                            <label class="flex items-center text-xs text-slate-500">
-                                <input type="checkbox" checked disabled class="form-checkbox h-4 w-4 text-primary bg-slate-700 border-slate-600 rounded mr-2">
-                                GDPR: Consent to display personal information and image has been obtained.
-                            </label>
-                        </div>
-                    </div>
-                </div>
+      const associatedContentHtml = getAssociatedContentForPerson(person.id);
+    
+      const scholarHref = person.googleScholar ? normalizeScholar(person.googleScholar) : "";
+      const linksBlock = scholarHref
+        ? `<div class="mt-4 flex gap-3">
+             <a href="${scholarHref}"
+                target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 text-sm text-primary hover:text-primary-dark"
+                aria-label="Open ${person.name}'s Google Scholar profile">
+               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                 <path d="M10.1 2.1a1 1 0 0 1 1.27 0l9 7.2a1 1 0 0 1 0 1.57l-9 7.2a1 1 0 0 1-1.6-.78V14a7 7 0 1 1 0-4v-2.3a1 1 0 0 1 .33-.75zM9 12a5 5 0 1 0 0 .02V12z"/>
+               </svg>
+               Google Scholar
+             </a>
+           </div>`
+        : "";
+    
+      return `
+        <div id="${person.id}" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="${person.id}-title" aria-describedby="${person.id}-bio">
+          <div class="modal-content flex flex-col md:flex-row items-center gap-8">
+            <button class="modal-close" aria-label="Close ${person.name} bio modal">×</button>
+            <img src="${person.image}" class="w-48 h-48 rounded-full border-4 ${borderColorClass}" alt="${person.name}" loading="lazy">
+            <div class="text-center md:text-left">
+              <h2 id="${person.id}-title" class="text-3xl font-bold text-light-text">${person.name}</h2>
+              <p class="text-primary font-semibold text-xl mb-4">${person.role}</p>
+              <p id="${person.id}-bio" class="text-medium-text">${person.bio}</p>
+              ${associatedContentHtml}
+              ${linksBlock}
+              <div class="mt-4 text-left">
+                <label class="flex items-center text-xs text-slate-500">
+                  <input type="checkbox" checked disabled class="form-checkbox h-4 w-4 text-primary bg-slate-700 border-slate-600 rounded mr-2">
+                  GDPR: Consent to display personal information and image has been obtained.
+                </label>
+              </div>
             </div>
-        `;
+          </div>
+        </div>
+      `;
     }
 
     /**
@@ -1396,3 +1441,4 @@ window.addEventListener("load", () => {
     track.scrollLeft = 0; // force a recalculation of scrollable area
   }
 });
+
