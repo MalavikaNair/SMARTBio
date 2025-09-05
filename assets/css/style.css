@@ -322,3 +322,49 @@ body {
 .outreach-card {
   align-items: flex-start;   /* stop chips from getting tall inside flex */
 }
+/* Compact, non-stretching date chips everywhere */
+.date-badge,
+#news-list time,
+#outreach-news-list time,
+#news-modal-date .date-badge,
+#outreach-talk-modal-date .date-badge,
+#academic-presentation-modal-date .date-badge {
+  display: inline-block;        /* shrink to content */
+  width: auto !important;       /* defeat w-full */
+  min-width: 0 !important;      /* allow wrapping to shrink */
+  height: auto !important;      /* defeat h-full */
+  flex: 0 0 auto !important;    /* defeat flex-1 growth */
+  align-self: flex-start !important; /* defeat align-stretch */
+  white-space: normal;          /* allow wrapping at spaces */
+  overflow-wrap: anywhere;      /* break only at whitespace */
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  background-color: rgba(16,185,129,0.15);
+  color: #10b981;
+}
+
+/* If a parent row is still stretching items, stop it */
+.news-card,
+.outreach-card,
+#news-modal-content-text,
+#outreach-talk-modal-content-text,
+#academic-presentation-modal-content-text {
+  align-items: flex-start;      /* prevent vertical stretching in flex rows */
+}
+
+/* Belt-and-braces: if something added huge padding on the chip */
+.date-badge { padding: 0.25rem 0.5rem !important; }
+function createNewsCarouselSlideHtml(item) {
+  return `
+    <div class="carousel-slide text-center flex items-center gap-4" role="group" aria-label="${item.title}">
+      <img src="${item.image}" alt="${item.title}" class="carousel-img rounded-lg" loading="lazy">
+      <div class="carousel-copy text-left">
+        <h3 class="text-xl font-bold text-primary">${item.title}</h3>
+        <p class="text-medium-text mt-2 text-sm">${item.description}</p>
+      </div>
+    </div>
+  `;
+}
