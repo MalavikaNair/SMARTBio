@@ -4,8 +4,8 @@
         "date": { "day": "03", "month": "May", "year": "2024" },
         "description": "In this mini-talk, we explore the cutting-edge field of biomaterials engineering and its transformative impact on the future of medical devices, including the role played by developing novel materials that can seamlessly integrate with the human body.",
         "speakerIds": ["malavika-nair"],
-        "link": "https://youtu.be/gFNOgbApMD0",
-        "videoLink": "https://youtu.be/gFNOgbApMD0",
+        "link": "https://youtube.com/gFNOgbApMD0",
+        "videoLink": "https://youtube.com/embed/gFNOgbApMD0",
         "type": "academic-presentation",
         "themes": ["Sensing", "Modulating", "Adaptive", "Regenerative", "Therapeutic"]
     },
@@ -16,7 +16,7 @@
         "description": "SMARTBio was involved in the organisation and delivery of the inaugural Bioelectricity Cluster held at the Richard Doll Building in Oxford. Matthew Burgess and Ryan Murray presented the group's work on the development, modelling and optimisation of ionomeric extracellular matrices (iECMs) for wound healing and cardiac applications ",
         "speakerIds": ["matthew-burgess","ryan-murray"],
         "link": "",
-        "videoLink": "",
+        "videoLink": "https://sophion.com/app/uploads/2025/01/Bioelectricity-cluster-2025.png",
         "type": "academic-presentation",
         "themes": ["Modulating", "Adaptive", "Regenerative"]
     },
@@ -27,7 +27,7 @@
         "description": "Samantha Baker-Jones delivered an oral presentation at MRS 2025 in Seattle on '3D Cryoprinting for the Manufacture of Large-Scale, Interface-Free and Interconnected Porous Biopolymeric Scaffolds'. Sam's DPhil is co-supervised by Prof. Patrick Grant",
         "speakerIds": ["sam-baker-jones"],
         "link": "",
-        "videoLink": "",
+        "videoLink": "https://www.mrs.org/images/default-source/meetings---events/annual-meetings/cities/seattle/seattle-washington.jpg?sfvrsn=de7c0141_1",
         "type": "academic-presentation",
         "themes": ["Regenerative"]
     },
@@ -38,7 +38,7 @@
         "description": "Our Team was at E-MRS 2025! Malavika Nair presented an invited talk at e-MRS 2025 in Strasbourg on 'Electroactive Extracellular Matrix Materials for Bioelectronics and Biomedicine', and Matthew Burgess also presented his work on 'Electromechanical Stimulation as a Tool for Tissue Engineering: Exploring Routes for Soft Bio-Electromechanical Constructs'.",
         "speakerIds": ["malavika-nair","matthew-burgess"],
         "link": "",
-        "videoLink": "",
+        "videoLink": "https://www.european-mrs.com/sites/default/files/meetings/gallery-photo/bandeaux_site_2025.jpg",
         "type": "academic-presentation",
         "themes": ["Modulating", "Regenerative"]
     },
@@ -49,7 +49,7 @@
         "description": "Veronica Lucian presented a talk on 'Assessing the Safety and Feasibility of Cavitation-Mediated Transport on Cell-Bearing Tissue Scaffolds' at ISTU 2025 in Banff. Veronica's DPhil is co-supervised by Prof. Constantin Coussios",
         "speakerIds": ["veronica-lucian"],
         "link": "",
-        "videoLink": "",
+        "videoLink": "https://istu.org/wp-content/uploads/2024/12/New-Final-Header-1024x420.png",
         "type": "academic-presentation",
         "themes": ["Therapeutic", "Regenerative"]
     },
@@ -60,7 +60,7 @@
         "description": "Veronica Lucian presented a poster on 'Pitfalls of Resazurin-Based Metabolic Assays as Continuous Viability Measures in Three-Dimensional (3D) Cell Culture' at The Humane Research Trust Cell Culture Conference at the University of Manchester. Veronica's DPhil is co-supervised by Prof. Constantin Coussios",
         "speakerIds": ["veronica-lucian"],
         "link": "",
-        "videoLink": "",
+        "videoLink": "https://humaneresearch.org.uk/wp-content/uploads/2024/07/THRT-UoM-Symposium-banner-1024x512.png",
         "type": "academic-presentation",
         "themes": ["Therapeutic", "Regenerative"]
 
@@ -72,7 +72,7 @@
         "description": "Veronica Lucian presented a poster on 'Ultrasound-Enhanced Cavitation using Sub-Micron Stabilising Nuclei for Tissue Engineering Applications' at the World Biomaterials Congress 2024 in Daegu, South Korea.  Veronica's DPhil is co-supervised by Prof. Constantin Coussios",
         "speakerIds": ["veronica-lucian"],
         "link": "",
-        "videoLink": "",
+        "videoLink": "https://wbc2024.com/img/2024/main/slogan_light.png",
         "type": "academic-presentation",
       "themes": ["Therapeutic", "Regenerative"]
 
@@ -84,7 +84,7 @@
         "description": "Veronica Lucian presented a poster on 'Applications of Cavitation to Tissue Engineering' at the 8th Winter School on Therapeutic Ultrasound in Les Houches, France. Veronica's DPhil is co-supervised by Prof. Constantin Coussios",
         "speakerIds": ["veronica-lucian"],
         "link": "",
-        "videoLink": "",
+        "videoLink": "https://www.houches-school-physics.com/uas/HOUCHES/UGA_LOGO_ACCUEIL/logo+EPH.svg",
         "type": "academic-presentation",
         "themes": ["Therapeutic", "Regenerative"]
 
@@ -96,7 +96,7 @@
         "description": "Veronica Lucian presented a virtual talk on 'Ultrasound-Responsive Collagen Scaffolds for Tissue Engineering'. Veronica's DPhil is co-supervised by Prof. Constantin Coussios",
         "speakerIds": ["veronica-lucian"],
         "link": "",
-        "videoLink": "",
+        "videoLink": "https://acousticalsociety.org/wp-content/uploads/2018/04/ASA_Web_logo.png",
         "type": "academic-presentation",
         "themes": ["Therapeutic", "Regenerative"]
 
