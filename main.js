@@ -349,21 +349,34 @@ const Renderer = (() => {
      * @returns {string} HTML string for the presentation card.
      */
     function createAcademicPresentationCardHtml(pres) {
-        let mediaHtml = '';
-        if (pres.videoLink) {
-            if (pres.videoLink.includes('youtube.com/embed/')) {
-                mediaHtml = `<div class="relative w-full" style="padding-bottom: 56.25%;">
-                                <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark" src="${pres.videoLink}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-                            </div>`;
-            } else {
-                mediaHtml = `<video controls class="w-full h-auto rounded-md border border-primary-dark" loading="lazy">
-                                <source src="${pres.videoLink}" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>`;
-            }
-        } else {
-            mediaHtml = `<img src="https://placehold.co/400x225/047857/f3f4f6" alt="${pres.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
-        }
+     let mediaHtml = '';
+
+  if (pres.videoLink) {
+    if (pres.videoLink.includes('youtube.com/embed/')) {
+      mediaHtml = `
+        <div class="relative w-full" style="padding-bottom: 56.25%;">
+          <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark"
+                  src="${pres.videoLink}"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                  loading="lazy"></iframe>
+        </div>`;
+    } else {
+      mediaHtml = `
+        <video controls class="w-full h-auto rounded-md border border-primary-dark" loading="lazy">
+          <source src="${pres.videoLink}" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>`;
+    }
+  } else {
+    const imgSrc = pres.image || 'images/placeholder-400x225.png'; // fallback path you control
+    mediaHtml = `
+      <img src="${imgSrc}"
+           alt="${pres.title} Placeholder"
+           class="w-full h-auto rounded-md mb-4 border border-primary-dark"
+           loading="lazy">`;
+  }
 
         let speakerHtml = '';
         if (pres.speakerIds && Array.isArray(pres.speakerIds) && pres.speakerIds.length > 0) {
@@ -897,26 +910,40 @@ const ModalManager = (() => {
     function openAcademicPresentationModal(presItem, triggerElement) {
         const presModal = DOMElements.academicPresentationDescriptionModal;
 
-        if (presItem && presModal) {
-            DOMElements.academicPresentationModalTitle.textContent = presItem.title;
-            DOMElements.academicPresentationModalDate.textContent = `${presItem.date.day} ${presItem.date.month} ${presItem.date.year}`;
-            DOMElements.academicPresentationModalDescription.textContent = presItem.description;
+  if (presItem && presModal) {
+    DOMElements.academicPresentationModalTitle.textContent = presItem.title;
+    DOMElements.academicPresentationModalDate.textContent =
+      `${presItem.date.day} ${presItem.date.month} ${presItem.date.year}`;
+    DOMElements.academicPresentationModalDescription.textContent = presItem.description;
 
-            DOMElements.academicPresentationModalMedia.innerHTML = '';
-            if (presItem.videoLink) {
-                if (presItem.videoLink.includes('youtube.com/embed/')) {
-                    DOMElements.academicPresentationModalMedia.innerHTML = `<div class="relative w-full" style="padding-bottom: 56.25%;">
-                                    <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark" src="${presItem.videoLink}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-                                </div>`;
-                } else {
-                    DOMElements.academicPresentationModalMedia.innerHTML = `<video controls class="w-full h-auto rounded-md border border-primary-dark" loading="lazy">
-                                    <source src="${presItem.videoLink}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>`;
-                }
-            } else {
-                DOMElements.academicPresentationModalMedia.innerHTML = `<img src="https://placehold.co/400x225/047857/f3f4f6?" alt="${presItem.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
-            }
+    DOMElements.academicPresentationModalMedia.innerHTML = '';
+
+    if (presItem.videoLink) {
+      if (presItem.videoLink.includes('youtube.com/embed/')) {
+        DOMElements.academicPresentationModalMedia.innerHTML = `
+          <div class="relative w-full" style="padding-bottom: 56.25%;">
+            <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark"
+                    src="${presItem.videoLink}"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    loading="lazy"></iframe>
+          </div>`;
+      } else {
+        DOMElements.academicPresentationModalMedia.innerHTML = `
+          <video controls class="w-full h-auto rounded-md border border-primary-dark" loading="lazy">
+            <source src="${presItem.videoLink}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>`;
+      }
+    } else {
+      const imgSrc = presItem.image || 'images/placeholder-400x225.png'; // fallback path you control
+      DOMElements.academicPresentationModalMedia.innerHTML = `
+        <img src="${imgSrc}"
+             alt="${presItem.title} Placeholder"
+             class="w-full h-auto rounded-md mb-4 border border-primary-dark"
+             loading="lazy">`;
+    }
 
             let speakerHtml = '';
             if (presItem.speakerIds && Array.isArray(presItem.speakerIds) && presItem.speakerIds.length > 0) {
