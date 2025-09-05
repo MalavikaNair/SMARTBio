@@ -522,24 +522,24 @@ function createNewsCarouselSlideHtml(item) {
 /* Ensure avatar boxes are identical everywhere */
 .team img, .alumni img,
 .modal-content img.rounded-full {
-  width: 24rem;           /* 48 (Tailwind) for modal, but CSS ensures consistency */
-  height: 24rem;
+  width: 48rem;           /* 48 (Tailwind) for modal, but CSS ensures consistency */
+  height: 48rem;
   object-fit: cover;
   display: block;
 }
 
 /* Avatars in cards ONLY (not buttons) */
 .card img.rounded-full {
-  width: 24rem;      /* w-32 */
-  height: 24rem;     /* h-32 */
+  width: 48rem;      /* w-32 */
+  height: 48rem;     /* h-32 */
   object-fit: cover;
   display: block;
 }
 
 /* Avatar in the person modal */
 .modal-content img.rounded-full {
-  width: 24rem;     /* w-48 */
-  height: 24rem;    /* h-48 */
+  width: 48rem;     /* w-48 */
+  height: 48rem;    /* h-48 */
   object-fit: cover;
   display: block;
 }
