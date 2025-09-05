@@ -29,7 +29,7 @@
         "modalMediaCaption": "After obtaining the full electromechanical model describing the behaviour of our materials, it is possible to control the movement of a construct, for instance, a collagen film, using a controller. This schematic illustrates the set-up for including the inputs and outputs to and from an Arduino, a microcontroller, to process visual data on the behaviour of a deflecting film as above, and to vary the input electrical stimuli to maintain a reference deflection as desired.",
         "modalMediaCreditId": "",
         "themes": ["Regenerative", "Modulating"],
-	    "teamMembers": ["","ryan-murray"]
+	    "teamMembers": ["jason-liu","ryan-murray"]
     },
     {
         "id": "research4",
