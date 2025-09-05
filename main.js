@@ -303,7 +303,7 @@ const Renderer = (() => {
                             </video>`;
             }
         } else {
-            mediaHtml = `<img src="https://placehold.co/400x225/047857/f3f4f6?text=Talk+Video" alt="${talk.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
+            mediaHtml = `<img src="https://placehold.co/400x225/047857/f3f4f6?" alt="${talk.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
         }
 
         let speakerHtml = '';
@@ -362,7 +362,7 @@ const Renderer = (() => {
                             </video>`;
             }
         } else {
-            mediaHtml = `<img src="https://placehold.co/400x225/047857/f3f4f6?text=Presentation+Video" alt="${pres.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
+            mediaHtml = `<img src="https://placehold.co/400x225/047857/f3f4f6" alt="${pres.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
         }
 
         let speakerHtml = '';
@@ -869,7 +869,7 @@ const ModalManager = (() => {
                                 </video>`;
                 }
             } else {
-                DOMElements.outreachTalkModalMedia.innerHTML = `<img src="https://placehold.co/400x225/047857/f3f4f6?text=Talk+Video" alt="${talkItem.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
+                DOMElements.outreachTalkModalMedia.innerHTML = `<img src="https://placehold.co/400x225/047857/f3f4f6" alt="${talkItem.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
             }
 
             let speakerHtml = '';
@@ -915,7 +915,7 @@ const ModalManager = (() => {
                                 </video>`;
                 }
             } else {
-                DOMElements.academicPresentationModalMedia.innerHTML = `<img src="https://placehold.co/400x225/047857/f3f4f6?text=Presentation+Video" alt="${presItem.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
+                DOMElements.academicPresentationModalMedia.innerHTML = `<img src="https://placehold.co/400x225/047857/f3f4f6?" alt="${presItem.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
             }
 
             let speakerHtml = '';
