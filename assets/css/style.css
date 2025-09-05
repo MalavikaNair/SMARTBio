@@ -160,9 +160,15 @@ body {
 #research-canvas:active {
     cursor: grabbing;
 }
-#dynamic-content-panel {
-    max-height: 600px;
-    overflow-y: auto;
+/* --- Interactive Research Hub: dynamic content images --- */
+#dynamic-content-panel img {
+  max-width: 120px;       /* cap width to something small */
+  max-height: 120px;      /* optional: keep them square-ish */
+  height: auto;           /* scale proportionally */
+  width: auto;
+  object-fit: contain;    /* no cropping */
+  display: block;
+  margin: 0.5rem auto;    /* center + some breathing room */
 }
 /* Keyframe animation for hero title */
 @keyframes breathe {
@@ -250,16 +256,21 @@ body {
 .collapsible-content > *:first-child {
     margin-top: 0;
 }
-
-/* Scale to fit height, preserve aspect ratio */
+/* --- 1) Latest News carousel images: fixed, consistent crop --- */
 .carousel-slide img,
 #news-carousel-track img {
-  height: 220px;     /* fixed height */
-  width: auto;       /* let width adjust to aspect ratio */
-  max-width: 100%;   /* don’t spill outside container */
-  object-fit: contain;
+  width: 100%;
+  height: 220px;      /* adjust 200–260px to taste */
+  object-fit: cover;  /* crops edges, keeps center interesting */
   display: block;
-  margin: 0 auto;    /* center horizontally if narrower */
+  border-radius: 0.5rem;
+}
+
+/* Prevent slide content from stretching due to tall images */
+.carousel-slide { 
+  display: flex; 
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 /* --- Bonus: modal images shouldn’t explode in height --- */
@@ -274,17 +285,19 @@ body {
 /* --- 2) Compact “green date” chips (News + Outreach News) --- */
 /* Preferred: apply class="date-badge" to your <time> in templates */
 .date-badge {
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
+  display: inline-block;       /* shrink to content width */
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
-  line-height: 1;
+  line-height: 1.2;
   font-weight: 600;
   border-radius: 0.5rem;
   background-color: rgba(16, 185, 129, 0.15);
   color: #10b981;
-  max-width: max-content;   /* never stretch full-width */
+
+  /* wrapping behavior */
+  white-space: normal;         /* allow wrapping */
+  word-break: normal;          /* don’t break words */
+  overflow-wrap: anywhere;     /* break at whitespace, not mid-word */
 }
 
 /* Fallback if you can’t add classes: target time tags in lists/cards */
