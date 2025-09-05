@@ -580,7 +580,7 @@ function createNewsCarouselSlideHtml(item) {
              <a href="${scholarHref}"
                target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
-               aria-label="Open ${member.name}'s Google Scholar profile">
+               aria-label="Open ${person.name}'s Google Scholar profile">
               <img src="assets/img/google-scholar.svg" alt="" class="w-4 h-4" aria-hidden="true">
               Scholar
             </a>
@@ -1435,6 +1435,7 @@ window.addEventListener("load", () => {
     track.scrollLeft = 0; // force a recalculation of scrollable area
   }
 });
+
 
 
 
