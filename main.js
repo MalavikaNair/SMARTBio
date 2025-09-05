@@ -1090,8 +1090,23 @@ const CarouselManager = (() => {
         slides = Array.from(DOMElements.newsCarouselTrack.children).filter(el => !el.classList.contains('loader')); // Filter out loader
         if (slides.length === 0) return;
 
-        slideWidth = slides[0].getBoundingClientRect().width;
-        DOMElements.newsCarouselTrack.style.transform = 'translateX(' + (-slideWidth * currentIndex) + 'px)';
+         const viewportWidth = DOMElements.newsCarouselTrack.getBoundingClientRect().width;
+         // keep slides sensible on ultrawide and very narrow screens
+          const targetWidth = Math.min(Math.max(viewportWidth, 720), 1040);
+    
+          slides.forEach(slide => {
+            slide.style.boxSizing = 'border-box';
+            slide.style.flex = `0 0 ${targetWidth}px`;
+            slide.style.width = `${targetWidth}px`;
+            slide.style.minWidth = `${targetWidth}px`;  // beat any min-width:100%
+            // optional: center content inside the slide if yours is narrow
+            slide.style.margin = '0 auto';
+      });
+
+      // now use the unified width for translate calculations
+      slideWidth = targetWidth;
+      DOMElements.newsCarouselTrack.style.transform = `translateX(${-slideWidth * currentIndex}px)`;
+
 
         // Update carousel dots
         if (DOMElements.carouselDotsContainer) {
@@ -1433,8 +1448,10 @@ window.addEventListener("load", () => {
   const track = document.getElementById("news-carousel-track");
   if (track) {
     track.scrollLeft = 0; // force a recalculation of scrollable area
+    CarouselManager.updateCarousel(); 
   }
 });
+
 
 
 
