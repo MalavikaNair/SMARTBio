@@ -283,9 +283,14 @@ body {
 }
 
 /* --- 2) Compact “green date” chips (News + Outreach News) --- */
-/* Preferred: apply class="date-badge" to your <time> in templates */
+/* General pill/date badge style */
 .date-badge {
-  display: inline-block;       /* shrink to content width */
+  display: inline-flex;       /* shrink to fit content */
+  align-items: center;        /* vertically center text */
+  justify-content: center;
+  height: auto !important;    /* cancel any h-full */
+  flex: 0 0 auto !important;  /* don't grow or stretch */
+  align-self: flex-start;     /* opt out of parent's align-items: stretch */
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
   line-height: 1.2;
@@ -293,11 +298,6 @@ body {
   border-radius: 0.5rem;
   background-color: rgba(16, 185, 129, 0.15);
   color: #10b981;
-
-  /* wrapping behavior */
-  white-space: normal;         /* allow wrapping */
-  word-break: normal;          /* don’t break words */
-  overflow-wrap: anywhere;     /* break at whitespace, not mid-word */
 }
 
 /* Fallback if you can’t add classes: target time tags in lists/cards */
