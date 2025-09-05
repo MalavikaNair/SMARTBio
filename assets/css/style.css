@@ -409,8 +409,8 @@ function createNewsCarouselSlideHtml(item) {
 }
 /* Team section images: consistent headshot sizing */
 .team img {
-  width: 160px;           /* same width for all */
-  height: 160px;          /* same height for all */
+  width: 120px;           /* same width for all */
+  height: 120px;          /* same height for all */
   object-fit: cover;      /* crop to fill box, no distortion */
   border-radius: 9999px;  /* perfect circle (if you want avatars) */
   display: block;
