@@ -416,3 +416,66 @@ function createNewsCarouselSlideHtml(item) {
   display: block;
   margin: 0 auto 1rem;    /* center above name */
 }
+/* Carousel track: single row, no wrapping */
+#news-carousel-track {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  will-change: transform;
+}
+
+/* Each slide is a fixed column + flexible copy (matches your JS sizing) */
+#news-carousel-track .carousel-slide {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+/* Image column never stretches (works on desktop + “request desktop site”) */
+#news-carousel-track .carousel-slide .carousel-img {
+  height: 220px;          /* 240px on very large if you prefer */
+  width: auto !important;
+  max-width: 280px;
+  flex: 0 0 280px;        /* fixed image column */
+  object-fit: contain;    /* or 'cover' if you want cropping */
+  border-radius: 0.5rem;
+}
+
+/* Copy column gets the rest; long text won't force overflow */
+#news-carousel-track .carousel-slide .carousel-copy {
+  flex: 1 1 0%;
+  min-width: 0;           /* allows wrapping instead of pushing width */
+  text-align: left;
+}
+
+/* (Optional) clamp the whole carousel block so it doesn’t sprawl edge-to-edge */
+@media (min-width: 1280px) {
+  #news-carousel-track {
+    margin-inline: auto;
+    max-width: 1100px;
+  }
+  #news-carousel-track .carousel-slide .carousel-img {
+    height: 240px;
+  }
+}
+/* News list: keep the date pill compact on all breakpoints */
+#news-list .card {
+  align-items: flex-start !important;  /* opt out of equal-height rows */
+}
+
+#news-list .card > .bg-primary {
+  display: inline-flex !important;     /* size to content */
+  align-items: center;
+  justify-content: center;
+  width: auto !important;              /* defeat any w-full */
+  min-width: 0 !important;
+  height: auto !important;             /* defeat h-full */
+  min-height: 0 !important;
+  flex: 0 0 auto !important;           /* defeat flex-1 growth */
+  align-self: flex-start !important;   /* opt out of row stretching */
+  padding: 0.25rem 0.5rem !important;  /* compact padding */
+  border-radius: 0.5rem !important;
+  line-height: 1.2 !important;
+  white-space: normal;                 /* allow wrap if long */
+  overflow-wrap: anywhere;             /* wrap at spaces */
+}
