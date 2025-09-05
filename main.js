@@ -82,6 +82,17 @@ const Utils = (() => {
      * @param {HTMLElement} element - The loader element.
      * @param {HTMLElement} parentSection - The parent section to set aria-busy on.
      */
+    function toAbsoluteUrl(url) {
+      if (!url) return "";
+      return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    }
+    
+    function normalizeScholar(urlOrId) {
+      if (!urlOrId) return "";
+      // Accept full URLs or just the scholar "user" ID
+      if (/^https?:\/\//i.test(urlOrId)) return urlOrId;
+      return `https://scholar.google.com/citations?user=${encodeURIComponent(urlOrId)}`;
+    }
     function showLoading(element, parentSection) {
         if (element) element.style.display = 'block';
         if (parentSection) parentSection.setAttribute('aria-busy', 'true');
@@ -114,18 +125,6 @@ const Utils = (() => {
             <p id="full-text-${id}" style="display: none;">${text}</p>
             <button class="read-more-btn text-primary hover:underline text-sm mt-2 inline-block" data-target-id="${id}" aria-expanded="false">Read More →</button>
         `;
-    }
-
-    function toAbsoluteUrl(url) {
-      if (!url) return "";
-      return /^https?:\/\//i.test(url) ? url : `https://${url}`;
-    }
-    
-    function normalizeScholar(urlOrId) {
-      if (!urlOrId) return "";
-      // Accept full URLs or just the scholar "user" ID
-      if (/^https?:\/\//i.test(urlOrId)) return urlOrId;
-      return `https://scholar.google.com/citations?user=${encodeURIComponent(urlOrId)}`;
     }
 
     /**
@@ -1441,4 +1440,5 @@ window.addEventListener("load", () => {
     track.scrollLeft = 0; // force a recalculation of scrollable area
   }
 });
+
 
