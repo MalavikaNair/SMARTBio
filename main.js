@@ -289,7 +289,7 @@ const Renderer = (() => {
 
     function renderResearchItems() {
         if (DOMElements.researchContentGrid && researchData && researchData.length > 0) {
-            DOMElements.researchContentGrid.innerHTML = researchData.map(createResearchCardHtml).join('');
+            DOMElements.researchContentGrid.innerHTML = researchData.map(createResearchCardHtml).join(' ');
         } else if (DOMElements.researchContentGrid) {
             DOMElements.researchContentGrid.innerHTML = '<p class="text-medium-text text-center col-span-full">No research items available at the moment.</p>';
         }
@@ -348,7 +348,7 @@ const Renderer = (() => {
                 const dateB = new Date(`${b.date.year} ${b.date.month} ${b.date.day}`);
                 return dateB - dateA;
             });
-            DOMElements.outreachTalksGrid.innerHTML = outreachTalksData.filter(talk => talk.type === 'outreach-talk').map(createOutreachTalkCardHtml).join('');
+            DOMElements.outreachTalksGrid.innerHTML = outreachTalksData.filter(talk => talk.type === 'outreach-talk').map(createOutreachTalkCardHtml).join(' ');
         } else if (DOMElements.outreachTalksGrid) {
             DOMElements.outreachTalksGrid.innerHTML = '<p class="text-medium-text text-center col-span-full">No outreach talks available at the moment.</p>';
         }
@@ -420,7 +420,7 @@ const Renderer = (() => {
                 const dateB = new Date(`${b.date.year} ${b.date.month} ${b.date.day}`);
                 return dateB - dateA;
             });
-            DOMElements.academicPresentationsGrid.innerHTML = academicPresentationsData.filter(pres => pres.type === 'academic-presentation').map(createAcademicPresentationCardHtml).join('');
+            DOMElements.academicPresentationsGrid.innerHTML = academicPresentationsData.filter(pres => pres.type === 'academic-presentation').map(createAcademicPresentationCardHtml).join(' ');
         } else if (DOMElements.academicPresentationsGrid) {
             DOMElements.academicPresentationsGrid.innerHTML = '<p class="text-medium-text text-center col-span-full">No academic presentations available at the moment.</p>';
         }
@@ -454,7 +454,7 @@ const Renderer = (() => {
                 const dateB = new Date(`${b.date.year} ${b.date.month} ${b.date.day}`);
                 return dateB - dateA;
             });
-            DOMElements.outreachNewsList.innerHTML = outreachNewsData.map(createOutreachNewsItemHtml).join('');
+            DOMElements.outreachNewsList.innerHTML = outreachNewsData.map(createOutreachNewsItemHtml).join(' ');
         } else if (DOMElements.outreachNewsList) {
             DOMElements.outreachNewsList.innerHTML = '<p class="text-medium-text text-center col-span-full">No outreach news available at the moment.</p>';
         }
@@ -507,10 +507,10 @@ function createNewsCarouselSlideHtml(item) {
             });
 
             if (DOMElements.newsCarouselTrack) {
-                DOMElements.newsCarouselTrack.innerHTML = newsData.map(createNewsCarouselSlideHtml).join('');
+                DOMElements.newsCarouselTrack.innerHTML = newsData.map(createNewsCarouselSlideHtml).join(' ');
             }
             if (DOMElements.newsList) {
-                DOMElements.newsList.innerHTML = newsData.map(createNewsListItemHtml).join('');
+                DOMElements.newsList.innerHTML = newsData.map(createNewsListItemHtml).join(' ');
             }
         } else {
             if (DOMElements.newsCarouselTrack) DOMElements.newsCarouselTrack.innerHTML = '<p class="text-medium-text text-center col-span-full">No latest updates available.</p>';
@@ -539,7 +539,7 @@ function createNewsCarouselSlideHtml(item) {
     
       return `
         <div class="card rounded-lg p-6 text-center">
-          <img src="${member.image}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-primary" alt="${member.name}" loading="lazy">
+          <img src="${member.image}" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-primary" alt="${member.name}" loading="lazy">
           <h3 class="text-xl font-bold text-light-text">${member.name}</h3>
           <p class="text-primary font-semibold">${member.role}</p>
           ${linksRow}
@@ -557,7 +557,7 @@ function createNewsCarouselSlideHtml(item) {
     function createAlumniCardHtml(alumnus) {
         return `
             <div class="card rounded-lg p-6 text-center">
-                <img src="${alumnus.image}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-slate-400" alt="${alumnus.name}" loading="lazy">
+            <img src="${alumnus.image}" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-slate-400" alt="${alumnus.name}" loading="lazy">
                 <h3 class="text-xl font-bold text-light-text">${alumnus.name}</h3>
                 <p class="text-slate-400 font-semibold">${alumnus.role}</p>
                 <button data-modal-target="${alumnus.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
@@ -581,7 +581,6 @@ function createNewsCarouselSlideHtml(item) {
                target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
                aria-label="Open ${person.name}'s Google Scholar profile">
-              <img src="assets/img/google-scholar.svg" alt="" class="w-4 h-4 inline-block" aria-hidden="true">
               Scholar
             </a>
            </div>`
@@ -657,7 +656,7 @@ function createNewsCarouselSlideHtml(item) {
 
     function renderTeamAndAlumni() {
         if (DOMElements.teamGrid && teamData && teamData.length > 0) {
-            DOMElements.teamGrid.innerHTML = teamData.map(createTeamCardHtml).join('');
+            DOMElements.teamGrid.innerHTML = teamData.map(createTeamCardHtml).join(' ');
             teamData.forEach(member => {
                 DOMElements.modalContainer.insertAdjacentHTML('beforeend', createPersonModalHtml(member, 'border-primary'));
             });
@@ -666,7 +665,7 @@ function createNewsCarouselSlideHtml(item) {
         }
 
         if (DOMElements.alumniGrid && alumniData && alumniData.length > 0) {
-            DOMElements.alumniGrid.innerHTML = alumniData.map(createAlumniCardHtml).join('');
+            DOMElements.alumniGrid.innerHTML = alumniData.map(createAlumniCardHtml).join(' ');
             alumniData.forEach(alumnus => {
                 DOMElements.modalContainer.insertAdjacentHTML('beforeend', createPersonModalHtml(alumnus, 'border-slate-400'));
             });
@@ -687,7 +686,7 @@ function createNewsCarouselSlideHtml(item) {
                 <h3 class="text-xl font-bold text-light-text mb-2">${game.title}</h3>
                 ${Utils.truncateText(game.description, 100, `game-${game.id}`)}
                 <div class="flex flex-wrap justify-center gap-1 mb-4">
-                    ${game.themes.map(theme => `<span class="bg-primary-dark text-xs text-white px-2 py-1 rounded-full">${theme}</span>`).join('')}
+                    ${game.themes.map(theme => `<span class="bg-primary-dark text-xs text-white px-2 py-1 rounded-full">${theme}</span>`).join(' ')}
                 </div>
                 <a href="${game.file}" target="_blank" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">Play Game</a>
             </div>
@@ -724,7 +723,7 @@ function createNewsCarouselSlideHtml(item) {
         const filteredGames = gamesData.filter(game => filter === 'all' || game.themes.includes(filter));
 
         if (filteredGames.length > 0) {
-            DOMElements.gamesGrid.innerHTML = filteredGames.map(createGameCardHtml).join('');
+            DOMElements.gamesGrid.innerHTML = filteredGames.map(createGameCardHtml).join(' ');
         } else {
             DOMElements.gamesGrid.innerHTML = `<p class="text-medium-text text-center col-span-full">No games found for "${filter}" theme.</p>`;
         }
@@ -1451,6 +1450,7 @@ window.addEventListener("load", () => {
     CarouselManager.updateCarousel(); 
   }
 });
+
 
 
 
