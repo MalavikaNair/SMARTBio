@@ -23,7 +23,7 @@
         "image": "./assets/img/sam-baker-jones.jpg",
         "bio": "Sam completed her undergraduate and master’s studies at the University of Nottingham, graduating with a BEng. Mechanical Engineering and MSc. Additive Manufacturing and 3D Printing. She then started her DPhil in Materials at Oxford in 2022, focussing on multi-material additive manufacturing, and is collaborating with the IBME to explore 3D bioprinting of hard-soft biomaterial scaffolds, under the supervision of Prof. Patrick Grant and Prof. Malavika Nair.",
         "themes": ["Regenerative"]
-    }
+    },
       {
         "id": "kae-nicolson",
         "name": "Kae Nicolson",
@@ -57,6 +57,5 @@
         "bio": "Zekun (Jason) Liu is a postdoctoral researcher at the University of Oxford, working on the creation of electroactive biomaterials for cardiac therapies. Jason is supported by the EPSRC-funded BIONIC Hearts Project",
         "themes": ["Modulating", "Regenerative"],
         "googleScholar": "dL3kWXUAAAAJ"
-    },
-
+    }
 ]
