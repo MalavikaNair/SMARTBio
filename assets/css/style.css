@@ -162,8 +162,8 @@ body {
 }
 /* --- Interactive Research Hub: dynamic content images --- */
 #dynamic-content-panel img {
-  max-width: 120px;       /* cap width to something small */
-  max-height: 120px;      /* optional: keep them square-ish */
+  max-width: 60px;       /* cap width to something small */
+  max-height: 60px;      /* optional: keep them square-ish */
   height: auto;           /* scale proportionally */
   width: auto;
   object-fit: contain;    /* no cropping */
