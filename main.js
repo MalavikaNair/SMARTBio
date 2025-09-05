@@ -152,7 +152,7 @@ const Utils = (() => {
         }
     }
 
-    return { showLoading, hideLoading, truncateText, toggleTextVisibility };
+    return { showLoading, hideLoading, truncateText, toggleTextVisibility,normalizeScholar, toAbsoluteUrl };
 })();
 
 /**
@@ -524,7 +524,7 @@ function createNewsCarouselSlideHtml(item) {
      * @returns {string} HTML string for the team card.
      */
     function createTeamCardHtml(member) {
-      const scholarHref = member.googleScholar ? normalizeScholar(member.googleScholar) : "";
+      const scholarHref = member.googleScholar ? Utils.normalizeScholar(member.googleScholar) : "";
       const linksRow = scholarHref
         ? `<div class="mt-3 flex justify-center gap-2">
              <a href="${scholarHref}"
@@ -577,7 +577,7 @@ function createNewsCarouselSlideHtml(item) {
     function createPersonModalHtml(person, borderColorClass) {
       const associatedContentHtml = getAssociatedContentForPerson(person.id);
     
-      const scholarHref = person.googleScholar ? normalizeScholar(person.googleScholar) : "";
+      const scholarHref = person.googleScholar ? Utils.normalizeScholar(person.googleScholar) : "";
       const linksBlock = scholarHref
         ? `<div class="mt-4 flex gap-3">
              <a href="${scholarHref}"
@@ -1440,5 +1440,6 @@ window.addEventListener("load", () => {
     track.scrollLeft = 0; // force a recalculation of scrollable area
   }
 });
+
 
 
