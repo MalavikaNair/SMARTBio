@@ -3,40 +3,40 @@
         "id": "game1",
         "title": "Actuation Station",
         "description": "Explore the capabilities of different robot types as you deliver various drugs and cells to a wound site",
-        "thumbnail": "actuation-station.png",
-        "file": "actuationstation.html",
+        "thumbnail": "./assets/img/actuation-station.png",
+        "file": "./outreach/actuationstation.html",
         "themes": ["Modulating", "Adaptive"]
     },
     {
         "id": "game2",
         "title": "Flappy Blob",
         "description": "Be the adaptive controller for flappy blob as it navigates through different pipes under different conditions!",
-        "thumbnail": "flappy-blob.png",
-        "file": "flappyblob.html",
+        "thumbnail": "./assets/img/flappy-blob.png",
+        "file": "./outreach/flappyblob.html",
         "themes": ["Adaptive", "Modulating"]
     },
   {
         "id": "game3",
         "title": "Wound Healing Saga",
         "description": "Become the Cellular Commander and guide a patient's wound through healing. Manage cells, fight threats, and ensure minimal scarring.",
-        "thumbnail": "wound-healing.png",
-        "file": "woundhealingsaga.html",
+        "thumbnail": "./assets/img/wound-healing.png",
+        "file": "./outreach/woundhealingsaga.html",
         "themes": ["Therapeutic","Regenerative"]
     },
     {
         "id": "game4",
         "title": "Bloody Snake in a Sponge!",
         "description": "Keep your blood vessel (snake) alive by eating growth food, avoiding shrink food, and providing some stimulation from time to time, as it navigates through a porous sponge!",
-        "thumbnail": "sponge-snake.png",
-        "file": "spongesnake.html",
+        "thumbnail": "./assets/img/sponge-snake.png",
+        "file": "./outreach/spongesnake.html",
         "themes": ["Therapeutic","Regenerative"]
     },
     {
         "id": "game5",
         "title": "Biological Network Sense",
         "description": "Design and manage a network of biological sensors to accurately read environmental values at specific target concentration zones, while managing energy costs",
-        "thumbnail": "biosense.png",
-        "file": "bionetwork.html",
+        "thumbnail": "./assets/img/biosense.png",
+        "file": "./outreach/bionetwork.html",
         "themes": ["Sensing", "Adaptive"]
     },
     {
@@ -44,7 +44,7 @@
         "title": "Hydrogel Quest",
         "description": "Navigate the lab, collect ingredients, and synthesise a hydrogel in this fun educational game!",
         "thumbnail": "./assets/img/hydrogel-quest.png",
-        "file": "hydrogel-quest.html",
+        "file": "./outreach/hydrogel-quest.html",
         "themes": []
     }
    ]
