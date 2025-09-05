@@ -546,7 +546,7 @@ function createNewsCarouselSlideHtml(item) {
 /* Research cards: identical image crop (16:9-ish, adjust height to taste) */
 .research-card-img {
   width: 100%;
-  height: 100px;          /* set the common height for all cards */
+  height: 220px;          /* set the common height for all cards */
   object-fit: cover;      /* crop to fill without distortion */
   display: block;
 }
