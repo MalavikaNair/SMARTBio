@@ -5,8 +5,8 @@
         "description": "In this mini-talk, we explore the cutting-edge field of biomaterials engineering and its transformative impact on the future of medical devices, including the role played by developing novel materials that can seamlessly integrate with the human body.",
         "speakerIds": ["malavika-nair"],
         "link": "https://youtube.com/gFNOgbApMD0",
-	"videoLink": "",
-        "image": "https://youtube.com/embed/gFNOgbApMD0",
+	"videoLink": "https://youtube.com/embed/gFNOgbApMD0",
+        "image": "",
         "type": "academic-presentation",
         "themes": ["Sensing", "Modulating", "Adaptive", "Regenerative", "Therapeutic"]
     },
@@ -79,7 +79,7 @@
         "speakerIds": ["veronica-lucian"],
         "link": "",
 	"videoLink": "",
-        "image": "https://wbc2024.com/img/2024/main/slogan_light.png",
+        "image": "https://wbc2024.com/img/2024/common/logo.png",
         "type": "academic-presentation",
       "themes": ["Therapeutic", "Regenerative"]
 
@@ -92,7 +92,7 @@
         "speakerIds": ["veronica-lucian"],
         "link": "",
 	"videoLink": "",
-        "image": "https://www.houches-school-physics.com/uas/HOUCHES/UGA_LOGO_ACCUEIL/logo+EPH.svg",
+        "image": "https://www.houches-school-physics.com/medias/photo/entree-ecole_1697729379192-jpg",
         "type": "academic-presentation",
         "themes": ["Therapeutic", "Regenerative"]
 
@@ -105,7 +105,7 @@
         "speakerIds": ["veronica-lucian"],
         "link": "",
         "videoLink": "",
-	"image": "https://acousticalsociety.org/wp-content/uploads/2018/04/ASA_Web_logo.png",
+	"image": "https://acousticalsociety.org/wp-content/uploads/2018/04/ASA_Master_Brand_Initials_color-e1525702626858.png",
         "type": "academic-presentation",
         "themes": ["Therapeutic", "Regenerative"]
 
