@@ -16,14 +16,21 @@
         "themes": ["Regenerative"],
        "googleScholar": "f_jvkdQAAAAJ"
     },
-       {
-        "id": "jason-liu",
-        "name": "Zekun (Jason) Liu",
-        "role": "Postdoctoral Researcher",
-        "image": "./assets/img/zekun-liu.jpeg",
-        "bio": "Zekun (Jason) Liu is a postdoctoral researcher at the University of Oxford, working on the creation of electroactive biomaterials for cardiac therapies. Jason is supported by the EPSRC-funded BIONIC Hearts Project",
-        "themes": ["Modulating", "Regenerative"],
-        "googleScholar": "dL3kWXUAAAAJ"
+      {
+        "id": "sam-baker-jones",
+        "name": "Samantha Baker-Jones",
+        "role": "DPhil Student",
+        "image": "./assets/img/sam-baker-jones.jpg",
+        "bio": "Sam completed her undergraduate and master’s studies at the University of Nottingham, graduating with a BEng. Mechanical Engineering and MSc. Additive Manufacturing and 3D Printing. She then started her DPhil in Materials at Oxford in 2022, focussing on multi-material additive manufacturing, and is collaborating with the IBME to explore 3D bioprinting of hard-soft biomaterial scaffolds, under the supervision of Prof. Patrick Grant and Prof. Malavika Nair.",
+        "themes": ["Regenerative"]
+    }
+      {
+        "id": "kae-nicolson",
+        "name": "Kae Nicolson",
+        "role": "DPhil Student",
+        "image": "./assets/img/kae-nicolson.jpg",
+        "bio": "Kae Nicolson completed their BSc in Materials Engineering at the University of Alberta, Canada in 2022. During this time they spent two years as an undergraduate research assistant for Prof. Hyun-Joong Chung developing a biomimetic synthetic aorta for use in ex-vivo heart perfusion devices. Kae commenced their DPhil at the Oxford Centre for Tissue Engineering and Bioprocessing in October 2022. Their research focuses on the use of extracellular vesicles for skin wound healing, and they are supervised by Professor Cathy Ye and Professor Malavika Nair.",
+        "themes": ["Regenerative","Therapeutic"]
     },
      {
         "id": "matthew-burgess",
@@ -42,20 +49,14 @@
         "bio": "Ryan is part of the Smart Biomaterials Team, where he develops innovative biomaterials for tissue regeneration, in vitro disease modelling, and targeted drug delivery. He previously worked in grid-scale energy storage and holds an MEng in Electrical and Mechanical Engineering from the University of Edinburgh.",
         "themes": ["Adaptive","Regenerative"]
     },
-    {
-        "id": "kae-nicolson",
-        "name": "Kae Nicolson",
-        "role": "DPhil Student",
-        "image": "./assets/img/kae-nicolson.jpg",
-        "bio": "Kae Nicolson completed their BSc in Materials Engineering at the University of Alberta, Canada in 2022. During this time they spent two years as an undergraduate research assistant for Prof. Hyun-Joong Chung developing a biomimetic synthetic aorta for use in ex-vivo heart perfusion devices. Kae commenced their DPhil at the Oxford Centre for Tissue Engineering and Bioprocessing in October 2022. Their research focuses on the use of extracellular vesicles for skin wound healing, and they are supervised by Professor Cathy Ye and Professor Malavika Nair.",
-        "themes": ["Regenerative","Therapeutic"]
+   {
+        "id": "jason-liu",
+        "name": "Zekun (Jason) Liu",
+        "role": "Postdoctoral Researcher",
+        "image": "./assets/img/zekun-liu.jpeg",
+        "bio": "Zekun (Jason) Liu is a postdoctoral researcher at the University of Oxford, working on the creation of electroactive biomaterials for cardiac therapies. Jason is supported by the EPSRC-funded BIONIC Hearts Project",
+        "themes": ["Modulating", "Regenerative"],
+        "googleScholar": "dL3kWXUAAAAJ"
     },
-    {
-        "id": "sam-baker-jones",
-        "name": "Samantha Baker-Jones",
-        "role": "DPhil Student",
-        "image": "./assets/img/sam-baker-jones.jpg",
-        "bio": "Sam completed her undergraduate and master’s studies at the University of Nottingham, graduating with a BEng. Mechanical Engineering and MSc. Additive Manufacturing and 3D Printing. She then started her DPhil in Materials at Oxford in 2022, focussing on multi-material additive manufacturing, and is collaborating with the IBME to explore 3D bioprinting of hard-soft biomaterial scaffolds, under the supervision of Prof. Patrick Grant and Prof. Malavika Nair.",
-        "themes": ["Regenerative"]
-    }
+
 ]
