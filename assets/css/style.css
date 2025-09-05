@@ -162,8 +162,8 @@ body {
 }
 /* --- Interactive Research Hub: dynamic content images --- */
 #dynamic-content-panel img {
-  max-width: 60px;       /* cap width to something small */
-  max-height: 60px;      /* optional: keep them square-ish */
+  max-width: 50px;       /* cap width to something small */
+  max-height: 50px;      /* optional: keep them square-ish */
   height: auto;           /* scale proportionally */
   width: auto;
   object-fit: contain;    /* no cropping */
@@ -406,4 +406,13 @@ function createNewsCarouselSlideHtml(item) {
   width: auto !important;
   flex: 0 0 auto;
   object-fit: contain;
+}
+/* Team section images: consistent headshot sizing */
+.team img {
+  width: 160px;           /* same width for all */
+  height: 160px;          /* same height for all */
+  object-fit: cover;      /* crop to fill box, no distortion */
+  border-radius: 9999px;  /* perfect circle (if you want avatars) */
+  display: block;
+  margin: 0 auto 1rem;    /* center above name */
 }
