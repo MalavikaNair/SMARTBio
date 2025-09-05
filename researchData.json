@@ -81,7 +81,9 @@
         "id": "research8",
         "title": "Embedded Extracellular Vesicle Collagen Scaffolds for Skin Wound Healing",
         "description": "Extracellular vesicles (EVs) are small lipid particles released by cells containing bioactive molecules that mediate intercellular communication. EVs carry a wide range of payloads including that can influence the recipient cells, and can thus trigger a cascade of biological responses required for effective or accelerated tissue repair. The ability of EVs to deliver cargo to specific cells makes them promising candidates for interventional therapies; however, their extraction, storage and deployment in a patient is often rendered challenging by their limited stability outside the body. One solution involves engineering a process by which their stability can be maintained out of the body, and to incorporate them in regenerative implants to accelerate the wound healing process. In order to achieve this, we must first develop an understanding of EVs derived from various cell lines and characterise not only the impact of the storage medium on the EVs, but also of the EVs in the tissue engineered constructs they will be embedded in prior to patient delivery.",
-        "image": "",
+        "image": "./assets/img/scaffold.png",
+		"modalMedia": "./assets/img/scaffold.png",
+		"modalMediaCaption": "",
         "themes": ["Regenerative","Therapeutic"],
 	    "teamMembers": ["kae-nicolson"]
     },
