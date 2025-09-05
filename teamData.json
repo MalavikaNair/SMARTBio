@@ -16,7 +16,16 @@
         "themes": ["Regenerative"],
        "googleScholar": "f_jvkdQAAAAJ"
     },
-{
+       {
+        "id": "jason-liu",
+        "name": "Zekun (Jason) Liu",
+        "role": "Postdoctoral Researcher",
+        "image": "./assets/img/zekun-liu.jpeg",
+        "bio": "Zekun (Jason) Liu is a postdoctoral researcher at the University of Oxford, working on the creation of electroactive biomaterials for cardiac therapies. Jason is supported by the EPSRC-funded BIONIC Hearts Project",
+        "themes": ["Modulating", "Regenerative"],
+        "googleScholar": "dL3kWXUAAAAJ"
+    },
+     {
         "id": "matthew-burgess",
         "name": "Matthew Burgess",
         "role": "DPhil Student",
