@@ -1,12 +1,104 @@
 [
-  {
-    "title": "Dummy Academic Presentation",
-    "date": "2025-01-01",
-    "description": "Placeholder presentation description.",
-    "speakers": [
-      "Presenter A"
-    ],
-    "link": "#",
-    "image": "./assets/img/research.png"
-  }
+        "id": "talk-3",
+        "title": "Lubbock Lecture 2024: Biomaterials for SMART Medical Devices",
+        "date": { "day": "03", "month": "May", "year": "2024" },
+        "description": "In this mini-talk, we explore the cutting-edge field of biomaterials engineering and its transformative impact on the future of medical devices, including the role played by developing novel materials that can seamlessly integrate with the human body.",
+        "speakerIds": ["malavika-nair"],
+        "link": "https://youtu.be/gFNOgbApMD0",
+        "videoLink": "https://youtu.be/gFNOgbApMD0",
+        "type": "academic-presentation",
+        "themes": ["Sensing", "Modulating", "Adaptive", "Regenerative", "Therapeutic"]
+    },
+      {
+        "id": "pres-2",
+        "title": "Bioelectricity Cluster 2025",
+        "date": { "day": "11", "month": "Apr", "year": "2025" },
+        "description": "SMARTBio was involved in the organisation and delivery of the inaugural Bioelectricity Cluster held at the Richard Doll Building in Oxford. Matthew Burgess and Ryan Murray presented the group's work on the development, modelling and optimisation of ionomeric extracellular matrices (iECMs) for wound healing and cardiac applications ",
+        "speakerIds": ["matthew-burgess","ryan-murray"],
+        "link": "",
+        "videoLink": "",
+        "type": "academic-presentation",
+        "themes": ["Modulating", "Adaptive", "Regenerative"]
+    },
+        {
+        "id": "pres-2",
+        "title": "Materials Research Society Spring Meeting 2025",
+        "date": { "day": "10", "month": "Apr", "year": "2025" },
+        "description": "Samantha Baker-Jones delivered an oral presentation at MRS 2025 in Seattle on '3D Cryoprinting for the Manufacture of Large-Scale, Interface-Free and Interconnected Porous Biopolymeric Scaffolds'. Sam's DPhil is co-supervised by Prof. Patrick Grant",
+        "speakerIds": ["sam-baker-jones"],
+        "link": "",
+        "videoLink": "",
+        "type": "academic-presentation",
+        "themes": ["Regenerative"]
+    },
+    {
+        "id": "pres-3",
+        "title": "European Materials Research Society 2025",
+        "date": { "day": "26", "month": "May", "year": "2025" },
+        "description": "Our Team was at E-MRS 2025! Malavika Nair presented an invited talk at e-MRS 2025 in Strasbourg on 'Electroactive Extracellular Matrix Materials for Bioelectronics and Biomedicine', and Matthew Burgess also presented his work on 'Electromechanical Stimulation as a Tool for Tissue Engineering: Exploring Routes for Soft Bio-Electromechanical Constructs'.",
+        "speakerIds": ["malavika-nair","matthew-burgess"],
+        "link": "",
+        "videoLink": "",
+        "type": "academic-presentation",
+        "themes": ["Modulating", "Regenerative"]
+    },
+      {
+        "id": "pres-4",
+        "title": "International Society for Therapeutic Ultrasound 2025",
+        "date": { "day": "19", "month": "June", "year": "2025" },
+        "description": "Veronica Lucian presented a talk on 'Assessing the Safety and Feasibility of Cavitation-Mediated Transport on Cell-Bearing Tissue Scaffolds' at ISTU 2025 in Banff. Veronica's DPhil is co-supervised by Prof. Constantin Coussios",
+        "speakerIds": ["veronica-lucian"],
+        "link": "",
+        "videoLink": "",
+        "type": "academic-presentation",
+        "themes": ["Therapeutic", "Regenerative"]
+    },
+      {
+        "id": "pres-5",
+        "title": "THRT Cell Culture Conference 2024",
+        "date": { "day": "17", "month": "Sep", "year": "2024" },
+        "description": "Veronica Lucian presented a poster on 'Pitfalls of Resazurin-Based Metabolic Assays as Continuous Viability Measures in Three-Dimensional (3D) Cell Culture' at The Humane Research Trust Cell Culture Conference at the University of Manchester. Veronica's DPhil is co-supervised by Prof. Constantin Coussios",
+        "speakerIds": ["veronica-lucian"],
+        "link": "",
+        "videoLink": "",
+        "type": "academic-presentation",
+        "themes": ["Therapeutic", "Regenerative"]
+
+    },
+    {
+        "id": "pres-6",
+        "title": "World Biomaterials Congress 2024",
+        "date": { "day": "17", "month": "May", "year": "2024" },
+        "description": "Veronica Lucian presented a poster on 'Ultrasound-Enhanced Cavitation using Sub-Micron Stabilising Nuclei for Tissue Engineering Applications' at the World Biomaterials Congress 2024 in Daegu, South Korea.  Veronica's DPhil is co-supervised by Prof. Constantin Coussios",
+        "speakerIds": ["veronica-lucian"],
+        "link": "",
+        "videoLink": "",
+        "type": "academic-presentation",
+      "themes": ["Therapeutic", "Regenerative"]
+
+    },
+      {
+        "id": "pres-7",
+        "title": "8th Winter School on Therapeutic Ultrasound 2023",
+        "date": { "day": "17", "month": "March", "year": "2023" },
+        "description": "Veronica Lucian presented a poster on 'Applications of Cavitation to Tissue Engineering' at the 8th Winter School on Therapeutic Ultrasound in Les Houches, France. Veronica's DPhil is co-supervised by Prof. Constantin Coussios",
+        "speakerIds": ["veronica-lucian"],
+        "link": "",
+        "videoLink": "",
+        "type": "academic-presentation",
+        "themes": ["Therapeutic", "Regenerative"]
+
+    },
+        {
+        "id": "pres-8",
+        "title": "187th Meeting of the Acoustical Society of America",
+        "date": { "day": "17", "month": "November", "year": "2024" },
+        "description": "Veronica Lucian presented a virtual talk on 'Ultrasound-Responsive Collagen Scaffolds for Tissue Engineering'. Veronica's DPhil is co-supervised by Prof. Constantin Coussios",
+        "speakerIds": ["veronica-lucian"],
+        "link": "",
+        "videoLink": "",
+        "type": "academic-presentation",
+        "themes": ["Therapeutic", "Regenerative"]
+
+    }
 ]

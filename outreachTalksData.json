@@ -5,7 +5,7 @@
         "date": { "day": "15", "month": "Nov", "year": "2023" },
         "description": "A taster lecture to prospective students to discover more about biomedical engineering and what it is like to be an Engineering Science Undergraduate Student at Oxford, entitled ‘How can we build better implants?",
         "speakerIds": ["malavika-nair"],
-        "link": "https://youtube.com/embed/bwRM8yJPbs8",
+        "link": "https://youtube.com/bwRM8yJPbs8",
         "videoLink": "https:/youtube.com/embed/bwRM8yJPbs8",
         "themes": ["Regenerative"],
         "type": "outreach-talk"
@@ -16,7 +16,7 @@
         "date": { "day": "08", "month": "Apr", "year": "2021" },
         "description": "A short profile on how electroactive biopolymers can be used to promote regeneration, given as part of the Emma Connects: Fellows’ Research Shorts Series.",
         "speakerIds": ["malavika-nair"],
-        "link": "https://youtube.com/embed/-v6SzT5tcu8",
+        "link": "https://youtube.com/-v6SzT5tcu8",
         "videoLink": "https://youtube.com/embed/-v6SzT5tcu8",
         "themes": ["Adaptive","Modulating","Regenerative"],
         "type": "outreach-talk"

@@ -7,7 +7,7 @@
         "modalMediaCaption": "Biodegradable metal nanoparticulates (spheres) on electrode surface prior to any treatment. The unconnected spheres mean that while there are metallic particles, there are few connected pathways along the surface that allow for efficient charge transfer. Following a mild chemical sintering treatment, sintering (a process of compacting and solidifying the mass) has been achieved here without the application of pressure and heat, allowing these electrodes to be incorporated with heat-sensitive proteins and molecules, while maintaining a conductive surface.",
         "modalMediaCreditId": "zosia-wolny",
         "themes": ["Sensing"],
-	    "teamMembers": ["zosia-wolny","ruth-gregg","georgie-burgoyne-morris","yannan-zhou"]
+	    "teamMembers": ["zosia-wolny","ruth-gregg","yannan-zhou"]
     },
     {
         "id": "research2",
@@ -27,27 +27,27 @@
 	    "image": "./assets/img/ventricle.png",
 	    "modalMedia": "./assets/img/ventricle.png",
         "modalMediaCaption": "After obtaining the full electromechanical model describing the behaviour of our materials, it is possible to control the movement of a construct, for instance, a collagen film, using a controller. This schematic illustrates the set-up for including the inputs and outputs to and from an Arduino, a microcontroller, to process visual data on the behaviour of a deflecting film as above, and to vary the input electrical stimuli to maintain a reference deflection as desired.",
-        "modalMediaCreditId": "delia-persa",
+        "modalMediaCreditId": "",
         "themes": ["Regenerative", "Modulating"],
-	    "teamMembers": ["jason-liu","ryan-murray"]
+	    "teamMembers": ["","ryan-murray"]
     },
     {
         "id": "research4",
         "title": "Control Loops for Dynamic Tissue Engineering Implants ",
         "description": "Soft robots are flexible, have a high specific strength and high response rates which make them ideal for applications requiring sensitive motions whilst remaining compliant. Biopolymers are an attractive material choice for biomedical soft robots: they are abundant, biodegradable, and can offer excellent biomimicry if they are derived from tissue. However, these polymers typically display limited stimulus-driven shape change on their own, with non-linear properties and requiring significant functionalisation and modification. To achieve the range of motion required in some applications, like joint replacement or the pumping mechanism of the heart, it is necessary to investigate the stimulus-driven shape change of different compositions of biopolymers, quantify these results, and identify engineering solutions to stabilise their electromechanical behaviour. One element of this work involves developing an understanding of the mechanisms driving the electromechanical behaviour, and developing suitable macroscopic models to account for the inherent variability in using natural polymers, and the development of appropriate control strategies that are cost efficient and suitable for use within a biomedical context.",
-        "image": "./asset/img/arduino.png",
-	    "modalMedia": "./asset/img/arduino.png",
+        "image": "./assets/img/arduino.png",
+	    "modalMedia": "./assets/img/arduino.png",
         "modalMediaCaption": "After obtaining the full electromechanical model describing the behaviour of our materials, it is possible to control the movement of a construct, for instance, a collagen film, using a controller. This schematic illustrates the set-up for including the inputs and outputs to and from an Arduino, a microcontroller, to process visual data on the behaviour of a deflecting film as above, and to vary the input electrical stimuli to maintain a reference deflection as desired.",
-        "modalMediaCreditId": "delia-persa",
+        "modalMediaCreditId": "",
         "themes": ["Adaptive"],
-	    "teamMembers": ["delia-persa"]
+	    "teamMembers": [""]
     },
 {
         "id": "research5",
         "title": "Cells & Smart Materials: Modelling Biological Impacts on IPMCs",
         "description": "Synthetic ionic polymer-metal composites (IPMCs) have existed for over 20 years, and more recently biocompatible and naturally derived materials have facilitated IPMCs to function as scaffolds for growing living cells. Although there has been a diverse array of computational models that simulate ion transport, fluid flow, and the resulting stress/strain distribution across the material using continuum mechanics, the impact of cells seeded on these IPMCs, and the IPMCs back on to the growing cells, has been less well understood and characterised. One solution involves employing hybrid modelling approaches to better understand the impact of living cells on the actuation mechanism of IPMCs, where a discrete agent-based cell model is coupled with the continuum mechanics of IPMCs. This allows for a detailed representation of individual cell behaviour, such as adhesion, proliferation, and interaction with the surface while maintaining a macroscopic view of the mechanical and electrochemical response of the IPMC material. By integrating these two modelling frameworks, we can explore how cellular activity alters IPMC performance, offering new insights into developing electroactive scaffolds for tissue engineering.",
-        "image": "./asset/img/flow.png",
-	"modalMedia": "./asset/img/flow.png",
+        "image": "./assets/img/flow.png",
+	"modalMedia": "./assets/img/flow.png",
         "modalMediaCaption": "Modelling is a powerful tool for designing and optimising these bio-integrated systems, providing both a means to simulate parameter variations and a framework for knowledge generation. Here finite element models of of oxygen A. velocity and B. concentration in cell culture media across a porous scaffold have been generated to understand the impact of a changing scaffold structure on cellular populations.",
         "modalMediaCreditId": "malavika-nair",
         "themes": ["Adaptive"],
@@ -57,8 +57,8 @@
         "id": "research6",
         "title": "Ultrasound-Mediated Seeding and Vascularisation in Engineered Skin Constructs",
         "description": "The development of large, full-thickness engineered tissues remains a significant challenge in regenerative medicine. For cellular scaffolds above a critical size, insufficient nutrient diffusion and limited cell penetration can lead to the formation of a necrotic core. One strategy involves the investigating the potential of ultrasound-mediated cell seeding and vascularisation (the formation of blood vessels) to mitigate the formation of these necrotic cores in engineered skin tissue constructs. As part of this work, we investigate the ability to fabricate ultrasound-responsive tissue engineering models, and investigate the impact of ultrasound as a stimulus on different aspects that impact tissue growth. As part of engineering such models, we aim to develop an understanding of the impact of ultrasound-mediated cavitation and heating for enhanced nutrient transport as well as on cellular and tissue function.",
-        "image": "./asset/img/vascularisedscaffold.png",
-	    "modalMedia": "./asset/img/vascularisedscaffold.png",
+        "image": "./assets/img/vascularisedscaffold.png",
+	    "modalMedia": "./assets/img/vascularisedscaffold.png",
         "modalMediaCaption": "A collagen scaffold (green) seeded with a co-culture of human dermal fibroblasts and human umbilical vein endothelial cells. The nuclei of all cells are stained blue, and CD31, a surface receptor on the endothelial cells is stained red in this image, highlighting the blood vessels that have been formed in this tissue construct.",
         "modalMediaCreditId": "veronica-lucian",
         "themes": ["Regenerative","Therapeutic"],
@@ -69,8 +69,8 @@
         "id": "research7",
         "title": "3D Cryoprinting for Large-Scale Interface-Free Scaffolds",
         "description": "3D cryoprinting is a technique that utilises a low-temperature surface to improve the manufacturability of soft materials that are difficult to process in other ways due to low shape fidelity. Typical approaches to 3D printing of soft and low–viscosity materials require modifications to the material’s chemistry following printing to facilitate solidification, including the incorporation of photopolymerization additives and cross-linking agents or baths, or heat-assisted solvent evaporation. For several biological materials, these approaches have been shown to limit the range of biochemistries or mechanics achievable in the final printed structure, limiting the ability to successfully integrate with biological tissues. Cryoprinting techniques can maintain the bioactivity of natural biopolymers by preserving the original polymer chemistry while controlling the printed geometry by near-immediate freezing of the viscous slurry following deposition, eliminating the need to adapt or heat the material during manufacture. Using these cryoprinting techniques, large, 3D, interface–free and interconnected mesoporous scaffolds can be successfully produced from dilute aqueous suspensions of structural biopolymers, offering significant potential for improved scaffold biointegration.",
-        "image": "./asset/img/cryoprinting.jpeg",
-	    "modalMedia": "./asset/img/cryoprinting.jpeg",
+        "image": "./assets/img/cryoprinting.jpeg",
+	    "modalMedia": "./assets/img/cryoprinting.jpeg",
         "modalMediaCaption": "Cryoprinting uses a low-temperature surface, allowing us to bypass limitations encountered in typical approaches to 3D printing. This allows us to directly print the material of interest without modifications to the material’s chemistry to generate large scalable structures.",
         "modalMediaCreditId": "sam-baker-jones",
         "themes": ["Regenerative"],
@@ -90,8 +90,8 @@
         "title": "Biodegradable Ureteric Stents",
         "description": "The placement of ureteric stents is one of the most common interventions used by urologists, in order to facilitate drainage of urine from the kidney to the bladder in the presence of an obstruction. Despite their clinical utility, ureteric stents are often associated with side-effects, leading to patient discomfort and causing a financial burden on healthcare systems. Biodegradable ureteric stents offer a potential solution to stent-associated side effects, while offering potential for drug elution into the system. As part of this project we look into optimising the design, composition and flow profiles to ensure that biodegradable stents engineered for this purpose are suitable for use in a heavily bacteria and mineral-rich environment.",
         "themes": ["Therapeutic"],
-	    "image": "./asset/img/bus.png",
-	    "modalMedia": "./asset/img/bus.png",
+	    "image": "./assets/img/bus.png",
+	    "modalMedia": "./assets/img/bus.png",
         "modalMediaCaption": "Scanning electron micrographs of ureteric stents subjected to different simulated encrustration environments 1-2. Pre-encrustation study at magnifications x60 and x200 3-4. Post-encrustation study at magnifications x60 and x200 with zoomed section at magnification of x500.",
         "modalMediaCreditId": "lauren-gargan",
 	    "teamMembers": ["lauren-gargan","ragini-shet"]
