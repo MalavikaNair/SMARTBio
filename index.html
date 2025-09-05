@@ -18,7 +18,7 @@
   <!-- Local Fonts -->
   <link rel="stylesheet" href="./assets/css/fonts.css">
   <!-- Your custom stylesheet -->
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
 
   <!-- Local Marked.js -->
   <script src="./assets/js/marked.min.js"></script>
@@ -147,7 +147,7 @@
         <section id="news-page" class="page-section py-28" aria-busy="true">
             <div class="container mx-auto px-6 fade-in-section">
                 <h2 class="text-4xl font-bold text-center mb-12 section-title">Latest News</h2>
-                <div id="news-list" class="space-y-8 max-w-4xl mx-auto" aria-live="polite">
+                <div id="news-list" class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" aria-live="polite">
                     <div class="loader" aria-label="Loading news list..."></div>
                     <!-- News articles will be dynamically loaded here by JavaScript -->
                 </div>
@@ -194,7 +194,7 @@
                         <svg class="w-6 h-6 text-primary" aria-hidden="true"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
                     </button>
                     <div id="outreach-news-content" class="collapsible-content">
-                        <div id="outreach-news-list" class="space-y-8 max-w-4xl mx-auto" aria-live="polite">
+                        <div id="outreach-news-list" class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" aria-live="polite">
                             <div class="loader" aria-label="Loading outreach news..."></div>
                             <!-- Outreach news will be dynamically loaded here by JavaScript -->
                         </div>
@@ -228,8 +228,9 @@
                 <h2 class="text-4xl font-bold text-center mb-12 section-title">Get In Touch</h2>
                 <p class="text-lg text-slate-200 mb-4">We are always looking for passionate students and collaborators.</p>
                 <p class="text-lg text-slate-200 mb-8">Interested in joining us or have a question? Reach out!</p>
+                <a href="" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/40">Email Us</a>
                 <address class="mt-12 text-medium-text not-italic">
-                    <p>SMART Biomaterials</p>
+                    <p>SMART Biomaterials Group</p>
                     <p>Institute of Biomedical Engineering - Marcela Botnar Wing</p>
                     <p>Botnar Research Centre, University of Oxford</p>
                     <p>Windmill Road, Headington, Oxford, OX3 7LD, UK</p>
