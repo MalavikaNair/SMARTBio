@@ -528,10 +528,18 @@ function createNewsCarouselSlideHtml(item) {
   display: block;
 }
 
-/* Cards use 8rem avatars; keep that too */
-.card .rounded-full {
-  width: 8rem;
-  height: 8rem;
+/* Avatars in cards ONLY (not buttons) */
+.card img.rounded-full {
+  width: 8rem;      /* w-32 */
+  height: 8rem;     /* h-32 */
+  object-fit: cover;
+  display: block;
+}
+
+/* Avatar in the person modal */
+.modal-content img.rounded-full {
+  width: 12rem;     /* w-48 */
+  height: 12rem;    /* h-48 */
   object-fit: cover;
   display: block;
 }
