@@ -423,8 +423,8 @@ const Renderer = (() => {
     function createOutreachNewsItemHtml(newsItem) {
         return `
             <div class="card rounded-lg p-4 flex flex-col sm:flex-row items-start sm:space-x-4">
-                <div class="bg-primary text-white text-center rounded-lg p-2 w-full sm:w-24 mb-2 sm:mb-0 flex-shrink-0">
-                    <p class="text-sm font-bold">${newsItem.date.day} ${newsItem.date.month} ${newsItem.date.year}</p>
+                <div class="bg-primary text-white text-center rounded-lg px-3 py-2 inline-flex w-auto mb-2 sm:mb-0 flex-shrink-0">
+                  <span class="text-sm font-bold">${newsItem.date.day} ${newsItem.date.month} ${newsItem.date.year}</span>
                 </div>
                 <div class="flex-grow">
                     <h3 class="text-lg font-bold text-light-text">${newsItem.title}</h3>
@@ -455,16 +455,17 @@ const Renderer = (() => {
      * @returns {string} HTML string for the carousel slide.
      */
     function createNewsCarouselSlideHtml(item) {
-        return `
-            <div class="carousel-slide text-center flex items-center gap-4" role="group" aria-label="${item.title}">
-                <img src="${item.image}" alt="${item.title}" class="w-1/3 rounded-lg object-cover" loading="lazy">
-                <div class="w-2/3 text-left">
-                    <h3 class="text-xl font-bold text-primary">${item.title}</h3>
-                    <p class="text-medium-text mt-2 text-sm">${item.description}</p>
-                </div>
-            </div>
-        `;
+      return `
+        <div class="carousel-slide text-center flex items-center gap-4" role="group" aria-label="${item.title}">
+          <img src="${item.image}" alt="${item.title}" class="carousel-img rounded-lg" loading="lazy">
+          <div class="carousel-copy text-left">
+            <h3 class="text-xl font-bold text-primary">${item.title}</h3>
+            <p class="text-medium-text mt-2 text-sm">${item.description}</p>
+          </div>
+        </div>
+      `;
     }
+
 
     /**
      * Creates an HTML string for a news list item.
@@ -474,10 +475,8 @@ const Renderer = (() => {
     function createNewsListItemHtml(item) {
         return `
             <div class="card rounded-lg p-6 flex flex-col sm:flex-row items-start sm:space-x-6 cursor-pointer" data-news-id="${item.id}">
-                <div class="bg-primary text-white text-center rounded-lg p-3 w-full sm:w-auto mb-4 sm:mb-0 flex-shrink-0">
-                    <p class="text-sm font-bold">${item.date.month}</p>
-                    <p class="text-2xl font-bold">${item.date.day}</p>
-                    <p class="text-sm font-bold">${item.date.year}</p>
+                <div class="bg-primary text-white text-center rounded-lg px-3 py-2 inline-flex w-auto mb-4 sm:mb-0 flex-shrink-0">
+                  <span class="text-sm font-bold">${item.date.day} ${item.date.month} ${item.date.year}</span>
                 </div>
                 <div>
                     <h3 class="text-xl font-bold text-light-text">${item.title}</h3>
@@ -1389,3 +1388,4 @@ const App = (() => {
 
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', App.init);
+
