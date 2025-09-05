@@ -574,17 +574,6 @@ function createNewsCarouselSlideHtml(item) {
     function createPersonModalHtml(person, borderColorClass) {
       const associatedContentHtml = getAssociatedContentForPerson(person.id);
     
-      const scholarHref = person.googleScholar ? Utils.normalizeScholar(person.googleScholar) : "";
-      const linksBlock = scholarHref
-        ? `<div class="mt-4 flex gap-3">
-             <a href="${scholarHref}"
-               target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
-               aria-label="Open ${person.name}'s Google Scholar profile">
-              Scholar
-            </a>
-           </div>`
-        : "";
     
       return `
         <div id="${person.id}" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="${person.id}-title" aria-describedby="${person.id}-bio">
@@ -1457,6 +1446,7 @@ window.addEventListener("load", () => {
     CarouselManager.updateCarousel(); 
   }
 });
+
 
 
 
