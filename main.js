@@ -1085,56 +1085,63 @@ const CarouselManager = (() => {
     let slideWidth = 0;
 
     function updateCarousel() {
-        if (!DOMElements.newsCarouselTrack) return;
-        slides = Array.from(DOMElements.newsCarouselTrack.children).filter(el => !el.classList.contains('loader')); // Filter out loader
-        if (slides.length === 0) return;
+  if (!DOMElements.newsCarouselTrack) return;
 
-         const viewportWidth = DOMElements.newsCarouselTrack.getBoundingClientRect().width;
-         // keep slides sensible on ultrawide and very narrow screens
-          const targetWidth = Math.min(Math.max(viewportWidth, 720), 1040);
-    
-          slides.forEach(slide => {
-            slide.style.boxSizing = 'border-box';
-            slide.style.flex = `0 0 ${targetWidth}px`;
-            slide.style.width = `${targetWidth}px`;
-            slide.style.minWidth = `${targetWidth}px`;  // beat any min-width:100%
-            // optional: center content inside the slide if yours is narrow
-            slide.style.margin = '0 auto';
+  // slides (skip loader)
+  slides = Array.from(DOMElements.newsCarouselTrack.children)
+    .filter(el => !el.classList.contains('loader'));
+  if (!slides.length) return;
+
+  // Viewport width of the track container
+  const viewport = DOMElements.newsCarouselTrack.getBoundingClientRect().width;
+
+  // Clamp to a sensible range so ultra-wide screens don't sprawl
+  const targetWidth = Math.min(Math.max(Math.round(viewport), 720), 1040);
+
+  // Read the CSS gap so we translate by width + gap each step
+  const cs = getComputedStyle(DOMElements.newsCarouselTrack);
+  const gap =
+    parseFloat(cs.columnGap || cs.gap || '0') ||
+    parseFloat(cs['grid-column-gap'] || '0') || 0;
+
+  // Normalize each slide's width
+  slides.forEach(slide => {
+    slide.style.boxSizing = 'border-box';
+    slide.style.flex = `0 0 ${targetWidth}px`;
+    slide.style.width = `${targetWidth}px`;
+    slide.style.minWidth = `${targetWidth}px`;
+    slide.style.margin = '0'; // ensure margins don't add unexpected width
+  });
+
+  // Use unified width for translate calculations, accounting for the gap
+  slideWidth = targetWidth;
+  const step = slideWidth + gap;
+  DOMElements.newsCarouselTrack.style.transform = `translateX(${-step * currentIndex}px)`;
+
+  // Dots (unchanged)
+  if (DOMElements.carouselDotsContainer) {
+    DOMElements.carouselDotsContainer.innerHTML = '';
+    slides.forEach((_, index) => {
+      const dot = document.createElement('button');
+      dot.className = `carousel-dot ${index === currentIndex ? 'active' : ''}`;
+      dot.setAttribute('role', 'tab');
+      dot.setAttribute('aria-selected', index === currentIndex);
+      dot.setAttribute('aria-controls', `news-carousel-slide-${index}`);
+      dot.addEventListener('click', () => {
+        currentIndex = index;
+        updateCarousel();
       });
+      DOMElements.carouselDotsContainer.appendChild(dot);
+    });
+  }
 
-      // now use the unified width for translate calculations
-      slideWidth = targetWidth;
-      DOMElements.newsCarouselTrack.style.transform = `translateX(${-slideWidth * currentIndex}px)`;
-
-
-        // Update carousel dots
-        if (DOMElements.carouselDotsContainer) {
-            DOMElements.carouselDotsContainer.innerHTML = ''; // Clear existing dots
-            slides.forEach((_, index) => {
-                const dot = document.createElement('button');
-                dot.className = `carousel-dot ${index === currentIndex ? 'active' : ''}`;
-                dot.setAttribute('role', 'tab');
-                dot.setAttribute('aria-selected', index === currentIndex);
-                dot.setAttribute('aria-controls', `news-carousel-slide-${index}`); // Assuming slides have IDs
-                dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
-                dot.addEventListener('click', () => {
-                    currentIndex = index;
-                    updateCarousel();
-                });
-                DOMElements.carouselDotsContainer.appendChild(dot);
-            });
-        }
-
-        // Update aria-current for carousel slides (optional, for more detailed accessibility)
-        slides.forEach((slide, index) => {
-            slide.id = `news-carousel-slide-${index}`; // Assign ID for aria-controls
-            if (index === currentIndex) {
-                slide.setAttribute('aria-current', 'true');
-            } else {
-                slide.removeAttribute('aria-current');
-            }
-        });
-    }
+  // IDs and aria-current
+  slides.forEach((slide, index) => {
+    slide.id = `news-carousel-slide-${index}`;
+    if (index === currentIndex) slide.setAttribute('aria-current', 'true');
+    else slide.removeAttribute('aria-current');
+  });
+}
 
     function setupCarousel() {
         if (DOMElements.newsCarouselTrack) {
@@ -1450,6 +1457,7 @@ window.addEventListener("load", () => {
     CarouselManager.updateCarousel(); 
   }
 });
+
 
 
 
