@@ -478,4 +478,26 @@ function createNewsCarouselSlideHtml(item) {
   line-height: 1.2 !important;
   white-space: normal;                 /* allow wrap if long */
   overflow-wrap: anywhere;             /* wrap at spaces */
+  margin-right: 0.5rem;                 /* right padding after pill */
+
+}
+/* Outreach news: make pill compact + add gap */
+#outreach-news-list .card {
+  align-items: flex-start !important;   /* stop equal-height stretching */
+}
+
+#outreach-news-list .card > .bg-primary {
+  display: inline-flex !important;      /* shrink to text size */
+  align-items: center;
+  justify-content: center;
+  width: auto !important;               /* cancel w-full / w-24 */
+  height: auto !important;              /* cancel h-full */
+  flex: 0 0 auto !important;            /* don’t flex-grow */
+  align-self: flex-start !important;    /* opt out of stretch */
+  padding: 0.25rem 0.5rem !important;   /* compact pill look */
+  border-radius: 0.5rem !important;
+  line-height: 1.2 !important;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  margin-right: 0.5rem;                 /* right padding after pill */
 }
