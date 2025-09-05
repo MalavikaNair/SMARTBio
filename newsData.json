@@ -28,7 +28,7 @@
         "title": "Matthew Burgess wins Best Poster Presentation Award at Inaugural Bioelectricity Cluster 2025",
         "description": "Matthew Burgess was recognised for his poster on \"Bio-ionomeric polymers for dynamic tissue engineering\" at the inaugural Bioelectricity Cluster 2025 held at the University of Oxford.",
         "date": { "month": "APR", "day": "12","year": "2025" },
-        "image": "",
+        "image": "./assets/img/bioelectricity-award.jpg",
         "themes": ["Regenerative", "Modulating"]
     },
     {
