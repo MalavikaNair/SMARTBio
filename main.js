@@ -528,15 +528,12 @@ function createNewsCarouselSlideHtml(item) {
       const linksRow = scholarHref
         ? `<div class="mt-3 flex justify-center gap-2">
              <a href="${scholarHref}"
-                target="_blank" rel="noopener noreferrer"
-                class="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
-                aria-label="Open ${member.name}'s Google Scholar profile">
-               <!-- Google Scholar icon (SVG) -->
-               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                 <path d="M10.1 2.1a1 1 0 0 1 1.27 0l9 7.2a1 1 0 0 1 0 1.57l-9 7.2a1 1 0 0 1-1.6-.78V14a7 7 0 1 1 0-4v-2.3a1 1 0 0 1 .33-.75zM9 12a5 5 0 1 0 0 .02V12z"/>
-               </svg>
-               Scholar
-             </a>
+               target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
+               aria-label="Open ${member.name}'s Google Scholar profile">
+              <img src="assets/icons/google-scholar.svg" alt="" class="w-4 h-4" aria-hidden="true">
+              Scholar
+            </a>
            </div>`
         : "";
     
@@ -581,14 +578,12 @@ function createNewsCarouselSlideHtml(item) {
       const linksBlock = scholarHref
         ? `<div class="mt-4 flex gap-3">
              <a href="${scholarHref}"
-                target="_blank" rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 text-sm text-primary hover:text-primary-dark"
-                aria-label="Open ${person.name}'s Google Scholar profile">
-               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                 <path d="M10.1 2.1a1 1 0 0 1 1.27 0l9 7.2a1 1 0 0 1 0 1.57l-9 7.2a1 1 0 0 1-1.6-.78V14a7 7 0 1 1 0-4v-2.3a1 1 0 0 1 .33-.75zM9 12a5 5 0 1 0 0 .02V12z"/>
-               </svg>
-               Google Scholar
-             </a>
+               target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
+               aria-label="Open ${member.name}'s Google Scholar profile">
+              <img src="assets/icons/google-scholar.svg" alt="" class="w-4 h-4" aria-hidden="true">
+              Scholar
+            </a>
            </div>`
         : "";
     
@@ -1440,6 +1435,7 @@ window.addEventListener("load", () => {
     track.scrollLeft = 0; // force a recalculation of scrollable area
   }
 });
+
 
 
 
