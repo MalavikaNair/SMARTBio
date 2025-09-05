@@ -279,7 +279,7 @@ const Renderer = (() => {
 
         return `
             <div class="card rounded-lg p-6 text-center flex flex-col items-center">
-                <img src="${item.image}" alt="${item.title}" class="w-full h-48 object-cover rounded-md mb-4 border border-primary-dark" loading="lazy">
+                <img src="${item.image}" alt="${item.title}" class="research-card-img rounded-md mb-4 border border-primary-dark" loading="lazy">
                 <h3 class="text-xl font-bold text-light-text mb-2">${item.title}</h3>
                 ${teamMembersHtml}
                 <button data-research-id="${item.id}" class="open-research-modal-btn bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300 mt-auto">More Info →</button>
@@ -1457,6 +1457,7 @@ window.addEventListener("load", () => {
     CarouselManager.updateCarousel(); 
   }
 });
+
 
 
 
