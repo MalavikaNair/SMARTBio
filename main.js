@@ -590,7 +590,7 @@ function createNewsCarouselSlideHtml(item) {
         <div id="${person.id}" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="${person.id}-title" aria-describedby="${person.id}-bio">
           <div class="modal-content flex flex-col md:flex-row items-center gap-8">
             <button class="modal-close" aria-label="Close ${person.name} bio modal">×</button>
-            <img src="${person.image}" class="w-48 h-48 rounded-full border-4 ${borderColorClass}" alt="${person.name}" loading="lazy">
+            <img src="${person.image}" class="w-48 h-48 object-cover rounded-full border-4 ${borderColorClass}" alt="${person.name}" loading="lazy">
             <div class="text-center md:text-left">
               <h2 id="${person.id}-title" class="text-3xl font-bold text-light-text">${person.name}</h2>
               <p class="text-primary font-semibold text-xl mb-4">${person.role}</p>
@@ -1457,6 +1457,7 @@ window.addEventListener("load", () => {
     CarouselManager.updateCarousel(); 
   }
 });
+
 
 
 
