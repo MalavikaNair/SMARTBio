@@ -585,7 +585,6 @@ function createNewsCarouselSlideHtml(item) {
               <p class="text-primary font-semibold text-xl mb-4">${person.role}</p>
               <p id="${person.id}-bio" class="text-medium-text">${person.bio}</p>
               ${associatedContentHtml}
-              ${linksBlock}
               <div class="mt-4 text-left">
                 <label class="flex items-center text-xs text-slate-500">
                   <input type="checkbox" checked disabled class="form-checkbox h-4 w-4 text-primary bg-slate-700 border-slate-600 rounded mr-2">
@@ -1446,6 +1445,7 @@ window.addEventListener("load", () => {
     CarouselManager.updateCarousel(); 
   }
 });
+
 
 
 
