@@ -77,11 +77,6 @@ const DOMElements = {
  * Utility functions for common tasks like loading indicators and text truncation.
  */
 const Utils = (() => {
-    /**
-     * Shows a loading spinner and sets aria-busy to true on the parent section.
-     * @param {HTMLElement} element - The loader element.
-     * @param {HTMLElement} parentSection - The parent section to set aria-busy on.
-     */
     function toAbsoluteUrl(url) {
       if (!url) return "";
       return /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -93,31 +88,20 @@ const Utils = (() => {
       if (/^https?:\/\//i.test(urlOrId)) return urlOrId;
       return `https://scholar.google.com/citations?user=${encodeURIComponent(urlOrId)}`;
     }
+
     function showLoading(element, parentSection) {
         if (element) element.style.display = 'block';
         if (parentSection) parentSection.setAttribute('aria-busy', 'true');
     }
 
-    /**
-     * Hides a loading spinner and sets aria-busy to false on the parent section.
-     * @param {HTMLElement} element - The loader element.
-     * @param {HTMLElement} parentSection - The parent section to set aria-busy on.
-     */
     function hideLoading(element, parentSection) {
         if (element) element.style.display = 'none';
         if (parentSection) parentSection.setAttribute('aria-busy', 'false');
     }
 
-    /**
-     * Truncates text and adds a "Read More" button.
-     * @param {string} text - The full text.
-     * @param {number} maxLength - The maximum length before truncation.
-     * @param {string} id - Unique ID for the element to manage expansion.
-     * @returns {string} HTML string with truncated text and button.
-     */
     function truncateText(text, maxLength, id) {
-        if (text.length <= maxLength) {
-            return `<p>${text}</p>`;
+        if (!text || text.length <= maxLength) {
+            return `<p>${text || ''}</p>`;
         }
         const truncated = text.substring(0, maxLength) + '...';
         return `
@@ -127,11 +111,6 @@ const Utils = (() => {
         `;
     }
 
-    /**
-     * Toggles the visibility of full/truncated text.
-     * @param {string} id - The ID of the text block to toggle.
-     * @param {HTMLElement} button - The button that triggered the toggle.
-     */
     function toggleTextVisibility(id, button) {
         const truncatedElement = document.getElementById(`truncated-text-${id}`);
         const fullElement = document.getElementById(`full-text-${id}`);
@@ -152,16 +131,13 @@ const Utils = (() => {
         }
     }
 
-    return { showLoading, hideLoading, truncateText, toggleTextVisibility,normalizeScholar, toAbsoluteUrl };
+    return { showLoading, hideLoading, truncateText, toggleTextVisibility, normalizeScholar, toAbsoluteUrl };
 })();
 
 /**
  * Manages data fetching and rendering of all content sections.
  */
 const DataManager = (() => {
-    /**
-     * Fetches all necessary JSON data.
-     */
     async function fetchAllData() {
         const loaders = [
             DOMElements.researchLoading, DOMElements.teamLoading, DOMElements.alumniLoading,
@@ -216,7 +192,6 @@ const DataManager = (() => {
             console.error('Error loading data:', error);
             const errorMessage = `<p class="text-red-500 text-center">Failed to load data: ${error.message}. Please check the console for more details and ensure data files exist.</p>`;
 
-            // Display error message in relevant sections
             if (DOMElements.researchContentGrid) DOMElements.researchContentGrid.innerHTML = errorMessage;
             if (DOMElements.teamGrid) DOMElements.teamGrid.innerHTML = errorMessage;
             if (DOMElements.alumniGrid) DOMElements.alumniGrid.innerHTML = errorMessage;
@@ -239,9 +214,6 @@ const DataManager = (() => {
  * Handles rendering of various content sections and their individual items.
  */
 const Renderer = (() => {
-    /**
-     * Renders all content sections after data is loaded.
-     */
     function renderAllContent() {
         renderResearchItems();
         renderOutreachTalks();
@@ -252,11 +224,6 @@ const Renderer = (() => {
         renderGamesAndFilters();
     }
 
-    /**
-     * Creates an HTML string for a research card.
-     * @param {object} item - The research item data.
-     * @returns {string} HTML string for the research card.
-     */
     function createResearchCardHtml(item) {
         let teamMembersHtml = '';
         if (item.teamMembers && item.teamMembers.length > 0) {
@@ -295,11 +262,6 @@ const Renderer = (() => {
         }
     }
 
-    /**
-     * Creates an HTML string for an outreach talk card.
-     * @param {object} talk - The outreach talk data.
-     * @returns {string} HTML string for the talk card.
-     */
     function createOutreachTalkCardHtml(talk) {
         let mediaHtml = '';
         if (talk.videoLink) {
@@ -354,17 +316,12 @@ const Renderer = (() => {
         }
     }
 
-    /**
-     * Creates an HTML string for an academic presentation card.
-     * @param {object} pres - The academic presentation data.
-     * @returns {string} HTML string for the presentation card.
-     */
     function createAcademicPresentationCardHtml(pres) {
-     let mediaHtml = '';
+        let mediaHtml = '';
 
-  if (pres.videoLink) {
-    if (pres.videoLink.includes('youtube.com/embed/')) {
-      mediaHtml = `
+        if (pres.videoLink) {
+            if (pres.videoLink.includes('youtube.com/embed/')) {
+                mediaHtml = `
         <div class="relative w-full" style="padding-bottom: 56.25%;">
           <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark"
                   src="${pres.videoLink}"
@@ -373,21 +330,21 @@ const Renderer = (() => {
                   allowfullscreen
                   loading="lazy"></iframe>
         </div>`;
-    } else {
-      mediaHtml = `
+            } else {
+                mediaHtml = `
         <video controls class="w-full h-auto rounded-md border border-primary-dark" loading="lazy">
           <source src="${pres.videoLink}" type="video/mp4">
           Your browser does not support the video tag.
         </video>`;
-    }
-  } else {
-    const imgSrc = pres.image || 'images/placeholder-400x225.png'; // fallback path you control
-    mediaHtml = `
+            }
+        } else {
+            const imgSrc = pres.image || 'images/placeholder-400x225.png'; // fallback path you control
+            mediaHtml = `
       <img src="${imgSrc}"
            alt="${pres.title} Placeholder"
            class="w-full h-auto rounded-md mb-4 border border-primary-dark"
            loading="lazy">`;
-  }
+        }
 
         let speakerHtml = '';
         if (pres.speakerIds && Array.isArray(pres.speakerIds) && pres.speakerIds.length > 0) {
@@ -426,11 +383,6 @@ const Renderer = (() => {
         }
     }
 
-    /**
-     * Creates an HTML string for an outreach news item.
-     * @param {object} newsItem - The outreach news item data.
-     * @returns {string} HTML string for the news item.
-     */
     function createOutreachNewsItemHtml(newsItem) {
         return `
             <div class="card rounded-lg p-4 flex flex-col sm:flex-row items-start sm:space-x-4">
@@ -460,30 +412,18 @@ const Renderer = (() => {
         }
     }
 
-    /**
-     * Creates an HTML string for a news carousel slide.
-     * @param {object} item - The news item data.
-     * @returns {string} HTML string for the carousel slide.
-     */
-function createNewsCarouselSlideHtml(item) {
-  return `
-    <div class="carousel-slide flex items-start gap-4 text-left" role="group" aria-label="${item.title}">
-      <img src="${item.image}" alt="${item.title}" class="carousel-img rounded-lg" loading="lazy">
-      <div class="carousel-copy">
-        <h3 class="text-xl font-bold text-primary">${item.title}</h3>
-        <p class="text-medium-text mt-2 text-sm">${item.description}</p>
-      </div>
-    </div>
-  `;
-}
+    function createNewsCarouselSlideHtml(item) {
+      return `
+        <div class="carousel-slide flex items-start gap-4 text-left" role="group" aria-label="${item.title}">
+          <img src="${item.image}" alt="${item.title}" class="carousel-img rounded-lg" loading="lazy">
+          <div class="carousel-copy">
+            <h3 class="text-xl font-bold text-primary">${item.title}</h3>
+            <p class="text-medium-text mt-2 text-sm">${item.description}</p>
+          </div>
+        </div>
+      `;
+    }
 
-
-
-    /**
-     * Creates an HTML string for a news list item.
-     * @param {object} item - The news item data.
-     * @returns {string} HTML string for the news list item.
-     */
     function createNewsListItemHtml(item) {
         return `
             <div class="card rounded-lg p-6 flex flex-col sm:flex-row items-start sm:space-x-6 cursor-pointer" data-news-id="${item.id}">
@@ -523,29 +463,30 @@ function createNewsCarouselSlideHtml(item) {
      * @param {object} member - The team member data.
      * @returns {string} HTML string for the team card.
      */
-function createTeamCardHtml(member) {
-  const scholarHref = member.googleScholar ? Utils.normalizeScholar(member.googleScholar) : "";
-  const linksRow = scholarHref
-    ? `<div class="mt-3 flex justify-center gap-2">
-         <a href="${scholarHref}"
-            target="_blank" rel="noopener noreferrer"
-            class="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
-            aria-label="Open ${member.name}'s Google Scholar profile">
-           <img src="assets/img/google-scholar.svg" alt="" class="w-4 h-4 inline-block" aria-hidden="true">
-           Scholar
-         </a>
-       </div>`
-    : "";
+    function createTeamCardHtml(member) {
+      const scholarHref = member.googleScholar ? Utils.normalizeScholar(member.googleScholar) : "";
+      const linksRow = scholarHref
+        ? `<div class="mt-3 flex justify-center gap-2">
+             <a href="${scholarHref}"
+                target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
+                aria-label="Open ${member.name}'s Google Scholar profile">
+               <img src="assets/img/google-scholar.svg" alt="" class="w-4 h-4 inline-block" aria-hidden="true">
+               Scholar
+             </a>
+           </div>`
+        : "";
 
-  return `
-    <div class="card rounded-lg p-6 text-center">
-      <img src="${member.image}" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-primary" alt="${member.name}" loading="lazy">
-      <h3 class="text-xl font-bold text-light-text">${member.name}</h3>
-      <p class="text-primary font-semibold">${member.role}</p>
-      ${linksRow}
-      <button data-modal-target="${member.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
-    </div>
-  `;
+      return `
+        <div class="card rounded-lg p-6 text-center">
+          <img src="${member.image}" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-primary" alt="${member.name}" loading="lazy">
+          <h3 class="text-xl font-bold text-light-text">${member.name}</h3>
+          <p class="text-primary font-semibold">${member.role}</p>
+          ${linksRow}
+          <button data-modal-target="${member.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
+        </div>
+      `;
+    } // <-- correctly closed
 
     /**
      * Creates an HTML string for an alumni member card.
@@ -558,7 +499,7 @@ function createTeamCardHtml(member) {
             <img src="${alumnus.image}" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-slate-400" alt="${alumnus.name}" loading="lazy">
                 <h3 class="text-xl font-bold text-light-text">${alumnus.name}</h3>
                 <p class="text-slate-400 font-semibold">${alumnus.role}</p>
-                <button data-modal-="${alumnus.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
+                <button data-modal-target="${alumnus.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
             </div>
         `;
     }
@@ -571,7 +512,6 @@ function createTeamCardHtml(member) {
      */
     function createPersonModalHtml(person, borderColorClass) {
       const associatedContentHtml = getAssociatedContentForPerson(person.id);
-    
     
       return `
         <div id="${person.id}" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="${person.id}-title" aria-describedby="${person.id}-bio">
@@ -595,16 +535,10 @@ function createTeamCardHtml(member) {
       `;
     }
 
-    /**
-     * Generates HTML for content associated with a given person ID.
-     * @param {string} personId - The ID of the person.
-     * @returns {string} HTML string containing links to associated content.
-     */
     function getAssociatedContentForPerson(personId) {
         let contentHtml = '';
         let hasContent = false;
 
-        // Research Projects
         const relatedResearch = researchData ? researchData.filter(r => Array.isArray(r.teamMembers) && r.teamMembers.includes(personId)) : [];
         if (relatedResearch.length > 0) {
             hasContent = true;
@@ -615,7 +549,6 @@ function createTeamCardHtml(member) {
             contentHtml += `</div>`;
         }
 
-        // Academic Presentations
         const relatedAcademicPresentations = academicPresentationsData ? academicPresentationsData.filter(p => Array.isArray(p.speakerIds) && p.speakerIds.includes(personId)) : [];
         if (relatedAcademicPresentations.length > 0) {
             hasContent = true;
@@ -626,7 +559,6 @@ function createTeamCardHtml(member) {
             contentHtml += `</div>`;
         }
 
-        // Outreach Talks
         const relatedOutreachTalks = outreachTalksData ? outreachTalksData.filter(t => Array.isArray(t.speakerIds) && t.speakerIds.includes(personId)) : [];
         if (relatedOutreachTalks.length > 0) {
             hasContent = true;
@@ -660,11 +592,6 @@ function createTeamCardHtml(member) {
         }
     }
 
-    /**
-     * Creates an HTML string for a game card.
-     * @param {object} game - The game data.
-     * @returns {string} HTML string for the game card.
-     */
     function createGameCardHtml(game) {
         return `
             <div class="game-card card rounded-lg p-6 text-center">
@@ -674,7 +601,7 @@ function createTeamCardHtml(member) {
                 <div class="flex flex-wrap justify-center gap-1 mb-4">
                     ${game.themes.map(theme => `<span class="bg-primary-dark text-xs text-white px-2 py-1 rounded-full">${theme}</span>`).join(' ')}
                 </div>
-                <a href="${game.file}" ="_blank" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">Play Game</a>
+                <a href="${game.file}" target="_blank" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">Play Game</a>
             </div>
         `;
     }
@@ -704,7 +631,7 @@ function createTeamCardHtml(member) {
 
     function renderGames(filter) {
         if (DOMElements.gamesGrid) DOMElements.gamesGrid.innerHTML = '';
-        if (!gamesData) return; // Exit if gamesData is not loaded
+        if (!gamesData) return;
 
         const filteredGames = gamesData.filter(game => filter === 'all' || game.themes.includes(filter));
 
@@ -724,7 +651,7 @@ function createTeamCardHtml(member) {
         renderNewsCarouselAndList,
         renderTeamAndAlumni,
         renderGamesAndFilters,
-        renderGames // Expose for filter functionality
+        renderGames
     };
 })();
 
@@ -734,29 +661,23 @@ function createTeamCardHtml(member) {
 const ModalManager = (() => {
     let lastFocusedElement = null; // To store element that opened the modal
 
-    /**
-     * Opens a modal and handles focus trapping.
-     * @param {HTMLElement} modal - The modal element to open.
-     * @param {HTMLElement} triggerElement - The element that triggered the modal.
-     */
     function openModal(modal, triggerElement) {
         lastFocusedElement = triggerElement;
         modal.classList.add('active');
-        modal.focus(); // Set focus to the modal overlay for keyboard accessibility
+        modal.focus();
 
-        // Trap focus inside the modal
         const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
         const firstFocusableElement = focusableElements[0];
         const lastFocusableElement = focusableElements[focusableElements.length - 1];
 
         modal.addEventListener('keydown', function trapFocus(e) {
             if (e.key === 'Tab') {
-                if (e.shiftKey) { // Shift + Tab
+                if (e.shiftKey) {
                     if (document.activeElement === firstFocusableElement) {
                         lastFocusableElement.focus();
                         e.preventDefault();
                     }
-                } else { // Tab
+                } else {
                     if (document.activeElement === lastFocusableElement) {
                         firstFocusableElement.focus();
                         e.preventDefault();
@@ -768,40 +689,31 @@ const ModalManager = (() => {
         });
 
         if (firstFocusableElement) {
-            firstFocusableElement.focus(); // Focus the first focusable element inside the modal
+            firstFocusableElement.focus();
         }
     }
 
-    /**
-     * Closes a modal and returns focus to the triggering element.
-     * @param {HTMLElement} modal - The modal element to close.
-     */
     function closeModal(modal) {
         modal.classList.remove('active');
         if (lastFocusedElement) {
-            lastFocusedElement.focus(); // Return focus to the element that opened the modal
+            lastFocusedElement.focus();
             lastFocusedElement = null;
         }
     }
 
-    /**
-     * Opens the research description modal with the given research item data.
-     * @param {object} researchItem - The research item data.
-     * @param {HTMLElement} triggerElement - The element that triggered the modal.
-     */
     function openResearchDescriptionModal(researchItem, triggerElement) {
         const researchModal = DOMElements.researchDescriptionModal;
 
         if (researchItem && researchModal) {
             DOMElements.researchModalTitle.textContent = researchItem.title;
-            DOMElements.researchModalDescription.textContent = researchItem.description; // Full description here
+            DOMElements.researchModalDescription.textContent = researchItem.description;
 
             DOMElements.researchModalMedia.innerHTML = '';
             DOMElements.researchModalCaption.textContent = '';
             DOMElements.researchModalCredit.innerHTML = '';
 
             if (researchItem.modalMedia) {
-                const mediaType = researchItem.modalMedia.endsWith('.mp4') || researchItem.modalMedia.endsWith('.webm') || researchItem.modalMedia.endsWith('.ogg') ? 'video' : 'image';
+                const mediaType = /\.(mp4|webm|ogg)$/i.test(researchItem.modalMedia) ? 'video' : 'image';
                 if (mediaType === 'image') {
                     const img = document.createElement('img');
                     img.src = researchItem.modalMedia;
@@ -809,7 +721,7 @@ const ModalManager = (() => {
                     img.className = 'w-full h-auto rounded-md object-cover border border-primary-dark';
                     img.setAttribute('loading', 'lazy');
                     DOMElements.researchModalMedia.appendChild(img);
-                } else if (mediaType === 'video') {
+                } else {
                     const video = document.createElement('video');
                     video.src = researchItem.modalMedia;
                     video.controls = true;
@@ -828,7 +740,7 @@ const ModalManager = (() => {
                     if (creditMember) {
                         const creditButton = document.createElement('button');
                         creditButton.className = 'open-modal-btn text-slate-500 hover:text-primary font-semibold';
-                        creditButton.setAttribute('data-modal-', creditMember.id);
+                        creditButton.setAttribute('data-modal-target', creditMember.id);
                         creditButton.textContent = `Photo Credit: ${creditMember.name}`;
                         DOMElements.researchModalCredit.appendChild(creditButton);
                     } else {
@@ -843,7 +755,7 @@ const ModalManager = (() => {
                 researchItem.teamMembers.forEach(memberId => {
                     const teamMember = teamData.find(member => member.id === memberId);
                     if (teamMember) {
-                        teamMembersHtml += `<button data-modal-="${teamMember.id}" class="open-modal-btn text-primary hover:text-light-text font-semibold">${teamMember.name}</button>`;
+                        teamMembersHtml += `<button data-modal-target="${teamMember.id}" class="open-modal-btn text-primary hover:text-light-text font-semibold">${teamMember.name}</button>`;
                     } else {
                         const alumnus = alumniData.find(alumni => alumni.id === memberId);
                         if (alumnus) {
@@ -861,30 +773,20 @@ const ModalManager = (() => {
         }
     }
 
-    /**
-     * Opens the news description modal with the given news item data.
-     * @param {object} newsItem - The news item data.
-     * @param {HTMLElement} triggerElement - The element that triggered the modal.
-     */
     function openNewsDescriptionModal(newsItem, triggerElement) {
         const newsModal = DOMElements.newsDescriptionModal;
 
         if (newsItem && newsModal) {
             DOMElements.newsModalTitle.textContent = newsItem.title;
             DOMElements.newsModalDate.textContent = `${newsItem.date.day} ${newsItem.date.month} ${newsItem.date.year}`;
-            DOMElements.newsModalDescription.textContent = newsItem.description; // Full description here
+            DOMElements.newsModalDescription.textContent = newsItem.description;
             DOMElements.newsModalImage.src = newsItem.image;
-            DOMElements.newsModalImage.alt = newsItem.title; // Ensure alt text is set
+            DOMElements.newsModalImage.alt = newsItem.title;
 
             openModal(newsModal, triggerElement);
         }
     }
 
-    /**
-     * Opens the outreach talk description modal with the given talk item data.
-     * @param {object} talkItem - The outreach talk item data.
-     * @param {HTMLElement} triggerElement - The element that triggered the modal.
-     */
     function openOutreachTalkModal(talkItem, triggerElement) {
         const talkModal = DOMElements.outreachTalkDescriptionModal;
 
@@ -926,48 +828,43 @@ const ModalManager = (() => {
         }
     }
 
-    /**
-     * Opens the academic presentation description modal with the given presentation item data.
-     * @param {object} presItem - The academic presentation item data.
-     * @param {HTMLElement} triggerElement - The element that triggered the modal.
-     */
     function openAcademicPresentationModal(presItem, triggerElement) {
         const presModal = DOMElements.academicPresentationDescriptionModal;
 
-  if (presItem && presModal) {
-    DOMElements.academicPresentationModalTitle.textContent = presItem.title;
-    DOMElements.academicPresentationModalDate.textContent =
-      `${presItem.date.day} ${presItem.date.month} ${presItem.date.year}`;
-    DOMElements.academicPresentationModalDescription.textContent = presItem.description;
+        if (presItem && presModal) {
+            DOMElements.academicPresentationModalTitle.textContent = presItem.title;
+            DOMElements.academicPresentationModalDate.textContent =
+              `${presItem.date.day} ${presItem.date.month} ${presItem.date.year}`;
+            DOMElements.academicPresentationModalDescription.textContent = presItem.description;
 
-    DOMElements.academicPresentationModalMedia.innerHTML = '';
+            DOMElements.academicPresentationModalMedia.innerHTML = '';
 
-    if (presItem.videoLink) {
-      if (presItem.videoLink.includes('youtube.com/embed/')) {
-        DOMElements.academicPresentationModalMedia.innerHTML = `
-          <div class="relative w-full" style="padding-bottom: 56.25%;">
-            <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark"
-                    src="${presItem.videoLink}"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen
-                    loading="lazy"></iframe>
-          </div>`;
-      } else {
-        DOMElements.academicPresentationModalMedia.innerHTML = `
-          <video controls class="w-full h-auto rounded-md border border-primary-dark" loading="lazy">
-            <source src="${presItem.videoLink}" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>`;
-      }
-    } else {
-      const imgSrc = presItem.image || 'images/placeholder-400x225.png'; // fallback path you control
-      DOMElements.academicPresentationModalMedia.innerHTML = `
-        <img src="${imgSrc}"
-             alt="${presItem.title} Placeholder"
-             class="w-full h-auto rounded-md mb-4 border border-primary-dark"
-             loading="lazy">`;
-    }
+            if (presItem.videoLink) {
+              if (presItem.videoLink.includes('youtube.com/embed/')) {
+                DOMElements.academicPresentationModalMedia.innerHTML = `
+                  <div class="relative w-full" style="padding-bottom: 56.25%;">
+                    <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark"
+                            src="${presItem.videoLink}"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                            loading="lazy"></iframe>
+                  </div>`;
+              } else {
+                DOMElements.academicPresentationModalMedia.innerHTML = `
+                  <video controls class="w-full h-auto rounded-md border border-primary-dark" loading="lazy">
+                    <source src="${presItem.videoLink}" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>`;
+              }
+            } else {
+              const imgSrc = presItem.image || 'images/placeholder-400x225.png'; // fallback path you control
+              DOMElements.academicPresentationModalMedia.innerHTML = `
+                <img src="${imgSrc}"
+                     alt="${presItem.title} Placeholder"
+                     class="w-full h-auto rounded-md mb-4 border border-primary-dark"
+                     loading="lazy">`;
+            }
 
             let speakerHtml = '';
             if (presItem.speakerIds && Array.isArray(presItem.speakerIds) && presItem.speakerIds.length > 0) {
@@ -986,28 +883,29 @@ const ModalManager = (() => {
         }
     }
 
-    /**
-     * Handles clicks on modal-related elements.
-     * @param {Event} e - The click event.
-     */
     function handleModalClicks(e) {
-        // Open person/alumni modal
-        if (e.target.matches('.open-modal-btn')) {
-            const modalId = e.target.getAttribute('data-modal-target');
+        // Open person/alumni modal (robust delegation)
+        const openBtn = e.target.closest('.open-modal-btn');
+        if (openBtn) {
+            const modalId = openBtn.getAttribute('data-modal-target');
             const modal = document.getElementById(modalId);
-            if(modal) openModal(modal, e.target);
+            if (modal) openModal(modal, openBtn);
+            return;
         }
+
         // Close modal by clicking close button or overlay
         if (e.target.matches('.modal-close') || e.target.matches('.modal-overlay')) {
             const activeModal = document.querySelector('.modal-overlay.active');
-            if(activeModal) closeModal(activeModal);
+            if (activeModal) closeModal(activeModal);
         }
+
         // Open Research modal (from research page cards)
         if (e.target.matches('.open-research-modal-btn')) {
             const researchId = e.target.getAttribute('data-research-id');
             const researchItem = researchData.find(item => item.id === researchId);
             openResearchDescriptionModal(researchItem, e.target);
         }
+
         // Open News modal (from news page cards or carousel)
         if (e.target.closest('.card.cursor-pointer[data-news-id]')) {
             const newsCard = e.target.closest('.card.cursor-pointer[data-news-id]');
@@ -1015,12 +913,14 @@ const ModalManager = (() => {
             const newsItem = newsData.find(item => item.id === newsId);
             openNewsDescriptionModal(newsItem, newsCard);
         }
+
         // Open Outreach Talk modal (from outreach page cards)
         if (e.target.matches('.open-outreach-talk-modal-btn')) {
             const talkId = e.target.getAttribute('data-outreach-talk-id');
             const talkItem = outreachTalksData.find(item => item.id === talkId);
             openOutreachTalkModal(talkItem, e.target);
         }
+
         // Open Academic Presentation modal (from outreach page cards)
         if (e.target.matches('.open-academic-presentation-modal-btn')) {
             const presId = e.target.getAttribute('data-academic-presentation-id');
@@ -1033,28 +933,23 @@ const ModalManager = (() => {
             const targetId = e.target.getAttribute('data-target-id');
             Utils.toggleTextVisibility(targetId, e.target);
         }
-        // Handle clicks on associated content links within person modals
+
+        // Associated content links within person modals
         if (e.target.matches('.associated-content-link')) {
             const type = e.target.dataset.type;
             const id = e.target.dataset.id;
 
-            closeModal(e.target.closest('.modal-overlay')); // Close the person modal first
+            closeModal(e.target.closest('.modal-overlay'));
 
             if (type === 'open-research-modal') {
                 const researchItem = researchData.find(item => item.id === id);
-                if (researchItem) {
-                    openResearchDescriptionModal(researchItem, e.target);
-                }
+                if (researchItem) openResearchDescriptionModal(researchItem, e.target);
             } else if (type === 'open-academic-presentation-modal') {
                 const presItem = academicPresentationsData.find(item => item.id === id);
-                if (presItem) {
-                    openAcademicPresentationModal(presItem, e.target);
-                }
+                if (presItem) openAcademicPresentationModal(presItem, e.target);
             } else if (type === 'open-outreach-talk-modal') {
                 const talkItem = outreachTalksData.find(item => item.id === id);
-                if (talkItem) {
-                    openOutreachTalkModal(talkItem, e.target);
-                }
+                if (talkItem) openOutreachTalkModal(talkItem, e.target);
             }
         }
     }
@@ -1071,67 +966,67 @@ const CarouselManager = (() => {
     let slideWidth = 0;
 
     function updateCarousel() {
-  if (!DOMElements.newsCarouselTrack) return;
+      if (!DOMElements.newsCarouselTrack) return;
 
-  // slides (skip loader)
-  slides = Array.from(DOMElements.newsCarouselTrack.children)
-    .filter(el => !el.classList.contains('loader'));
-  if (!slides.length) return;
+      // slides (skip loader)
+      slides = Array.from(DOMElements.newsCarouselTrack.children)
+        .filter(el => !el.classList.contains('loader'));
+      if (!slides.length) return;
 
-  // Viewport width of the track container
-  const viewport = DOMElements.newsCarouselTrack.getBoundingClientRect().width;
-   // Use full viewport width on small screens, clamp only on larger ones
-  let targetWidth;
-  if (window.innerWidth < 640) {              // Tailwind "sm" breakpoint
-    targetWidth = Math.round(viewport);      // full width of the container
-  } else {
-    targetWidth = Math.min(Math.max(Math.round(viewport), 720), 1040);
-  }
+      // Viewport width of the track container
+      const viewport = DOMElements.newsCarouselTrack.getBoundingClientRect().width;
+      // Use full viewport width on small screens, clamp only on larger ones
+      let targetWidth;
+      if (window.innerWidth < 640) {              // Tailwind "sm" breakpoint
+        targetWidth = Math.round(viewport);      // full width of the container
+      } else {
+        targetWidth = Math.min(Math.max(Math.round(viewport), 720), 1040);
+      }
 
-  // Read the CSS gap so we translate by width + gap each step
-  const cs = getComputedStyle(DOMElements.newsCarouselTrack);
-  const gap =
-    parseFloat(cs.columnGap || cs.gap || '0') ||
-    parseFloat(cs['grid-column-gap'] || '0') || 0;
+      // Read the CSS gap so we translate by width + gap each step
+      const cs = getComputedStyle(DOMElements.newsCarouselTrack);
+      const gap =
+        parseFloat(cs.columnGap || cs.gap || '0') ||
+        parseFloat(cs['grid-column-gap'] || '0') || 0;
 
-  // Normalize each slide's width
-  slides.forEach(slide => {
-    slide.style.boxSizing = 'border-box';
-    slide.style.flex = `0 0 ${targetWidth}px`;
-    slide.style.width = `${targetWidth}px`;
-    slide.style.minWidth = `${targetWidth}px`;
-    slide.style.margin = '0'; // ensure margins don't add unexpected width
-  });
-
-  // Use unified width for translate calculations, accounting for the gap
-  slideWidth = targetWidth;
-  const step = slideWidth + gap;
-  DOMElements.newsCarouselTrack.style.transform = `translateX(${-step * currentIndex}px)`;
-
-  // Dots (unchanged)
-  if (DOMElements.carouselDotsContainer) {
-    DOMElements.carouselDotsContainer.innerHTML = '';
-    slides.forEach((_, index) => {
-      const dot = document.createElement('button');
-      dot.className = `carousel-dot ${index === currentIndex ? 'active' : ''}`;
-      dot.setAttribute('role', 'tab');
-      dot.setAttribute('aria-selected', index === currentIndex);
-      dot.setAttribute('aria-controls', `news-carousel-slide-${index}`);
-      dot.addEventListener('click', () => {
-        currentIndex = index;
-        updateCarousel();
+      // Normalize each slide's width
+      slides.forEach(slide => {
+        slide.style.boxSizing = 'border-box';
+        slide.style.flex = `0 0 ${targetWidth}px`;
+        slide.style.width = `${targetWidth}px`;
+        slide.style.minWidth = `${targetWidth}px`;
+        slide.style.margin = '0'; // ensure margins don't add unexpected width
       });
-      DOMElements.carouselDotsContainer.appendChild(dot);
-    });
-  }
 
-  // IDs and aria-current
-  slides.forEach((slide, index) => {
-    slide.id = `news-carousel-slide-${index}`;
-    if (index === currentIndex) slide.setAttribute('aria-current', 'true');
-    else slide.removeAttribute('aria-current');
-  });
-}
+      // Use unified width for translate calculations, accounting for the gap
+      slideWidth = targetWidth;
+      const step = slideWidth + gap;
+      DOMElements.newsCarouselTrack.style.transform = `translateX(${-step * currentIndex}px)`;
+
+      // Dots
+      if (DOMElements.carouselDotsContainer) {
+        DOMElements.carouselDotsContainer.innerHTML = '';
+        slides.forEach((_, index) => {
+          const dot = document.createElement('button');
+          dot.className = `carousel-dot ${index === currentIndex ? 'active' : ''}`;
+          dot.setAttribute('role', 'tab');
+          dot.setAttribute('aria-selected', index === currentIndex);
+          dot.setAttribute('aria-controls', `news-carousel-slide-${index}`);
+          dot.addEventListener('click', () => {
+            currentIndex = index;
+            updateCarousel();
+          });
+          DOMElements.carouselDotsContainer.appendChild(dot);
+        });
+      }
+
+      // IDs and aria-current
+      slides.forEach((slide, index) => {
+        slide.id = `news-carousel-slide-${index}`;
+        if (index === currentIndex) slide.setAttribute('aria-current', 'true');
+        else slide.removeAttribute('aria-current');
+      });
+    }
 
     function setupCarousel() {
         if (DOMElements.newsCarouselTrack) {
@@ -1171,10 +1066,6 @@ const CarouselManager = (() => {
  * Manages page navigation and mobile menu.
  */
 const NavigationManager = (() => {
-    /**
-     * Shows the specified page section and updates navigation.
-     * @param {string} pageId - The ID of the page section to show (e.g., 'home', 'research').
-     */
     function showPage(pageId) {
         DOMElements.pageSections.forEach(section => {
             const isActive = section.id === pageId + '-page';
@@ -1203,8 +1094,7 @@ const NavigationManager = (() => {
             if (researchCanvasContainer && typeof window.initResearchHub === 'function') {
                 // Delay initialization slightly to ensure canvas is rendered and sized
                 console.log("Attempting to initialize Research Hub.");
-                console.log("THREE object status:", typeof window.THREE); // Log THREE object status
-                // Ensure all data is loaded before initializing the research hub
+                console.log("THREE object status:", typeof window.THREE);
                 if (window.researchData && window.newsData && window.teamData && window.gamesData) {
                     setTimeout(() => {
                         window.initResearchHub(window.researchData, window.newsData, window.teamData, window.gamesData);
@@ -1220,7 +1110,6 @@ const NavigationManager = (() => {
             const researchContainer = document.getElementById('research-canvas-container');
             const researchCanvas = document.getElementById('research-canvas');
             if (researchCanvas && researchContainer && window.camera && window.renderer) {
-                // Resize renderer if already initialized
                 window.camera.aspect = researchContainer.clientWidth / 600;
                 window.camera.updateProjectionMatrix();
                 window.renderer.setSize(researchContainer.clientWidth, 600);
@@ -1247,7 +1136,6 @@ const NavigationManager = (() => {
                 })
                 .catch(error => {
                     console.error('Error loading privacy notice:', error);
-                    // Fallback to static content if markdown file fails to load
                     DOMElements.privacyNoticeContent.innerHTML = `
                         <h3 class="text-xl font-bold text-light-text mb-2">Our Privacy Commitment</h3>
                         <p>This website is committed to protecting your privacy. We collect minimal data necessary for site functionality and analytics.</p>
@@ -1271,10 +1159,6 @@ const NavigationManager = (() => {
         }
     }
 
-    /**
-     * Handles navigation link clicks.
-     * @param {Event} e - The click event.
-     */
     function handleNavClick(e) {
         e.preventDefault();
         const pageId = e.currentTarget.hash.substring(1);
@@ -1314,7 +1198,7 @@ const GDPRManager = (() => {
 const ScrollManager = (() => {
     function toggleScrollToTopButton() {
         if (DOMElements.scrollToTopBtn) {
-            if (window.scrollY > 300) { // Show button after scrolling down 300px
+            if (window.scrollY > 300) {
                 DOMElements.scrollToTopBtn.style.display = 'block';
             } else {
                 DOMElements.scrollToTopBtn.style.display = 'none';
@@ -1447,19 +1331,3 @@ window.addEventListener("load", () => {
     CarouselManager.updateCarousel(); 
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
