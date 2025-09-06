@@ -523,31 +523,29 @@ function createNewsCarouselSlideHtml(item) {
      * @param {object} member - The team member data.
      * @returns {string} HTML string for the team card.
      */
-    function createTeamCardHtml(member) {
-      const scholarHref = member.googleScholar ? Utils.normalizeScholar(member.googleScholar) : "";
-      const linksRow = scholarHref
-        ? `<div class="mt-3 flex justify-center gap-2">
-             <a href="${scholarHref}"
-               target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
-               aria-label="Open ${member.name}'s Google Scholar profile">
-              <img src="assets/img/google-scholar.svg" alt="" class="w-4 h-4 inline-block" aria-hidden="true">
-              Scholar
-            </a>
-           </div>`
-        : "";
-    
-      return `
-        <div class="card rounded-lg p-6 text-center">
-          <img src="${member.image}" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-primary" alt="${member.name}" loading="lazy">
-          <h3 class="text-xl font-bold text-light-text">${member.name}</h3>
-          <p class="text-primary font-semibold">${member.role}</p>
-          ${linksRow}
-          <button data-modal-="${member.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
-        </div>
-      `;
-    }
+function createTeamCardHtml(member) {
+  const scholarHref = member.googleScholar ? Utils.normalizeScholar(member.googleScholar) : "";
+  const linksRow = scholarHref
+    ? `<div class="mt-3 flex justify-center gap-2">
+         <a href="${scholarHref}"
+            target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark"
+            aria-label="Open ${member.name}'s Google Scholar profile">
+           <img src="assets/img/google-scholar.svg" alt="" class="w-4 h-4 inline-block" aria-hidden="true">
+           Scholar
+         </a>
+       </div>`
+    : "";
 
+  return `
+    <div class="card rounded-lg p-6 text-center">
+      <img src="${member.image}" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-primary" alt="${member.name}" loading="lazy">
+      <h3 class="text-xl font-bold text-light-text">${member.name}</h3>
+      <p class="text-primary font-semibold">${member.role}</p>
+      ${linksRow}
+      <button data-modal-target="${member.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
+    </div>
+  `;
 
     /**
      * Creates an HTML string for an alumni member card.
@@ -1449,6 +1447,7 @@ window.addEventListener("load", () => {
     CarouselManager.updateCarousel(); 
   }
 });
+
 
 
 
