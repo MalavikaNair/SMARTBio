@@ -530,8 +530,8 @@ function createNewsCarouselSlideHtml(item) {
 
 /* Avatars in cards ONLY (not buttons) */
 .card img.rounded-full {
-  width: 32rem;      /* w-32 */
-  height: 32rem;     /* h-32 */
+  width: 30rem;      /* w-32 */
+  height: 30rem;     /* h-32 */
   object-fit: cover;
   display: block;
 }
@@ -555,4 +555,12 @@ function createNewsCarouselSlideHtml(item) {
 .open-academic-presentation-modal-btn {
   display: inline-flex;
   align-items: center;
+}
+/* On small screens, make sure slides can't overflow the viewport */
+@media (max-width: 639px) {
+  #news-carousel-track .carousel-slide {
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    min-width: 100% !important;
+  }
 }
