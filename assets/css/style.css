@@ -564,3 +564,37 @@ function createNewsCarouselSlideHtml(item) {
     min-width: 100% !important;
   }
 }
+/* 1) Let the Outreach page (and any page-section) grow + scroll on mobile */
+@media (max-width: 640px) {
+  .page-section {
+    min-height: 100vh;          /* grow with content */
+    height: auto !important;    /* defeat fixed 100vh if present */
+    overflow: auto !important;  /* allow scrolling */
+  }
+  #outreach-page {
+    overflow: visible !important;
+  }
+}
+
+/* Modern mobile viewports (iOS/Chrome address bar quirks) */
+@supports (min-height: 100svh) {
+  @media (max-width: 640px) {
+    .page-section { min-height: 100svh; }
+  }
+}
+
+/* 2) Collapsible content: remove the height cap when expanded */
+.collapsible-content {
+  overflow: hidden;             /* collapsed state */
+}
+.collapsible-content.expanded {
+  max-height: none !important;  /* no cap when open */
+  overflow: visible !important; /* let children render fully */
+}
+
+/* 3) Ensure cards/containers don’t clip expanded content */
+#academic-presentations-grid,
+#outreach-page .card,
+#outreach-page .grid {
+  overflow: visible !important;
+}
