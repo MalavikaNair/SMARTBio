@@ -543,7 +543,7 @@ function createNewsCarouselSlideHtml(item) {
           <h3 class="text-xl font-bold text-light-text">${member.name}</h3>
           <p class="text-primary font-semibold">${member.role}</p>
           ${linksRow}
-          <button data-modal-target="${member.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
+          <button data-modal-="${member.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
         </div>
       `;
     }
@@ -560,7 +560,7 @@ function createNewsCarouselSlideHtml(item) {
             <img src="${alumnus.image}" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-slate-400" alt="${alumnus.name}" loading="lazy">
                 <h3 class="text-xl font-bold text-light-text">${alumnus.name}</h3>
                 <p class="text-slate-400 font-semibold">${alumnus.role}</p>
-                <button data-modal-target="${alumnus.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
+                <button data-modal-="${alumnus.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
             </div>
         `;
     }
@@ -676,7 +676,7 @@ function createNewsCarouselSlideHtml(item) {
                 <div class="flex flex-wrap justify-center gap-1 mb-4">
                     ${game.themes.map(theme => `<span class="bg-primary-dark text-xs text-white px-2 py-1 rounded-full">${theme}</span>`).join(' ')}
                 </div>
-                <a href="${game.file}" target="_blank" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">Play Game</a>
+                <a href="${game.file}" ="_blank" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">Play Game</a>
             </div>
         `;
     }
@@ -830,7 +830,7 @@ const ModalManager = (() => {
                     if (creditMember) {
                         const creditButton = document.createElement('button');
                         creditButton.className = 'open-modal-btn text-slate-500 hover:text-primary font-semibold';
-                        creditButton.setAttribute('data-modal-target', creditMember.id);
+                        creditButton.setAttribute('data-modal-', creditMember.id);
                         creditButton.textContent = `Photo Credit: ${creditMember.name}`;
                         DOMElements.researchModalCredit.appendChild(creditButton);
                     } else {
@@ -845,7 +845,7 @@ const ModalManager = (() => {
                 researchItem.teamMembers.forEach(memberId => {
                     const teamMember = teamData.find(member => member.id === memberId);
                     if (teamMember) {
-                        teamMembersHtml += `<button data-modal-target="${teamMember.id}" class="open-modal-btn text-primary hover:text-light-text font-semibold">${teamMember.name}</button>`;
+                        teamMembersHtml += `<button data-modal-="${teamMember.id}" class="open-modal-btn text-primary hover:text-light-text font-semibold">${teamMember.name}</button>`;
                     } else {
                         const alumnus = alumniData.find(alumni => alumni.id === memberId);
                         if (alumnus) {
@@ -1082,9 +1082,13 @@ const CarouselManager = (() => {
 
   // Viewport width of the track container
   const viewport = DOMElements.newsCarouselTrack.getBoundingClientRect().width;
-
-  // Clamp to a sensible range so ultra-wide screens don't sprawl
-  const targetWidth = Math.min(Math.max(Math.round(viewport), 720), 1040);
+   // Use full viewport width on small screens, clamp only on larger ones
+  let targetWidth;
+  if (window.innerWidth < 640) {              // Tailwind "sm" breakpoint
+    targetWidth = Math.round(viewport);      // full width of the container
+  } else {
+    targetWidth = Math.min(Math.max(Math.round(viewport), 720), 1040);
+  }
 
   // Read the CSS gap so we translate by width + gap each step
   const cs = getComputedStyle(DOMElements.newsCarouselTrack);
@@ -1445,6 +1449,7 @@ window.addEventListener("load", () => {
     CarouselManager.updateCarousel(); 
   }
 });
+
 
 
 
