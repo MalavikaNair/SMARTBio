@@ -524,7 +524,7 @@ const Renderer = (() => {
             const descGroup = Utils.buildReadMore(item.shortDescription || item.description || '', 'research-' + String(item.id));
             return Utils.createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [
               img, title, descGroup,
-              Utils.createEl('button', { className:'mt-3 px-3 py-1 rounded border border-primary-dark', dataset: { modalTarget: 'open-research-modal', id: item.id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text:'More Info' })
+              Utils.createEl('button', { className:'mt-3 px-3 py-1 rounded border border-primary-dark', dataset:{ modalTarget:'open-research-modal', id:item.id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text:'More Info' })
             ].filter(Boolean));
         });
         grid.append(...cards);
@@ -591,6 +591,7 @@ const Renderer = (() => {
         }
         const nodes = items.map((n) => Utils.createEl('li', { className: 'p-4 border-b border-primary-dark' }, [
             Utils.createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
+            n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null,
             Utils.createEl('p', { className: 'text-sm text-medium-text', text: n?.description || '' }),
             n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
         ].filter(Boolean)));
@@ -625,8 +626,11 @@ const Renderer = (() => {
             return;
         }
         if (listEl) {
-            const nodes = items.map((n) => Utils.createEl('li', { className: 'p-4 border-b border-primary-dark' }, [
+            const nodes = items.map((n) => Utils.createEl('li', { className: 'p-4 border-b border-primary-dark card flex flex-col gap-2' }, [
+                n?.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML(n?.title || 'News image'), className:'w-full h-40 object-cover rounded-md border border-primary-dark', loading:'lazy' }) : null,
                 Utils.createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
+                n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null,
+            n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null,
                 Utils.createEl('p', { className: 'text-sm text-medium-text', text: n?.description || '' }),
                 n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
             ].filter(Boolean)));
@@ -636,6 +640,8 @@ const Renderer = (() => {
             const slides = items.map((n) => Utils.createEl('div', { className: 'carousel-slide p-4' }, [
                 n?.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML(n?.title || 'News image'), className: 'w-full h-56 object-cover rounded-md mb-3 border border-primary-dark', loading: 'lazy' }) : null,
                 Utils.createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
+                n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null,
+            n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null,
                 Utils.createEl('p', { className: 'text-sm text-medium-text', text: n?.description || '' }),
                 n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
             ].filter(Boolean)));
@@ -698,13 +704,21 @@ const Renderer = (() => {
             return;
         }
 
-        const genres = Array.from(new Set(items.flatMap(g => Array.isArray(g?.genres) ? g.genres : (g?.genre ? [g.genre] : [])))).filter(Boolean);
-        let activeGenre = null;
+        const themesAll = Array.from(new Set(items.flatMap(g => Array.isArray(g?.themes) ? g.themes : []))).filter(Boolean);
+        let activeTheme = null;
 
         function renderFilters() {
-            if (!filtersWrap) return;
-            filtersWrap.replaceChildren();
-            const allBtn = Utils.createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: 'All' });
+  if (!filtersWrap) return;
+  filtersWrap.replaceChildren();
+  const allBtn = Utils.createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: 'All' });
+  allBtn.addEventListener('click', () => { activeTheme = null; renderGrid(); });
+  filtersWrap.appendChild(allBtn);
+  themesAll.forEach(t => {
+    const b = Utils.createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: t });
+    b.addEventListener('click', () => { activeTheme = t; renderGrid(); });
+    filtersWrap.appendChild(b);
+  });
+});
             allBtn.addEventListener('click', () => { activeGenre = null; renderGrid(); });
             filtersWrap.appendChild(allBtn);
             genres.forEach(ge => {
@@ -718,14 +732,15 @@ const Renderer = (() => {
             const img = gm?.thumbnail ? Utils.createEl('img', { src: Utils.sanitizeUrl(gm.thumbnail), alt: Utils.escapeHTML(gm?.title || 'Game image'), className:'w-full h-40 object-cover rounded-md mb-3 border border-primary-dark', loading:'lazy' }) : null;
             const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: gm?.title || '' });
             const desc = Utils.createEl('p', { className: 'text-sm text-medium-text', text: gm?.description || '' });
+            const themes = Array.isArray(gm?.themes) ? Utils.createEl('div', { className:'mt-2 flex flex-wrap gap-2' }, gm.themes.map(t => Utils.createEl('span', { className:'px-2 py-1 rounded-full bg-primary/10 text-primary text-xs', text: t }))) : null;
             const link = gm?.file ? Utils.createEl('a', { href: Utils.sanitizeUrl(gm.file, '#'), className:'text-primary underline mt-2 inline-block', text:'Play / Learn more' }) : null;
-            return Utils.createEl('div', { className: 'card rounded-lg p-4' }, [img, title, desc, link].filter(Boolean));
+            return Utils.createEl('div', { className: 'card rounded-lg p-4' }, [img, title, desc, themes, link].filter(Boolean));
         }
 
         function renderGrid() {
             if (!grid) return;
             grid.replaceChildren();
-            const filtered = activeGenre ? items.filter(x => (Array.isArray(x?.genres) ? x.genres.includes(activeGenre) : x?.genre === activeGenre)) : items;
+            const filtered = activeTheme ? items.filter(x => Array.isArray(x?.themes) && x.themes.includes(activeTheme)) : items;
             const nodes = filtered.map(gameCard);
             if (nodes.length) grid.append(...nodes);
             else grid.textContent = 'No games match the selected filter.';
@@ -925,11 +940,21 @@ function openNewsModal(newsItem, trigger) {
   }
 
   function handleModalClicks(e) {
-    const t = e.target;
+    const t = (e.target && e.target.closest) ? e.target.closest('[data-modal-target]') : e.target;
     if (!(t instanceof HTMLElement)) return;
+    // Allow closing via [data-close-modal] or overlay clicks
+    const closeBtn = e.target.closest && e.target.closest('[data-close-modal]');
+    if (closeBtn) {
+      const modal = closeBtn.closest('.modal-overlay');
+      if (modal) closeModal(modal);
+      return;
+    }
+    if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+      closeModal(e.target);
+      return;
+    }
     const type = t.getAttribute('data-modal-target');
     const id = t.getAttribute('data-id');
-    if (!type || !id) return;
 
     if (type === 'open-research-modal') {
       const item = (Array.isArray(window.researchData) ? window.researchData : (window.researchData?.items || [])).find(x => String(x.id) === String(id));
@@ -1284,6 +1309,16 @@ const App = (() => {
     function setupEventListeners() {
         // Global click delegation for modals
         document.addEventListener('click', ModalManager.handleModalClicks);
+        document.addEventListener('click', (e) => {
+          const close = e.target.closest && e.target.closest('[data-close-modal]');
+          if (close) {
+            const overlay = close.closest('.modal-overlay');
+            if (overlay) ModalManager.closeModal(overlay);
+          }
+          if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+            ModalManager.closeModal(e.target);
+          }
+        });
 
         // Read More / Show Less toggle
         document.addEventListener('click', (e) => {
