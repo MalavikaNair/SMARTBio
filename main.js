@@ -674,49 +674,57 @@ const Renderer = (() => {
     grid.append(...nodes);
   }
 
-  function renderOutreachNews() {
-    const list = DOMElements.outreachNewsList;
-    if (!list) return;
-    list.replaceChildren();
-    const items = resolveCollection(window.outreachNewsData);
-    if (items.length === 0) { list.textContent = 'No outreach news available at the moment.'; return; }
+  
+function renderOutreachNews() {
+  const list = DOMElements.outreachNewsList;
+  if (!list) return;
+  list.replaceChildren();
+  const items = Array.isArray(window.outreachNewsData) ? window.outreachNewsData : (window.outreachNewsData && window.outreachNewsData.items || []);
+  if (items.length === 0) { list.textContent = 'No outreach news available at the moment.'; return; }
 
-    const team = resolveCollection(window.teamData);
-    const alumni = resolveCollection(window.alumniData);
-    function nameById(id) {
-      const p = team.find(x => String(x.id) === String(id)) || alumni.find(x => String(x.id) === String(id));
-      return p ? p.name : String(id);
+  const team = Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || []);
+  const alumni = Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []);
+  function nameById(id) {
+    const p = team.find(x => String(x.id) === String(id)) || alumni.find(x => String(x.id) === String(id));
+    return p ? p.name : String(id);
+  }
+
+  const nodes = items.map(n => {
+    const img = (n && n.image) ? Utils.createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML((n && n.title) || 'Outreach image'), className:'w-full h-40 object-cover rounded-md border border-primary-dark', loading:'lazy' }) : null;
+    const dateEl = Utils.buildDateBadge(n && n.date);
+    const title = Utils.createEl('h4', { className: 'font-semibold', text: (n && n.title) || '' });
+    const desc = Utils.createEl('p', { className: 'text-sm text-medium-text', text: (n && n.description) || '' });
+    const link = (n && n.link) ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null;
+
+    const wrap = Utils.createEl('li', { className: 'p-4 border-b border-primary-dark card flex flex-col gap-2' },
+      [img, dateEl, title, desc, link].filter(Boolean)
+    );
+
+    // Associated Members (as links)
+    const ids = (n && Array.isArray(n.associatedTeamMembers)) ? n.associatedTeamMembers : [];
+    if (ids.length) {
+      const sec = Utils.createEl('div', { className:'mt-2 text-sm text-medium-text' });
+      sec.appendChild(Utils.createEl('strong', { text: 'Associated Members:' }));
+      const row = Utils.createEl('div', { className:'flex flex-wrap justify-center gap-2 mt-2' });
+      ids.forEach(id => {
+        const linkBtn = Utils.createEl('button', {
+          className:'text-primary hover:text-light-text font-semibold',
+          dataset:{ modalTarget:'open-person-bio', id },
+          onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e),
+          text: nameById(id)
+        });
+        row.appendChild(linkBtn);
+      });
+      sec.appendChild(row);
+      wrap.appendChild(sec);
     }
 
-    const nodes = items.map(n => {
-      const img = (n && n.image) ? Utils.createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML((n && n.title) || 'Outreach image'), className:'w-full h-40 object-cover rounded-md border border-primary-dark', loading:'lazy' }) : null;
-      const dateEl = Utils.buildDateBadge(n && n.date);
-      const title = Utils.createEl('h4', { className: 'font-semibold', text: (n && n.title) || '' });
-      const desc = Utils.createEl('p', { className: 'text-sm text-medium-text', text: (n && n.description) || '' });
-      const link = (n && n.link) ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null;
+    return wrap;
+  });
 
-      const wrap = Utils.createEl('li', { className: 'p-4 border-b border-primary-dark card flex flex-col gap-2' },
-        [img, dateEl, title, desc, link].filter(Boolean)
-      );
+  list.append(...nodes);
+}
 
-      // associatedTeamMembers chips
-      const ids = (n && Array.isArray(n.associatedTeamMembers)) ? n.associatedTeamMembers : [];
-      if (ids.length) {
-        const sec = Utils.createEl('div', { className:'mt-2 text-sm text-medium-text' });
-        sec.appendChild(Utils.createEl('strong', { text: 'Associated Members:' }));
-        const row = Utils.createEl('div', { className:'flex flex-wrap justify-center gap-2 mt-2' });
-        ids.forEach(id => {
-          const link = Utils.createEl('button', { className:'text-primary hover:text-light-text font-semibold', dataset:{ modalTarget:'open-person-bio', id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text: nameById(id) });
-          row.appendChild(link);
-        });
-        sec.appendChild(row);
-        wrap.appendChild(sec);
-      }
-      return wrap;
-    });
-
-    list.append(...nodes);
-  }
 
   function renderNewsCarouselAndList() {
     const listEl = DOMElements.newsList;
