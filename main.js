@@ -1,9 +1,13 @@
-/* SMARTBio generated.js — consolidated & cleaned (style.css untouched)
+/* SMARTBio generated.js — consolidated & data-shape aware (style.css untouched)
  * - Research modal: LEFT media/caption/credit, RIGHT details/members
  * - Team bio modal: LEFT image, RIGHT bio + bold green links
  * - ResearchHub “Bio” buttons supported (.open-modal-btn[data-modal-target="<id>"])
- * - Academic Presentations now **expand/collapse** (collapsible headers)
- * - Date badges shown in News and Outreach News (uses .date-badge from your CSS)
+ * - Academic Presentations EXPAND/COLLAPSE via .collapsible-header
+ * - Date badges shown in News, Outreach News, Outreach Talks, Academic Presentations
+ * - Data shapes supported (examples):
+ *    • dates as objects: { day: "03", month: "May", year: "2024" }
+ *    • games: { thumbnail, file }
+ *    • talks/presentations: { speakerIds, videoLink }
  */
 
 /* ======================= Utils ======================= */
@@ -31,6 +35,14 @@ const Utils = (() => {
 
   function sanitizeUrl(url, fallback = '#') {
     return isSafeUrl(url) ? String(url) : fallback;
+  }
+
+  function normalizeScholarUrl(val) {
+    if (!val) return null;
+    const s = String(val).trim();
+    if (/^https?:\/\//i.test(s)) return s;
+    // treat as Scholar user id
+    return `https://scholar.google.com/citations?user=${encodeURIComponent(s)}`;
   }
 
   function createEl(tag, attrs = {}, children = []) {
@@ -97,13 +109,53 @@ const Utils = (() => {
     return v;
   }
 
+  // Date helpers
+  const MONTH_MAP = {
+    jan:'Jan', january:'Jan',
+    feb:'Feb', february:'Feb',
+    mar:'Mar', march:'Mar',
+    apr:'Apr', april:'Apr',
+    may:'May',
+    jun:'Jun', june:'Jun',
+    jul:'Jul', july:'Jul',
+    aug:'Aug', august:'Aug',
+    sep:'Sep', sept:'Sep', september:'Sep',
+    oct:'Oct', october:'Oct',
+    nov:'Nov', november:'Nov',
+    dec:'Dec', december:'Dec'
+  };
+  function formatDate(input) {
+    if (!input) return '';
+    if (typeof input === 'string') return input;
+    if (typeof input === 'object') {
+      const day = (input.day ?? '').toString().padStart(1, '0');
+      const rawMonth = (input.month ?? '').toString();
+      const mKey = rawMonth.toLowerCase();
+      const month = MONTH_MAP[mKey] || rawMonth;
+      const year = input.year ?? '';
+      const parts = [];
+      if (day) parts.push(day);
+      if (month) parts.push(month);
+      if (year) parts.push(String(year));
+      return parts.join(' ');
+    }
+    try {
+      const d = new Date(input);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' });
+      }
+    } catch {}
+    return String(input);
+  }
+
   function getMemberSinceDate(v) {
     if (!v && v !== 0) return new Date(8640000000000000);
     try {
-      const parts = String(v).split('-');
+      const str = String(v);
+      const parts = str.split('-');
       if (parts.length === 1) return new Date(Number(parts[0]), 0, 1);
       if (parts.length === 2) return new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
-      const d = new Date(v);
+      const d = new Date(str);
       if (!isNaN(d.getTime())) return d;
     } catch {}
     return new Date(8640000000000000);
@@ -124,8 +176,8 @@ const Utils = (() => {
   }
 
   return {
-    escapeHTML, isSafeUrl, sanitizeUrl, createEl, createSafeMedia,
-    getMemberSinceDate, formatMemberSince
+    escapeHTML, isSafeUrl, sanitizeUrl, normalizeScholarUrl, createEl, createSafeMedia,
+    formatDate, getMemberSinceDate, formatMemberSince
   };
 })();
 
@@ -323,7 +375,7 @@ const Renderer = (() => {
       const li = Utils.createEl('li', { className: 'mb-6' });
       const heading = Utils.createEl('div', { className: 'flex items-center gap-3 mb-2' }, [
         Utils.createEl('h3', { className: 'text-lg font-semibold', text: n?.title || '' }),
-        n?.date ? Utils.createEl('span', { className: 'date-badge', text: n.date }) : null
+        n?.date ? Utils.createEl('span', { className: 'date-badge', text: Utils.formatDate(n.date) }) : null
       ].filter(Boolean));
       const desc = Utils.createEl('p', { className: 'text-medium-text', text: n?.description || '' });
       const btn = Utils.createEl('button', {
@@ -378,7 +430,7 @@ const Renderer = (() => {
         const since = p?.memberSince ? Utils.createEl('p', { className: 'text-xs text-medium-text', text: 'Member since ' + Utils.formatMemberSince(p.memberSince) }) : null;
         const linksWrap = Utils.createEl('div', { className: 'mt-2 space-x-3' });
         if (p?.website) linksWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(p.website), target: '_blank', rel: 'noopener', className: 'text-primary font-semibold hover:underline', text: 'Website' }));
-        if (p?.googleScholar) linksWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(p.googleScholar), target: '_blank', rel: 'noopener', className: 'text-primary font-semibold hover:underline', text: 'Scholar' }));
+        if (p?.googleScholar) linksWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(Utils.normalizeScholarUrl(p.googleScholar)), target: '_blank', rel: 'noopener', className: 'text-primary font-semibold hover:underline', text: 'Scholar' }));
         const bioBtn = Utils.createEl('button', { className: 'text-primary font-semibold hover:underline mt-2 block', dataset: { modalTarget: 'open-person-bio', id: p?.id }, text: 'Bio →' });
 
         return Utils.createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' },
@@ -395,14 +447,14 @@ const Renderer = (() => {
     const items = resolve(window.gamesData);
     if (!items.length) { grid.textContent = 'No games yet.'; return; }
     items.forEach(g => {
-      const img = g?.image ? Utils.createEl('img', {
-        src: Utils.sanitizeUrl(g.image),
+      const img = g?.thumbnail ? Utils.createEl('img', {
+        src: Utils.sanitizeUrl(g.thumbnail),
         alt: Utils.escapeHTML(g?.title || 'Game'),
         className: 'w-full h-48 object-cover rounded-md border border-primary-dark mb-3',
         loading: 'lazy'
       }) : null;
-      const play = g?.link ? Utils.createEl('a', {
-        href: Utils.sanitizeUrl(g.link),
+      const play = g?.file ? Utils.createEl('a', {
+        href: Utils.sanitizeUrl(g.file),
         target: '_blank',
         rel: 'noopener',
         className: 'bg-primary text-white px-4 py-2 rounded-full font-semibold inline-block mt-2',
@@ -431,11 +483,11 @@ const Renderer = (() => {
     const cards = items.map((t, idx) => {
       const heading = Utils.createEl('div', { className: 'flex items-center gap-3 mb-2' }, [
         Utils.createEl('h3', { className: 'text-lg font-semibold', text: t?.title || '' }),
-        t?.date ? Utils.createEl('span', { className: 'date-badge', text: t.date }) : null
+        t?.date ? Utils.createEl('span', { className: 'date-badge', text: Utils.formatDate(t.date) }) : null
       ].filter(Boolean));
 
       const right = Utils.createEl('div', { className: 'mt-3 flex gap-2 flex-wrap' });
-      (Array.isArray(t?.speakers) ? t.speakers : []).forEach(id => {
+      (Array.isArray(t?.speakerIds) ? t.speakerIds : []).forEach(id => {
         const person = personById(id);
         right.appendChild(Utils.createEl('button', {
           className: 'px-2 py-1 rounded bg-primary text-white text-xs',
@@ -460,7 +512,7 @@ const Renderer = (() => {
     grid.append(...cards);
   }
 
-  // Academic Presentations — now EXPAND/COLLAPSE via .collapsible-header
+  // Academic Presentations — EXPAND/COLLAPSE via .collapsible-header
   function renderAcademicPresentations() {
     const grid = DOMElements.academicPresentationsGrid;
     if (!grid) return;
@@ -474,7 +526,7 @@ const Renderer = (() => {
     items.forEach((t, idx) => {
       const contentId = `ap-content-${idx}`;
 
-      // Header that CollapsibleManager can toggle
+      // Header for collapsible
       const header = Utils.createEl('div', {
         className: 'collapsible-header flex items-center justify-between gap-4 cursor-pointer',
         dataset: { contentId },
@@ -483,21 +535,21 @@ const Renderer = (() => {
         'aria-expanded': 'false'
       }, [
         Utils.createEl('h3', { className: 'text-lg font-semibold', text: t?.title || '' }),
-        t?.date ? Utils.createEl('span', { className: 'date-badge', text: t.date }) : null
+        t?.date ? Utils.createEl('span', { className: 'date-badge', text: Utils.formatDate(t.date) }) : null
       ].filter(Boolean));
 
-      // Content hidden by default; shows description, media, speakers, link
+      // Content hidden by default
       const content = Utils.createEl('div', { id: contentId, className: 'hidden', 'aria-hidden': 'true' });
 
       content.appendChild(Utils.createEl('p', { className: 'text-medium-text mt-3', text: t?.description || '' }));
 
       const mediaWrap = Utils.createEl('div', { className: 'mt-3' });
-      const media = Utils.createSafeMedia(t?.modalMedia || t?.image);
+      const media = Utils.createSafeMedia(t?.videoLink || t?.modalMedia || t?.image);
       if (media) mediaWrap.appendChild(media);
       if (mediaWrap.children.length) content.appendChild(mediaWrap);
 
       const speakers = Utils.createEl('div', { className: 'mt-3 flex gap-2 flex-wrap' });
-      (Array.isArray(t?.speakers) ? t.speakers : []).forEach(id => {
+      (Array.isArray(t?.speakerIds) ? t.speakerIds : []).forEach(id => {
         const p = personById(id);
         speakers.appendChild(Utils.createEl('button', {
           className: 'px-2 py-1 rounded bg-primary text-white text-xs',
@@ -534,7 +586,7 @@ const Renderer = (() => {
       const li = Utils.createEl('li', { className: 'mb-6' });
       const heading = Utils.createEl('div', { className: 'flex items-center gap-3 mb-2' }, [
         Utils.createEl('h3', { className: 'text-lg font-semibold', text: n?.title || '' }),
-        n?.date ? Utils.createEl('span', { className: 'date-badge', text: n.date }) : null
+        n?.date ? Utils.createEl('span', { className: 'date-badge', text: Utils.formatDate(n.date) }) : null
       ].filter(Boolean));
       const desc = Utils.createEl('p', { className: 'text-medium-text', text: n?.description || '' });
       const btn = Utils.createEl('button', {
@@ -674,7 +726,7 @@ const ModalManager = (() => {
       }));
     };
     addLink('Website', person?.website);
-    addLink('Scholar', person?.googleScholar);
+    addLink('Scholar', Utils.normalizeScholarUrl(person?.googleScholar));
     if (Array.isArray(person?.presentations)) {
       person.presentations.forEach(pr => {
         if (typeof pr === 'string') addLink('Presentation', pr);
@@ -735,7 +787,7 @@ const ModalManager = (() => {
     if (!m || !n) return;
 
     m.querySelector('#news-modal-title').textContent = n?.title || '';
-    m.querySelector('#news-modal-date').textContent = n?.date || '';
+    m.querySelector('#news-modal-date').textContent = Utils.formatDate(n?.date) || '';
     m.querySelector('#news-modal-description').textContent = n?.description || '';
     const img = m.querySelector('#news-modal-image');
     if (img && n?.image) { img.src = Utils.sanitizeUrl(n.image); img.alt = Utils.escapeHTML(n?.title || 'News Image'); }
@@ -751,15 +803,15 @@ const ModalManager = (() => {
     if (!m || !t) return;
 
     m.querySelector('#outreach-talk-modal-title').textContent = t?.title || '';
-    m.querySelector('#outreach-talk-modal-date').textContent = t?.date || '';
+    m.querySelector('#outreach-talk-modal-date').textContent = Utils.formatDate(t?.date) || '';
     m.querySelector('#outreach-talk-modal-description').textContent = t?.description || '';
 
     const mediaWrap = m.querySelector('#outreach-talk-modal-media');
-    if (mediaWrap) { mediaWrap.replaceChildren(); const media = Utils.createSafeMedia(t?.modalMedia || t?.image); if (media) mediaWrap.appendChild(media); }
+    if (mediaWrap) { mediaWrap.replaceChildren(); const media = Utils.createSafeMedia(t?.videoLink || t?.modalMedia || t?.image); if (media) mediaWrap.appendChild(media); }
     const speakers = m.querySelector('#outreach-talk-modal-speakers');
     if (speakers) {
       speakers.replaceChildren();
-      (Array.isArray(t?.speakers) ? t.speakers : []).forEach(id => {
+      (Array.isArray(t?.speakerIds) ? t.speakerIds : []).forEach(id => {
         const p = resolvePeople().find(pp => String(pp.id) === String(id));
         speakers.appendChild(Utils.createEl('button', {
           className: 'px-2 py-1 rounded bg-primary text-white text-xs mr-2 mb-2',
@@ -774,7 +826,7 @@ const ModalManager = (() => {
     openModal(m, trigger);
   }
 
-  // Academic Presentation (pre-built DOM) — still available if you use it elsewhere
+  // Academic Presentation (pre-built DOM) — optional
   function openAcademicPresentationModal(index, trigger) {
     const items = Array.isArray(window.academicPresentationsData) ? window.academicPresentationsData : (window.academicPresentationsData && window.academicPresentationsData.items) || [];
     const t = items[index];
@@ -782,15 +834,15 @@ const ModalManager = (() => {
     if (!m || !t) return;
 
     m.querySelector('#academic-presentation-modal-title').textContent = t?.title || '';
-    m.querySelector('#academic-presentation-modal-date').textContent = t?.date || '';
+    m.querySelector('#academic-presentation-modal-date').textContent = Utils.formatDate(t?.date) || '';
     m.querySelector('#academic-presentation-modal-description').textContent = t?.description || '';
 
     const mediaWrap = m.querySelector('#academic-presentation-modal-media');
-    if (mediaWrap) { mediaWrap.replaceChildren(); const media = Utils.createSafeMedia(t?.modalMedia || t?.image); if (media) mediaWrap.appendChild(media); }
+    if (mediaWrap) { mediaWrap.replaceChildren(); const media = Utils.createSafeMedia(t?.videoLink || t?.modalMedia || t?.image); if (media) mediaWrap.appendChild(media); }
     const speakers = m.querySelector('#academic-presentation-modal-speakers');
     if (speakers) {
       speakers.replaceChildren();
-      (Array.isArray(t?.speakers) ? t.speakers : []).forEach(id => {
+      (Array.isArray(t?.speakerIds) ? t.speakerIds : []).forEach(id => {
         const p = resolvePeople().find(pp => String(pp.id) === String(id));
         speakers.appendChild(Utils.createEl('button', {
           className: 'px-2 py-1 rounded bg-primary text-white text-xs mr-2 mb-2',
