@@ -84,48 +84,91 @@ const DOMElements = {
 // =========================
 const Utils = (() => {
   function escapeHTML(str){
-  const s = String(str ?? '');
-  return s.replace(/[&<>"'`]/g, (c) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-    '`': '&#96;'
-  })[c]);
-}[c])); }
-  function isSafeUrl(url){ try{ const u=new URL(String(url),window.location.origin); return ['http:','https:'].includes(u.protocol); }catch{ return false; } }
-  function sanitizeUrl(url,fallback='#'){ return isSafeUrl(url)?String(url):fallback; }
+    const s = String(str ?? '');
+    return s.replace(/[&<>"'`]/g, c => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '`': '&#96;'
+    })[c]);
+  }
+  function isSafeUrl(url){
+    try {
+      const u = new URL(String(url), window.location.origin);
+      return ['http:', 'https:'].includes(u.protocol);
+    } catch {
+      return false;
+    }
+  }
+  function sanitizeUrl(url, fallback = '#'){ return isSafeUrl(url) ? String(url) : fallback; }
   function createEl(tag, attrs = {}, children = []) {
     const el = document.createElement(tag);
-    for (const [k,v] of Object.entries(attrs||{})) {
-      if (v==null) continue;
-      if (k==='text'){ el.textContent=String(v); continue; }
-      if (k==='html'){ el.innerHTML=String(v); continue; }
-      if (k==='dataset' && typeof v==='object'){ for (const [dk,dv] of Object.entries(v)) el.dataset[dk]=String(dv); continue; }
-      if (k in el){ try{ el[k]=v; } catch { el.setAttribute(k,String(v)); } } else el.setAttribute(k,String(v));
+    for (const [k,v] of Object.entries(attrs || {})) {
+      if (v == null) continue;
+      if (k === 'text') { el.textContent = String(v); continue; }
+      if (k === 'html') { el.innerHTML = String(v); continue; }
+      if (k === 'dataset' && typeof v === 'object') {
+        for (const [dk, dv] of Object.entries(v)) el.dataset[dk] = String(dv);
+        continue;
+      }
+      if (k in el) { try { el[k] = v; } catch { el.setAttribute(k, String(v)); } }
+      else { el.setAttribute(k, String(v)); }
     }
-    for (const c of [].concat(children||[])){ if (c==null) continue; el.appendChild(typeof c==='string'?document.createTextNode(c):c); }
+    for (const c of [].concat(children || [])) {
+      if (c == null) continue;
+      el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
     return el;
   }
   function createYouTubeEmbed(url){
-    try{ const u=new URL(String(url),window.location.origin); const host=u.hostname.toLowerCase();
-      if(!['www.youtube.com','youtube.com'].includes(host)) return null;
-      if(!u.pathname.startsWith('/embed/')) return null;
-      const iframe=document.createElement('iframe'); iframe.src=u.href; iframe.loading='lazy'; iframe.allowFullscreen=true;
+    try {
+      const u = new URL(String(url), window.location.origin);
+      const host = u.hostname.toLowerCase();
+      if (!['www.youtube.com','youtube.com'].includes(host)) return null;
+      if (!u.pathname.startsWith('/embed/')) return null;
+      const iframe = document.createElement('iframe');
+      iframe.src = u.href;
+      iframe.loading = 'lazy';
+      iframe.allowFullscreen = true;
       iframe.setAttribute('allow','accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-      iframe.className='absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark'; return iframe;
+      iframe.className = 'absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark';
+      return iframe;
     } catch { return null; }
   }
   function createSafeMedia(url){
-    if(!url) return null; const u=String(url);
-    if(/\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(u)){ const img=document.createElement('img'); img.src=sanitizeUrl(u); img.alt=''; img.loading='lazy'; img.className='w-full h-auto rounded-md object-cover border border-primary-dark'; return img; }
-    if(u.includes('youtube.com/embed/')){ const box=document.createElement('div'); box.className='relative w-full'; box.style.paddingBottom='56.25%'; const ifr=createYouTubeEmbed(u); if(ifr) box.appendChild(ifr); return box; }
-    const v=document.createElement('video'); v.controls=true; v.loading='lazy'; v.className='w-full h-auto rounded-md border border-primary-dark';
-    const src=document.createElement('source'); src.src=sanitizeUrl(u); src.type='video/mp4'; v.appendChild(src); return v;
+    if (!url) return null;
+    const u = String(url);
+    if (/\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(u)) {
+      const img = document.createElement('img');
+      img.src = sanitizeUrl(u);
+      img.alt = '';
+      img.loading = 'lazy';
+      img.className = 'w-full h-auto rounded-md object-cover border border-primary-dark';
+      return img;
+    }
+    if (u.includes('youtube.com/embed/')) {
+      const box = document.createElement('div');
+      box.className = 'relative w-full';
+      box.style.paddingBottom = '56.25%';
+      const ifr = createYouTubeEmbed(u);
+      if (ifr) box.appendChild(ifr);
+      return box;
+    }
+    const v = document.createElement('video');
+    v.controls = true;
+    v.loading = 'lazy';
+    v.className = 'w-full h-auto rounded-md border border-primary-dark';
+    const srcEl = document.createElement('source');
+    srcEl.src = sanitizeUrl(u);
+    srcEl.type = 'video/mp4';
+    v.appendChild(srcEl);
+    return v;
   }
   return { escapeHTML, sanitizeUrl, createEl, createYouTubeEmbed, createSafeMedia };
 })();
+
 
 // =========================
 // Data Manager (unchanged API)
