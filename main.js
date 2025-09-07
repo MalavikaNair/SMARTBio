@@ -1564,4 +1564,4 @@ const App = (() => {
 })();
 
 // Initialize the application when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', App.init);return wrap;
+document.addEventListener('DOMContentLoaded', App.init);
