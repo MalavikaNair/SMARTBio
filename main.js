@@ -1,10 +1,11 @@
+r"""
 /* SMARTBio generated.js — consolidated & data-shape aware (style.css untouched)
  * - Research modal: LEFT media/caption/credit, RIGHT details/members
- * - Team bio modal: LEFT image, RIGHT bio + bold green links
+ * - Team bio modal: LEFT image, RIGHT bio + bold green links + related talks/presentations
  * - ResearchHub “Bio” buttons supported (.open-modal-btn[data-modal-target="<id>"])
  * - Academic Presentations EXPAND/COLLAPSE via .collapsible-header
  * - Date badges shown in News, Outreach News, Outreach Talks, Academic Presentations
- * - Data shapes supported (examples):
+ * - Supports data shapes:
  *    • dates as objects: { day: "03", month: "May", year: "2024" }
  *    • games: { thumbnail, file }
  *    • talks/presentations: { speakerIds, videoLink }
@@ -128,7 +129,7 @@ const Utils = (() => {
     if (!input) return '';
     if (typeof input === 'string') return input;
     if (typeof input === 'object') {
-      const day = (input.day ?? '').toString().padStart(1, '0');
+      const day = (input.day ?? '').toString();
       const rawMonth = (input.month ?? '').toString();
       const mKey = rawMonth.toLowerCase();
       const month = MONTH_MAP[mKey] || rawMonth;
@@ -539,7 +540,7 @@ const Renderer = (() => {
       ].filter(Boolean));
 
       // Content hidden by default
-      const content = Utils.createEl('div', { id: contentId, className: 'hidden', 'aria-hidden': 'true' });
+      const content = Utils.createEl('div', { id: contentId, className: 'collapsible-content hidden', 'aria-hidden': 'true', style: 'max-height:0; overflow:hidden;' });
 
       content.appendChild(Utils.createEl('p', { className: 'text-medium-text mt-3', text: t?.description || '' }));
 
@@ -690,7 +691,7 @@ const ModalManager = (() => {
 
   function clear(el){ if (el) while (el.firstChild) el.removeChild(el.firstChild); }
 
-  // Team Bio (custom overlay) — LEFT image, RIGHT bio + bold green links
+  // Team Bio (custom overlay) — LEFT image, RIGHT bio + bold green links + related talks/presentations
   function openPersonBioModal(personId, trigger) {
     const people = resolvePeople();
     const person = people.find(p => String(p.id) === String(personId));
@@ -734,6 +735,44 @@ const ModalManager = (() => {
       });
     }
     if (links.childNodes.length) right.appendChild(links);
+
+    // Related: Outreach Talks & Academic Presentations
+    const talksAll = Array.isArray(window.outreachTalksData) ? window.outreachTalksData : (window.outreachTalksData?.items || []);
+    const presAll  = Array.isArray(window.academicPresentationsData) ? window.academicPresentationsData : (window.academicPresentationsData?.items || []);
+
+    const talkMatches = talksAll
+      .map((t, idx) => ({...t, __index: idx}))
+      .filter(t => Array.isArray(t.speakerIds) && t.speakerIds.some(id => String(id) === String(personId)));
+
+    const presMatches = presAll
+      .map((t, idx) => ({...t, __index: idx}))
+      .filter(t => Array.isArray(t.speakerIds) && t.speakerIds.some(id => String(id) === String(personId)));
+
+    if (talkMatches.length) {
+      right.appendChild(Utils.createEl('h4', { className: 'text-xl font-semibold mt-6 mb-2', text: 'Outreach Talks' }));
+      talkMatches.forEach(t => {
+        const leftRow = Utils.createEl('div', { className: 'flex items-center gap-3' }, [
+          Utils.createEl('span', { className: 'text-sm', text: t.title || '' }),
+          Utils.createEl('span', { className: 'date-badge', text: Utils.formatDate(t.date) })
+        ]);
+        const view = Utils.createEl('button', { className: 'text-primary font-semibold hover:underline text-sm', dataset: { modalTarget: 'open-outreach-talk-modal', id: t.__index }, text: 'View →' });
+        const line = Utils.createEl('div', { className: 'flex items-center justify-between mb-2' }, [leftRow, view]);
+        right.appendChild(line);
+      });
+    }
+
+    if (presMatches.length) {
+      right.appendChild(Utils.createEl('h4', { className: 'text-xl font-semibold mt-4 mb-2', text: 'Academic Presentations' }));
+      presMatches.forEach(t => {
+        const leftRow = Utils.createEl('div', { className: 'flex items-center gap-3' }, [
+          Utils.createEl('span', { className: 'text-sm', text: t.title || '' }),
+          Utils.createEl('span', { className: 'date-badge', text: Utils.formatDate(t.date) })
+        ]);
+        const view = Utils.createEl('button', { className: 'text-primary font-semibold hover:underline text-sm', dataset: { modalTarget: 'open-academic-presentation-modal', id: t.__index }, text: 'View →' });
+        const line = Utils.createEl('div', { className: 'flex items-center justify-between mb-2' }, [leftRow, view]);
+        right.appendChild(line);
+      });
+    }
 
     panel.append(left, right);
     overlay.appendChild(panel);
@@ -990,30 +1029,52 @@ const ScrollManager = (() => {
 })();
 
 const CollapsibleManager = (() => {
+  function resolveContentForHeader(h) {
+    if (!h) return null;
+    const id =
+      h.getAttribute('data-content-id') ||
+      h.getAttribute('data-target-id') ||
+      h.getAttribute('aria-controls');
+    let content = null;
+    if (id) content = document.getElementById(id);
+    if (!content) {
+      // Fallback: next sibling or nearest .collapsible-content
+      content = h.nextElementSibling && h.nextElementSibling.classList?.contains('collapsible-content')
+        ? h.nextElementSibling
+        : h.parentElement?.querySelector?.('.collapsible-content');
+    }
+    return content;
+  }
+
+  function setExpandedState(h, content, expand) {
+    h.setAttribute('aria-expanded', String(expand));
+    if (!content) return;
+    content.classList.toggle('hidden', !expand);
+    content.classList.toggle('open', !!expand);
+    // Support max-height transitions if defined in CSS
+    if (expand) {
+      content.style.maxHeight = content.scrollHeight + 'px';
+      content.setAttribute('aria-hidden', 'false');
+    } else {
+      content.style.maxHeight = '0';
+      content.setAttribute('aria-hidden', 'true');
+    }
+  }
+
   function toggle(h) {
     if (!h) return;
-    const contentId = h.getAttribute('data-content-id');
-    const content = contentId ? document.getElementById(contentId) : h.nextElementSibling;
+    const content = resolveContentForHeader(h);
     const isExpanded = h.getAttribute('aria-expanded') === 'true';
-    const newState = !isExpanded;
-    h.setAttribute('aria-expanded', String(newState));
-    if (content) {
-      content.classList.toggle('hidden', !newState);
-      content.setAttribute('aria-hidden', String(!newState));
-    }
+    setExpandedState(h, content, !isExpanded);
   }
 
   function setupCollapsibleSections() {
     document.querySelectorAll('.collapsible-header').forEach(h => {
-      const contentId = h.getAttribute('data-content-id');
-      const content = contentId ? document.getElementById(contentId) : h.nextElementSibling;
+      const content = resolveContentForHeader(h);
       const isExpanded = h.getAttribute('aria-expanded') === 'true';
       h.setAttribute('role', h.getAttribute('role') || 'button');
       h.setAttribute('tabindex', h.getAttribute('tabindex') || '0');
-      if (content) {
-        content.classList.toggle('hidden', !isExpanded);
-        content.setAttribute('aria-hidden', String(!isExpanded));
-      }
+      setExpandedState(h, content, !!isExpanded);
     });
 
     document.addEventListener('click', (e) => {
@@ -1058,4 +1119,4 @@ const App = (() => {
   return { init };
 })();
 
-document.addEventListener('DOMContentLoaded', App.init);
+document.addEventListener('DOMContentLoaded', App.init)
