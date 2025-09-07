@@ -116,6 +116,29 @@ const Utils = (() => {
         `;
     }
 
+    function formatMemberSince(value) {
+      if (!value) return "";
+      try {
+        // Accepts "YYYY", "YYYY-MM", or any ISO-ish date string
+        const parts = String(value).split("-");
+        if (parts.length === 1) {
+          return parts[0]; // "2021"
+        }
+        if (parts.length === 2) {
+          // "2021-03" -> "March 2021"
+          const [y, m] = parts;
+          const date = new Date(Number(y), Number(m) - 1, 1);
+          return date.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+        }
+        // Full date or ISO -> nice month+year label
+        const date = new Date(value);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+        }
+      } catch {}
+      return String(value); // fallback: raw value
+    }
+
     /**
      * Toggles the visibility of full/truncated text.
      * @param {string} id - The ID of the text block to toggle.
@@ -141,7 +164,7 @@ const Utils = (() => {
         }
     }
 
-    return { showLoading, hideLoading, truncateText, toggleTextVisibility };
+    return { showLoading, hideLoading, truncateText, toggleTextVisibility, formatMemberSince  };
 })();
 
 /**
@@ -653,7 +676,7 @@ const Renderer = (() => {
                 
                 ${game.ageRange ? `<p class=\"text-slate-400 text-sm mt-1\">Age range: ${game.ageRange}</p>` : ``}
                 <div class="flex flex-wrap justify-center gap-1 mb-4">
-                    ${game.themes.map(theme => `<span class="bg-primary-dark text-xs text-white px-2 py-1 rounded-full">${theme}</span>`).join('')}
+                    ${game.themes.map(theme => `<span class="bg-primary-dark text-xs text-white px-2 py-1 rounded-full">${theme}</span>`).join(' ')}
                 </div>
                 <a href="${game.file}" target="_blank" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">Play Game</a>
             </div>
@@ -1394,5 +1417,6 @@ const App = (() => {
 
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', App.init);
+
 
 
