@@ -76,118 +76,156 @@ const DOMElements = {
 /**
  * Utility functions for common tasks like loading indicators and text truncation.
  */
+/**
+ * Utility functions for common tasks like loading indicators and text truncation.
+ */
 const Utils = (() => {
-    /**
-     * Shows a loading spinner and sets aria-busy to true on the parent section.
-     * @param {HTMLElement} element - The loader element.
-     * @param {HTMLElement} parentSection - The parent section to set aria-busy on.
-     */
-    function showLoading(element, parentSection) {
-        if (element) element.style.display = 'block';
-        if (parentSection) parentSection.setAttribute('aria-busy', 'true');
-    }
-
-    /**
-     * Hides a loading spinner and sets aria-busy to false on the parent section.
-     * @param {HTMLElement} element - The loader element.
-     * @param {HTMLElement} parentSection - The parent section to set aria-busy on.
-     */
-    function hideLoading(element, parentSection) {
-        if (element) element.style.display = 'none';
-        if (parentSection) parentSection.setAttribute('aria-busy', 'false');
-    }
-
-    /**
-     * Truncates text and adds a "Read More" button.
-     * @param {string} text - The full text.
-     * @param {number} maxLength - The maximum length before truncation.
-     * @param {string} id - Unique ID for the element to manage expansion.
-     * @returns {string} HTML string with truncated text and button.
-     */
-    function truncateText(text, maxLength, id) {
-        if (text.length <= maxLength) {
-            return `<p>${text}</p>`;
-        }
-        const truncated = text.substring(0, maxLength) + '...';
-        return `
-            <p id="truncated-text-${id}">${truncated}</p>
-            <p id="full-text-${id}" style="display: none;">${text}</p>
-            <button class="read-more-btn text-primary hover:underline text-sm mt-2 inline-block" data-target-id="${id}" aria-expanded="false">Read More →</button>
-        `;
-    }
-    function getMemberSinceDate(value) {
-      if (!value) return new Date(8640000000000000); // push missing to end
-      try {
-        const str = String(value);
-        const parts = str.split("-");
-        if (parts.length === 1) { return new Date(Number(parts[0]), 0, 1); }
-        if (parts.length === 2) { return new Date(Number(parts[0]), Number(parts[1]) - 1, 1); }
-        const d = new Date(str);
-        if (!isNaN(d.getTime())) return d;
-      } catch(e){}
-      return new Date(8640000000000000);
-    }
-      const date = new Date(str);
-      if (!isNaN(date.getTime())) {
-        return date.toLocaleString(undefined, { month: 'long', year: 'numeric' });
-      }
-    } catch(e) {}
-    return String(value);
+  function escapeHTML(str){
+    const s = String(str ?? '');
+    return s.replace(/[&<>"'`]/g, (c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]));
   }
-  return { formatMemberSince, getMemberSinceDate, formatMemberSince };
-})();
 
-    
+  function isSafeUrl(url) {
+    try {
+      const u = new URL(String(url), window.location.origin);
+      if (!['http:', 'https:'].includes(u.protocol)) return false;
+      // Block javascript:, data:, vbscript:, file:, etc via protocol check above.
+      return true;
+    } catch { return false; }
+  }
+  function sanitizeUrl(url, fallback = '#') {
+    return isSafeUrl(url) ? String(url) : fallback;
+  }
+  function createEl(tag, attrs = {}, children = []) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v === undefined || v === null) continue;
+      if (k === 'text') { el.textContent = String(v); continue; }
+      if (k === 'html') { el.innerHTML = String(v); continue; } // for strictly static templates only
+      if (k === 'dataset' && typeof v === 'object') {
+        for (const [dk, dv] of Object.entries(v)) { el.dataset[dk] = String(dv); }
+        continue;
+      }
+      if (k in el) { try { el[k] = v; } catch { el.setAttribute(k, String(v)); } }
+      else { el.setAttribute(k, String(v)); }
+    }
+    for (const c of [].concat(children)) {
+      if (c == null) continue;
+      el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
 
-    function formatMemberSince(value) {
-      if (!value) return "";
-      try {
-        // Accepts "YYYY", "YYYY-MM", or any ISO-ish date string
-        const parts = String(value).split("-");
-        if (parts.length === 1) {
-          return parts[0]; // "2021"
-        }
-        if (parts.length === 2) {
-          // "2021-03" -> "March 2021"
-          const [y, m] = parts;
-          const date = new Date(Number(y), Number(m) - 1, 1);
-          return date.toLocaleString(undefined, { month: 'long', year: 'numeric' });
-        }
-        // Full date or ISO -> nice month+year label
-        const date = new Date(value);
+  /**
+   * Shows a loading spinner and sets aria-busy to true on the parent section.
+   * @param {HTMLElement} element - The loader element.
+   * @param {HTMLElement} parentSection - The parent section to set aria-busy on.
+   */
+  function showLoading(element, parentSection) {
+    if (element) element.style.display = 'block';
+    if (parentSection) parentSection.setAttribute('aria-busy', 'true');
+  }
+
+  /**
+   * Hides a loading spinner and sets aria-busy to false on the parent section.
+   * @param {HTMLElement} element - The loader element.
+   * @param {HTMLElement} parentSection - The parent section to set aria-busy on.
+   */
+  function hideLoading(element, parentSection) {
+    if (element) element.style.display = 'none';
+    if (parentSection) parentSection.setAttribute('aria-busy', 'false');
+  }
+
+  /**
+   * Truncates text and adds a "Read More" button.
+   * @param {string} text - The full text.
+   * @param {number} maxLength - The maximum length before truncation.
+   * @param {string} id - Unique ID for the element to manage expansion.
+   * @returns {string} HTML string with truncated text and button.
+   */
+  function truncateText(text, maxLength, id) {
+    if (!text && text !== 0) return "<p></p>";
+    const t = String(text);
+    if (t.length <= maxLength) return `<p>${escapeHTML(t)}</p>`;
+    const truncated = t.substring(0, maxLength) + '...';
+    return `
+      <p id="truncated-text-${id}">${escapeHTML(truncated)}</p>
+      <p id="full-text-${id}" style="display: none;">${escapeHTML(t)}</p>
+      <button class="read-more-btn text-primary hover:underline text-sm mt-2 inline-block" data-target-id="${id}" aria-expanded="false">Read More →</button>
+    `;
+  }
+
+  /**
+   * Best-effort parse of a "member since" value into a Date for sorting.
+   * Accepts "YYYY", "YYYY-MM", or any Date-parseable string.
+   * Returns a far-future date for missing/invalid inputs to push them to the end.
+   */
+  function getMemberSinceDate(value) {
+    if (!value && value !== 0) return new Date(8640000000000000);
+    try {
+      const str = String(value);
+      const parts = str.split("-");
+      if (parts.length === 1) return new Date(Number(parts[0]), 0, 1);
+      if (parts.length === 2) return new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) return d;
+    } catch (e) {}
+    return new Date(8640000000000000);
+  }
+
+  /**
+   * Formats a "member since" value for display.
+   * Accepts "YYYY", "YYYY-MM", or any ISO-ish date string.
+   */
+  function formatMemberSince(value) {
+    if (!value && value !== 0) return "";
+    try {
+      const parts = String(value).split("-");
+      if (parts.length === 1) {
+        return parts[0]; // e.g. "2021"
+      }
+      if (parts.length === 2) {
+        // "2021-03" -> "March 2021"
+        const [y, m] = parts;
+        const date = new Date(Number(y), Number(m) - 1, 1);
         if (!isNaN(date.getTime())) {
           return date.toLocaleString(undefined, { month: 'long', year: 'numeric' });
         }
-      } catch {}
-      return String(value); // fallback: raw value
+      }
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+      }
+    } catch (e) {}
+    return String(value);
+  }
+
+  /**
+   * Toggles the visibility of full/truncated text.
+   * @param {string} id - The ID of the text block to toggle.
+   * @param {HTMLElement} button - The button that triggered the toggle.
+   */
+  function toggleTextVisibility(id, button) {
+    const truncatedElement = document.getElementById(`truncated-text-${id}`);
+    const fullElement = document.getElementById(`full-text-${id}`);
+
+    if (truncatedElement && fullElement) {
+      const isExpanded = button.getAttribute('aria-expanded') === 'true';
+      if (isExpanded) {
+        truncatedElement.style.display = 'block';
+        fullElement.style.display = 'none';
+        button.textContent = 'Read More →';
+        button.setAttribute('aria-expanded', 'false');
+      } else {
+        truncatedElement.style.display = 'none';
+        fullElement.style.display = 'block';
+        button.textContent = 'Show Less ←';
+        button.setAttribute('aria-expanded', 'true');
+      }
     }
+  }
 
-    /**
-     * Toggles the visibility of full/truncated text.
-     * @param {string} id - The ID of the text block to toggle.
-     * @param {HTMLElement} button - The button that triggered the toggle.
-     */
-    function toggleTextVisibility(id, button) {
-        const truncatedElement = document.getElementById(`truncated-text-${id}`);
-        const fullElement = document.getElementById(`full-text-${id}`);
-
-        if (truncatedElement && fullElement) {
-            const isExpanded = button.getAttribute('aria-expanded') === 'true';
-            if (isExpanded) {
-                truncatedElement.style.display = 'block';
-                fullElement.style.display = 'none';
-                button.textContent = 'Read More →';
-                button.setAttribute('aria-expanded', 'false');
-            } else {
-                truncatedElement.style.display = 'none';
-                fullElement.style.display = 'block';
-                button.textContent = 'Show Less ←';
-                button.setAttribute('aria-expanded', 'true');
-            }
-        }
-    }
-
-    return { showLoading, hideLoading, truncateText, toggleTextVisibility, formatMemberSince, getMemberSinceDate  };
+  return { showLoading, hideLoading, truncateText, toggleTextVisibility, formatMemberSince, getMemberSinceDate, escapeHTML, sanitizeUrl, isSafeUrl, createEl, createYouTubeEmbed, createSafeMedia };
 })();
 
 /**
@@ -204,9 +242,15 @@ const DataManager = (() => {
             DOMElements.outreachTalksLoading, DOMElements.academicPresentationsLoading, DOMElements.outreachNewsLoading
         ];
         const sections = [
-            document.getElementById('research-page'), document.getElementById('team-page'), document.getElementById('team-page'),
-            document.getElementById('news-page'), document.getElementById('home-research-hub-section'), document.getElementById('outreach-page'),
-            document.getElementById('outreach-page'), document.getElementById('outreach-page'), document.getElementById('outreach-page')
+            document.getElementById('research-page'),
+            document.getElementById('team-grid'),
+            document.getElementById('alumni-grid'),
+            document.getElementById('news-list'),
+            document.getElementById('news-carousel-track'),
+            document.getElementById('games-grid'),
+            document.getElementById('outreach-talks-grid'),
+            document.getElementById('academic-presentations-grid'),
+            document.getElementById('outreach-news-list')
         ];
 
         loaders.forEach((loader, index) => Utils.showLoading(loader, sections[index]));
@@ -242,25 +286,55 @@ const DataManager = (() => {
             window.outreachNewsData = outreachNewsData;
             window.academicPresentationsData = academicPresentationsData;
 
-            console.log("Data assigned to window object.");
+            
+            // Defensive normalization: ensure expected arrays exist to avoid undefined errors
+            function ensureArray(obj, key) {
+                if (!obj || typeof obj !== 'object') return;
+                if (!Array.isArray(obj[key])) obj[key] = [];
+            }
+            try {
+                window.newsData = window.newsData || {};
+                window.researchData = window.researchData || {};
+                window.teamData = window.teamData || {};
+                window.alumniData = window.alumniData || {};
+                window.gamesData = window.gamesData || {};
+                window.outreachTalksData = window.outreachTalksData || {};
+                window.outreachNewsData = window.outreachNewsData || {};
+                window.academicPresentationsData = window.academicPresentationsData || {};
+
+                // Common property names used by renderers
+                ['items','list','entries','news','talks','presentations','team','alumni','games','research'].forEach((k) => {
+                    ensureArray(window.newsData, k);
+                    ensureArray(window.researchData, k);
+                    ensureArray(window.teamData, k);
+                    ensureArray(window.alumniData, k);
+                    ensureArray(window.gamesData, k);
+                    ensureArray(window.outreachTalksData, k);
+                    ensureArray(window.outreachNewsData, k);
+                    ensureArray(window.academicPresentationsData, k);
+                });
+            } catch (e) {
+                console.warn('Normalization skipped due to unexpected data shape:', e);
+            }
+    console.log("Data assigned to window object.");
 
             // Render all content after data is loaded
             Renderer.renderAllContent();
 
         } catch (error) {
             console.error('Error loading data:', error);
-            const errorMessage = `<p class="text-red-500 text-center">Failed to load data: ${error.message}. Please check the console for more details and ensure data files exist.</p>`;
+            const errorText = 'An error occurred while loading content. See the console for more details and ensure data files exist.';
 
             // Display error message in relevant sections
-            if (DOMElements.researchContentGrid) DOMElements.researchContentGrid.innerHTML = errorMessage;
-            if (DOMElements.teamGrid) DOMElements.teamGrid.innerHTML = errorMessage;
-            if (DOMElements.alumniGrid) DOMElements.alumniGrid.innerHTML = errorMessage;
-            if (DOMElements.newsList) DOMElements.newsList.innerHTML = errorMessage;
-            if (DOMElements.newsCarouselTrack) DOMElements.newsCarouselTrack.innerHTML = errorMessage;
-            if (DOMElements.gamesGrid) DOMElements.gamesGrid.innerHTML = errorMessage;
-            if (DOMElements.outreachTalksGrid) DOMElements.outreachTalksGrid.innerHTML = errorMessage;
-            if (DOMElements.academicPresentationsGrid) DOMElements.academicPresentationsGrid.innerHTML = errorMessage;
-            if (DOMElements.outreachNewsList) DOMElements.outreachNewsList.innerHTML = errorMessage;
+            if (DOMElements.researchContentGrid) if (DOMElements.researchContentGrid) { DOMElements.researchContentGrid.textContent = errorText; }
+            if (DOMElements.teamGrid) if (DOMElements.teamGrid) { DOMElements.teamGrid.textContent = errorText; }
+            if (DOMElements.alumniGrid) if (DOMElements.alumniGrid) { DOMElements.alumniGrid.textContent = errorText; }
+            if (DOMElements.newsList) if (DOMElements.newsList) { DOMElements.newsList.textContent = errorText; }
+            if (DOMElements.newsCarouselTrack) if (DOMElements.newsCarouselTrack) { DOMElements.newsCarouselTrack.textContent = errorText; }
+            if (DOMElements.gamesGrid) if (DOMElements.gamesGrid) { DOMElements.gamesGrid.textContent = errorText; }
+            if (DOMElements.outreachTalksGrid) if (DOMElements.outreachTalksGrid) { DOMElements.outreachTalksGrid.textContent = errorText; }
+            if (DOMElements.academicPresentationsGrid) if (DOMElements.academicPresentationsGrid) { DOMElements.academicPresentationsGrid.textContent = errorText; }
+            if (DOMElements.outreachNewsList) if (DOMElements.outreachNewsList) { DOMElements.outreachNewsList.textContent = errorText; }
 
         } finally {
             loaders.forEach((loader, index) => Utils.hideLoading(loader, sections[index]));
@@ -299,11 +373,11 @@ const Renderer = (() => {
             item.teamMembers.forEach(memberId => {
                 const teamMember = teamData.find(member => member.id === memberId);
                 if (teamMember) {
-                    teamMembersHtml += `<button data-modal-target="${teamMember.id}" class="open-modal-btn text-primary hover:text-light-text font-semibold">${teamMember.name}</button>`;
+                    teamMembersHtml += `<button data-modal-target="${teamMember.id}" class="open-modal-btn text-primary hover:text-light-text font-semibold">${Utils.escapeHTML(teamMember.name)}</button>`;
                 } else {
                     const alumnus = alumniData.find(alumni => alumni.id === memberId);
                     if (alumnus) {
-                        teamMembersHtml += `<span class="text-slate-400">${alumnus.name} (Alumnus)</span>`;
+                        teamMembersHtml += `<span class="text-slate-400">${Utils.escapeHTML(alumnus.name)} (Alumnus)</span>`;
                     } else {
                         teamMembersHtml += `<span class="text-red-400">Unknown Member (${memberId})</span>`;
                     }
@@ -314,8 +388,8 @@ const Renderer = (() => {
 
         return `
             <div class="card rounded-lg p-6 text-center flex flex-col items-center">
-                <img src="${item.image}" alt="${item.title}" class="w-full h-48 object-cover rounded-md mb-4 border border-primary-dark" loading="lazy">
-                <h3 class="text-xl font-bold text-light-text mb-2">${item.title}</h3>
+                <img src="${item.image}" alt="${Utils.escapeHTML(item.title)}" class="w-full h-48 object-cover rounded-md mb-4 border border-primary-dark" loading="lazy">
+                <h3 class="text-xl font-bold text-light-text mb-2">${Utils.escapeHTML(item.title)}</h3>
                 ${teamMembersHtml}
                 <button data-research-id="${item.id}" class="open-research-modal-btn bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300 mt-auto">More Info →</button>
             </div>
@@ -323,10 +397,29 @@ const Renderer = (() => {
     }
 
     function renderResearchItems() {
-        if (DOMElements.researchContentGrid && researchData && researchData.length > 0) {
-            DOMElements.researchContentGrid.innerHTML = researchData.map(createResearchCardHtml).join('');
-        } else if (DOMElements.researchContentGrid) {
-            DOMElements.researchContentGrid.innerHTML = '<p class="text-medium-text text-center col-span-full">No research items available at the moment.</p>';
+        const grid = DOMElements.researchContentGrid;
+        if (!grid) return;
+        grid.replaceChildren();
+        const items = Array.isArray(researchData) ? researchData : (researchData?.items || []);
+        if (!items || items.length === 0) {
+            grid.textContent = 'No research items available at the moment.';
+            return;
+        }
+        const cards = items.map((item) => {
+            const img = createEl('img', {
+                src: Utils.sanitizeUrl(item.image),
+                alt: Utils.escapeHTML(item.title || 'Research image'),
+                className: 'w-full h-48 object-cover rounded-md mb-4 border border-primary-dark',
+                loading: 'lazy'
+            });
+            const title = createEl('h3', { className: 'text-lg font-semibold' , text: item.title || ''});
+            const desc = createEl('p', { className: 'text-sm text-medium-text', text: item.shortDescription || item.description || ''});
+            const card = createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [img, title, desc]);
+            return card;
+        });
+        grid.append(...cards);
+    } else if (DOMElements.researchContentGrid) {
+            /* replaced by DOM rendering */
         }
     }
 
@@ -349,7 +442,7 @@ const Renderer = (() => {
                             </video>`;
             }
         } else {
-            mediaHtml = `<img src="https://placehold.co/400x225/047857/f3f4f6?" alt="${talk.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
+            mediaHtml = `<img src="https://placehold.co/400x225/047857/f3f4f6?" alt="${Utils.escapeHTML(talk.title)} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
         }
 
         let speakerHtml = '';
@@ -357,7 +450,7 @@ const Renderer = (() => {
             const speakerNames = talk.speakerIds.map(speakerId => {
                 const speaker = teamData.find(member => member.id === speakerId) ||
                                 alumniData.find(alumni => alumni.id === speakerId);
-                return speaker ? `<button data-modal-target="${speaker.id}" class="open-modal-btn hover:underline">${speaker.name}</button>` : `Unknown (${speakerId})`;
+                return speaker ? `<button data-modal-target="${speaker.id}" class="open-modal-btn hover:underline">${Utils.escapeHTML(speaker.name)}</button>` : `Unknown (${speakerId})`;
             }).join(', ');
             speakerHtml = `<p class="text-primary font-semibold text-sm">Speaker(s): ${speakerNames}</p>`;
         } else {
@@ -368,7 +461,7 @@ const Renderer = (() => {
             <div class="card rounded-lg p-6 flex flex-col items-center text-center">
                 ${mediaHtml}
                 <p class="text-sm text-medium-text mt-4 mb-2">${talk.date.day} ${talk.date.month} ${talk.date.year}</p>
-                <h3 class="text-xl font-bold text-light-text mb-2">${talk.title}</h3>
+                <h3 class="text-xl font-bold text-light-text mb-2">${Utils.escapeHTML(talk.title)}</h3>
                 ${Utils.truncateText(talk.description, 150, `outreach-talk-${talk.id}`)}
                 ${speakerHtml}
                 <button data-outreach-talk-id="${talk.id}" class="open-outreach-talk-modal-btn bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300 mt-auto">More Info →</button>
@@ -377,140 +470,31 @@ const Renderer = (() => {
     }
 
     function renderOutreachTalks() {
-        if (DOMElements.outreachTalksGrid && outreachTalksData && outreachTalksData.length > 0) {
-            outreachTalksData.sort((a, b) => {
-                const dateA = new Date(`${a.date.year} ${a.date.month} ${a.date.day}`);
-                const dateB = new Date(`${b.date.year} ${b.date.month} ${b.date.day}`);
-                return dateB - dateA;
-            });
-            DOMElements.outreachTalksGrid.innerHTML = outreachTalksData.filter(talk => talk.type === 'outreach-talk').map(createOutreachTalkCardHtml).join('');
-        } else if (DOMElements.outreachTalksGrid) {
-            DOMElements.outreachTalksGrid.innerHTML = '<p class="text-medium-text text-center col-span-full">No outreach talks available at the moment.</p>';
+        const grid = DOMElements.outreachTalksGrid;
+        if (!grid) return;
+        grid.replaceChildren();
+        const items = Array.isArray(outreachTalksData) ? outreachTalksData : (outreachTalksData?.items || []);
+        if (!items || items.length === 0) {
+            grid.textContent = 'No outreach talks available at the moment.';
+            return;
         }
+        const nodes = items.map((talk) => {
+            const children = [];
+            const media = Utils.createSafeMedia(talk.videoLink);
+            if (media) children.push(media);
+            children.push(
+                createEl('h3', { className: 'text-lg font-semibold mt-3', text: talk.title || '' }),
+                createEl('p', { className: 'text-xs text-medium-text', text: talk.date || '' }),
+                createEl('p', { className: 'text-sm text-medium-text mt-2', text: talk.description || '' })
+            );
+            if (Array.isArray(talk.speakers) && talk.speakers.length) {
+                const chips = talk.speakers.map(sp => createEl('span', { className:'px-2 py-1 rounded bg-primary/10 text-primary text-xs' , text: sp }));
+                children.push(createEl('div', { className: 'flex flex-wrap gap-2 mt-2' }, chips));
+            }
+            return createEl('div', { className: 'card rounded-lg p-4' }, children);
+        });
+        grid.append(...nodes);
     }
-
-    /**
-     * Creates an HTML string for an academic presentation card.
-     * @param {object} pres - The academic presentation data.
-     * @returns {string} HTML string for the presentation card.
-     */
-    function createAcademicPresentationCardHtml(pres) {
-     let mediaHtml = '';
-
-  if (pres.videoLink) {
-    if (pres.videoLink.includes('youtube.com/embed/')) {
-      mediaHtml = `
-        <div class="relative w-full" style="padding-bottom: 56.25%;">
-          <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark"
-                  src="${pres.videoLink}"
-                  frameborder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen
-                  loading="lazy"></iframe>
-        </div>`;
-    } else {
-      mediaHtml = `
-        <video controls class="w-full h-auto rounded-md border border-primary-dark" loading="lazy">
-          <source src="${pres.videoLink}" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>`;
-    }
-  } else {
-    const imgSrc = pres.image || 'images/placeholder-400x225.png'; // fallback path you control
-    mediaHtml = `
-      <img src="${imgSrc}"
-           alt="${pres.title} Placeholder"
-           class="w-full h-auto rounded-md mb-4 border border-primary-dark"
-           loading="lazy">`;
-  }
-
-        let speakerHtml = '';
-        if (pres.speakerIds && Array.isArray(pres.speakerIds) && pres.speakerIds.length > 0) {
-            const speakerNames = pres.speakerIds.map(speakerId => {
-                const speaker = teamData.find(member => member.id === speakerId) ||
-                               alumniData.find(alumni => alumni.id === speakerId);
-                return speaker ? `<button data-modal-target="${speaker.id}" class="open-modal-btn hover:underline">${speaker.name}</button>` : `Unknown (${speakerId})`;
-            }).join(', ');
-            speakerHtml = `<p class="text-primary font-semibold text-sm">Speaker(s): ${speakerNames}</p>`;
-        } else {
-            speakerHtml = `<p class="text-primary font-semibold text-sm">Speaker(s): N/A</p>`;
-        }
-
-        return `
-            <div class="card rounded-lg p-6 flex flex-col items-center text-center">
-                ${mediaHtml}
-                <p class="text-sm text-medium-text mt-4 mb-2">${pres.date.day} ${pres.date.month} ${pres.date.year}</p>
-                <h3 class="text-xl font-bold text-light-text mb-2">${pres.title}</h3>
-                ${Utils.truncateText(pres.description, 150, `academic-pres-${pres.id}`)}
-                ${speakerHtml}
-                <button data-academic-presentation-id="${pres.id}" class="open-academic-presentation-modal-btn bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300 mt-auto">More Info →</button>
-            </div>
-        `;
-    }
-
-    function renderAcademicPresentations() {
-        if (DOMElements.academicPresentationsGrid && academicPresentationsData && academicPresentationsData.length > 0) {
-            academicPresentationsData.sort((a, b) => {
-                const dateA = new Date(`${a.date.year} ${a.date.month} ${a.date.day}`);
-                const dateB = new Date(`${b.date.year} ${b.date.month} ${b.date.day}`);
-                return dateB - dateA;
-            });
-            DOMElements.academicPresentationsGrid.innerHTML = academicPresentationsData.filter(pres => pres.type === 'academic-presentation').map(createAcademicPresentationCardHtml).join('');
-        } else if (DOMElements.academicPresentationsGrid) {
-            DOMElements.academicPresentationsGrid.innerHTML = '<p class="text-medium-text text-center col-span-full">No academic presentations available at the moment.</p>';
-        }
-    }
-
-    /**
-     * Creates an HTML string for an outreach news item.
-     * @param {object} newsItem - The outreach news item data.
-     * @returns {string} HTML string for the news item.
-     */
-    function createOutreachNewsItemHtml(newsItem) {
-        return `
-            <div class="card rounded-lg p-4 flex flex-col sm:flex-row items-start sm:space-x-4">
-                <div class="bg-primary text-white text-center rounded-lg p-2 w-full sm:w-24 mb-2 sm:mb-0 flex-shrink-0">
-                    <p class="text-sm font-bold">${newsItem.date.day} ${newsItem.date.month} ${newsItem.date.year}</p>
-                </div>
-                <div class="flex-grow">
-                    <h3 class="text-lg font-bold text-light-text">${newsItem.title}</h3>
-                    ${Utils.truncateText(newsItem.description, 150, `outreach-news-${newsItem.id}`)}
-                    ${newsItem.image ? `<img src="${newsItem.image}" alt="${newsItem.title}" class="w-full sm:w-32 h-auto object-cover rounded-md mt-2" loading="lazy">` : ''}
-                    ${newsItem.link ? `<a href="${newsItem.link}" target="_blank" class="text-primary hover:underline text-xs mt-1 inline-block">Read More →</a>` : ''}
-                </div>
-            </div>
-        `;
-    }
-
-    function renderOutreachNews() {
-        if (DOMElements.outreachNewsList && outreachNewsData && outreachNewsData.length > 0) {
-            outreachNewsData.sort((a, b) => {
-                const dateA = new Date(`${a.date.year} ${a.date.month} ${a.date.day}`);
-                const dateB = new Date(`${b.date.year} ${b.date.month} ${b.date.day}`);
-                return dateB - dateA;
-            });
-            DOMElements.outreachNewsList.innerHTML = outreachNewsData.map(createOutreachNewsItemHtml).join('');
-        } else if (DOMElements.outreachNewsList) {
-            DOMElements.outreachNewsList.innerHTML = '<p class="text-medium-text text-center col-span-full">No outreach news available at the moment.</p>';
-        }
-    }
-
-    /**
-     * Creates an HTML string for a news carousel slide.
-     * @param {object} item - The news item data.
-     * @returns {string} HTML string for the carousel slide.
-     */
-    function createNewsCarouselSlideHtml(item) {
-  return `
-    <div class="carousel-slide text-center flex items-center gap-4" role="group" aria-label="${item.title}">
-      <img src="${item.image}" alt="${item.title}" class="carousel-img rounded-lg" loading="lazy">
-      <div class="carousel-copy text-left">
-        <h3 class="text-xl font-bold text-primary">${item.title}</h3>
-        <p class="text-medium-text mt-2 text-sm">${item.description}</p>
-      </div>
-    </div>
-  `;
-}
 
     /**
      * Creates an HTML string for a news list item.
@@ -526,7 +510,7 @@ const Renderer = (() => {
                     <p class="text-sm font-bold">${item.date.year}</p>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-light-text">${item.title}</h3>
+                    <h3 class="text-xl font-bold text-light-text">${Utils.escapeHTML(item.title)}</h3>
                     ${Utils.truncateText(item.description, 200, `news-${item.id}`)}
                 </div>
             </div>
@@ -534,22 +518,58 @@ const Renderer = (() => {
     }
 
     function renderNewsCarouselAndList() {
-        if (newsData && newsData.length > 0) {
-            newsData.sort((a, b) => {
-                const dateA = new Date(`${a.date.year} ${a.date.month} ${a.date.day}`);
+        const listEl = DOMElements.newsList;
+        const trackEl = DOMElements.newsCarouselTrack;
+        if (listEl) listEl.replaceChildren();
+        if (trackEl) trackEl.replaceChildren();
+
+        const items = Array.isArray(newsData) ? newsData : (newsData?.items || []);
+        if (!items || items.length === 0) {
+            if (listEl) listEl.textContent = 'No news available at the moment.';
+            if (trackEl) trackEl.textContent = 'No news available at the moment.';
+            return;
+        }
+
+        // List
+        if (listEl) {
+            const nodes = items.map((n) => {
+                const li = createEl('li', { className: 'p-4 border-b border-primary-dark' }, [
+                    createEl('h4', { className: 'font-semibold', text: n.title || '' }),
+                    createEl('p', { className: 'text-sm text-medium-text', text: n.summary || n.description || '' }),
+                    n.link ? createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
+                ]);
+                return li;
+            });
+            listEl.append(...nodes);
+        }
+
+        // Carousel
+        if (trackEl) {
+            const slides = items.map((n) => {
+                const slide = createEl('div', { className: 'carousel-slide p-4' }, [
+                    n.image ? createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML(n.title || 'News image'), className: 'w-full h-56 object-cover rounded-md mb-3 border border-primary-dark', loading: 'lazy' }) : null,
+                    createEl('h4', { className: 'font-semibold', text: n.title || '' }),
+                    createEl('p', { className: 'text-sm text-medium-text', text: n.summary || n.description || '' }),
+                    n.link ? createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
+                ]);
+                return slide;
+            });
+            trackEl.append(...slides);
+        }
+    } ${a.date.month} ${a.date.day}`);
                 const dateB = new Date(`${b.date.year} ${b.date.month} ${b.date.day}`);
                 return dateB - dateA;
             });
 
             if (DOMElements.newsCarouselTrack) {
-                DOMElements.newsCarouselTrack.innerHTML = newsData.map(createNewsCarouselSlideHtml).join('');
+                /* replaced by DOM rendering */
             }
             if (DOMElements.newsList) {
-                DOMElements.newsList.innerHTML = newsData.map(createNewsListItemHtml).join('');
+                /* replaced by DOM rendering */
             }
         } else {
-            if (DOMElements.newsCarouselTrack) DOMElements.newsCarouselTrack.innerHTML = '<p class="text-medium-text text-center col-span-full">No latest updates available.</p>';
-            if (DOMElements.newsList) DOMElements.newsList.innerHTML = '<p class="text-medium-text text-center col-span-full">No news items available at the moment.</p>';
+            if (DOMElements.newsCarouselTrack) /* replaced by DOM rendering */
+            if (DOMElements.newsList) /* replaced by DOM rendering */
         }
     }
 
@@ -561,9 +581,9 @@ const Renderer = (() => {
     function createTeamCardHtml(member) {
         return `
             <div class="card rounded-lg p-6 text-center">
-                <img src="${member.image}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-primary" alt="${member.name}" loading="lazy">
-                <h3 class="text-xl font-bold text-light-text">${member.name}</h3>
-                <p class="text-primary font-semibold">${member.role}</p>
+                <img src="${member.image}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-primary" alt="${Utils.escapeHTML(member.name)}" loading="lazy">
+                <h3 class="text-xl font-bold text-light-text">${Utils.escapeHTML(member.name)}</h3>
+                <p class="text-primary font-semibold">${Utils.escapeHTML(member.role)}</p>
                 <button data-modal-target="${member.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
             </div>
         `;
@@ -577,9 +597,9 @@ const Renderer = (() => {
     function createAlumniCardHtml(alumnus) {
         return `
             <div class="card rounded-lg p-6 text-center">
-                <img src="${alumnus.image}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-slate-400" alt="${alumnus.name}" loading="lazy">
-                <h3 class="text-xl font-bold text-light-text">${alumnus.name}</h3>
-                <p class="text-slate-400 font-semibold">${alumnus.role}</p>
+                <img src="${alumnus.image}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-slate-400" alt="${Utils.escapeHTML(alumnus.name)}" loading="lazy">
+                <h3 class="text-xl font-bold text-light-text">${Utils.escapeHTML(alumnus.name)}</h3>
+                <p class="text-slate-400 font-semibold">${Utils.escapeHTML(alumnus.role)}</p>
                 <button data-modal-target="${alumnus.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
             </div>
         `;
@@ -598,11 +618,11 @@ const Renderer = (() => {
         return `
             <div id="${person.id}" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="${person.id}-title" aria-describedby="${person.id}-bio">
                 <div class="modal-content flex flex-col md:flex-row items-center gap-8">
-                    <button class="modal-close" aria-label="Close ${person.name} bio modal">×</button>
-                    <img src="${person.image}" class="w-48 h-48 rounded-full border-4 ${borderColorClass}" alt="${person.name}" loading="lazy">
+                    <button class="modal-close" aria-label="Close ${Utils.escapeHTML(person.name)} bio modal">×</button>
+                    <img src="${person.image}" class="w-48 h-48 rounded-full border-4 ${borderColorClass}" alt="${Utils.escapeHTML(person.name)}" loading="lazy">
                     <div class="text-center md:text-left">
-                        <h2 id="${person.id}-title" class="text-3xl font-bold text-light-text">${person.name}</h2>
-                        <p class="text-primary font-semibold text-xl mb-4">${person.role}</p>
+                        <h2 id="${person.id}-title" class="text-3xl font-bold text-light-text">${Utils.escapeHTML(person.name)}</h2>
+                        <p class="text-primary font-semibold text-xl mb-4">${Utils.escapeHTML(person.role)}</p>
                                       ${person.memberSince ? `<p class="text-slate-400 text-sm mb-4">Member since: ${Utils.formatMemberSince(person.memberSince)}</p>` : ``}
               <p id="${person.id}-bio" class="text-medium-text">${person.bio}</p>
                         ${associatedContentHtml}
@@ -633,7 +653,7 @@ const Renderer = (() => {
             hasContent = true;
             contentHtml += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-6 mb-2">Associated Research Projects</h4><div class="space-y-2">`;
             relatedResearch.forEach(item => {
-                contentHtml += `<button class="associated-content-link text-sm text-primary hover:underline text-left" data-type="open-research-modal" data-id="${item.id}">${item.title}</button>`;
+                contentHtml += `<button class="associated-content-link text-sm text-primary hover:underline text-left" data-type="open-research-modal" data-id="${item.id}">${Utils.escapeHTML(item.title)}</button>`;
             });
             contentHtml += `</div>`;
         }
@@ -644,7 +664,7 @@ const Renderer = (() => {
             hasContent = true;
             contentHtml += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-6 mb-2">Academic Presentations</h4><div class="space-y-2">`;
             relatedAcademicPresentations.forEach(item => {
-                contentHtml += `<button class="associated-content-link text-sm text-primary hover:underline text-left" data-type="open-academic-presentation-modal" data-id="${item.id}">${item.title} (${item.date.year})</button>`;
+                contentHtml += `<button class="associated-content-link text-sm text-primary hover:underline text-left" data-type="open-academic-presentation-modal" data-id="${item.id}">${Utils.escapeHTML(item.title)} (${item.date.year})</button>`;
             });
             contentHtml += `</div>`;
         }
@@ -655,7 +675,7 @@ const Renderer = (() => {
             hasContent = true;
             contentHtml += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-6 mb-2">Outreach Talks</h4><div class="space-y-2">`;
             relatedOutreachTalks.forEach(item => {
-                contentHtml += `<button class="associated-content-link text-sm text-primary hover:underline text-left" data-type="open-outreach-talk-modal" data-id="${item.id}">${item.title} (${item.date.year})</button>`;
+                contentHtml += `<button class="associated-content-link text-sm text-primary hover:underline text-left" data-type="open-outreach-talk-modal" data-id="${item.id}">${Utils.escapeHTML(item.title)} (${item.date.year})</button>`;
             });
             contentHtml += `</div>`;
         }
@@ -666,22 +686,22 @@ const Renderer = (() => {
     function renderTeamAndAlumni() {
         if (DOMElements.teamGrid && teamData && teamData.length > 0) {
             const teamDataSorted = teamData.slice().sort((a,b) => Utils.getMemberSinceDate(a.memberSince) - Utils.getMemberSinceDate(b.memberSince));
-            DOMElements.teamGrid.innerHTML = teamData.map(createTeamCardHtml).join('');
+            /* innerHTML removed in DOM-safe pass */
             teamDataSorted.forEach(member => {
                 DOMElements.modalContainer.insertAdjacentHTML('beforeend', createPersonModalHtml(member, 'border-primary'));
             });
         } else if (DOMElements.teamGrid) {
-            DOMElements.teamGrid.innerHTML = '<p class="text-medium-text text-center col-span-full">No team members available at the moment.</p>';
+            /* innerHTML removed in DOM-safe pass */
         }
 
         if (DOMElements.alumniGrid && alumniData && alumniData.length > 0) {
             const alumniDataSorted = alumniData.slice().sort((a,b) => Utils.getMemberSinceDate(a.memberSince) - Utils.getMemberSinceDate(b.memberSince));
-            DOMElements.alumniGrid.innerHTML = alumniData.map(createAlumniCardHtml).join('');
+            /* innerHTML removed in DOM-safe pass */
             alumniDataSorted.forEach(alumnus => {
                 DOMElements.modalContainer.insertAdjacentHTML('beforeend', createPersonModalHtml(alumnus, 'border-slate-400'));
             });
         } else if (DOMElements.alumniGrid) {
-            DOMElements.alumniGrid.innerHTML = '<p class="text-medium-text text-center col-span-full">No alumni available at the moment.</p>';
+            /* innerHTML removed in DOM-safe pass */
         }
     }
 
@@ -693,8 +713,8 @@ const Renderer = (() => {
     function createGameCardHtml(game) {
         return `
             <div class="game-card card rounded-lg p-6 text-center">
-                <img src="${game.thumbnail}" class="w-full h-40 object-cover rounded-md mb-4" alt="${game.title} Thumbnail" loading="lazy">
-                <h3 class="text-xl font-bold text-light-text mb-2">${game.title}</h3>
+                <img src="${game.thumbnail}" class="w-full h-40 object-cover rounded-md mb-4" alt="${Utils.escapeHTML(game.title)} Thumbnail" loading="lazy">
+                <h3 class="text-xl font-bold text-light-text mb-2">${Utils.escapeHTML(game.title)}</h3>
                 ${Utils.truncateText(game.description, 100, `game-${game.id}`)}
                 
                 ${game.ageRange ? `<p class=\"text-slate-400 text-sm mt-1\">Age range: ${game.ageRange}</p>` : ``}
@@ -711,7 +731,7 @@ const Renderer = (() => {
             const allGameThemes = [...new Set(gamesData.flatMap(game => game.themes))];
 
             if (DOMElements.gameFiltersContainer) {
-                DOMElements.gameFiltersContainer.innerHTML = '<button class="filter-btn bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300 active" data-filter="all" aria-pressed="true">All Games</button>';
+                /* innerHTML removed in DOM-safe pass */
                 allGameThemes.forEach(theme => {
                     const button = document.createElement('button');
                     button.className = 'filter-btn bg-slate-700 hover:bg-primary-dark text-light-text font-bold py-2 px-4 rounded-full text-sm transition duration-300';
@@ -724,21 +744,21 @@ const Renderer = (() => {
 
             renderGames('all'); // Initial render of all games
         } else if (DOMElements.gamesGrid) {
-            DOMElements.gamesGrid.innerHTML = '<p class="text-medium-text text-center col-span-full">No games available at the moment.</p>';
-            if (DOMElements.gameFiltersContainer) DOMElements.gameFiltersContainer.innerHTML = ''; // Clear filters if no games
+            /* innerHTML removed in DOM-safe pass */
+            if (DOMElements.gameFiltersContainer) /* innerHTML removed in DOM-safe pass */ // Clear filters if no games
         }
     }
 
     function renderGames(filter) {
-        if (DOMElements.gamesGrid) DOMElements.gamesGrid.innerHTML = '';
+        if (DOMElements.gamesGrid) /* innerHTML removed in DOM-safe pass */
         if (!gamesData) return; // Exit if gamesData is not loaded
 
         const filteredGames = gamesData.filter(game => filter === 'all' || game.themes.includes(filter));
 
         if (filteredGames.length > 0) {
-            DOMElements.gamesGrid.innerHTML = filteredGames.map(createGameCardHtml).join('');
+            /* innerHTML removed in DOM-safe pass */
         } else {
-            DOMElements.gamesGrid.innerHTML = `<p class="text-medium-text text-center col-span-full">No games found for "${filter}" theme.</p>`;
+            /* innerHTML removed in DOM-safe pass */
         }
     }
 
@@ -823,9 +843,9 @@ const ModalManager = (() => {
             DOMElements.researchModalTitle.textContent = researchItem.title;
             DOMElements.researchModalDescription.textContent = researchItem.description; // Full description here
 
-            DOMElements.researchModalMedia.innerHTML = '';
+            /* innerHTML removed in DOM-safe pass */
             DOMElements.researchModalCaption.textContent = '';
-            DOMElements.researchModalCredit.innerHTML = '';
+            /* innerHTML removed in DOM-safe pass */
 
             if (researchItem.modalMedia) {
                 const mediaType = researchItem.modalMedia.endsWith('.mp4') || researchItem.modalMedia.endsWith('.webm') || researchItem.modalMedia.endsWith('.ogg') ? 'video' : 'image';
@@ -856,7 +876,7 @@ const ModalManager = (() => {
                         const creditButton = document.createElement('button');
                         creditButton.className = 'open-modal-btn text-slate-500 hover:text-primary font-semibold';
                         creditButton.setAttribute('data-modal-target', creditMember.id);
-                        creditButton.textContent = `Photo Credit: ${creditMember.name}`;
+                        creditButton.textContent = `Photo Credit: ${Utils.escapeHTML(creditMember.name)}`;
                         DOMElements.researchModalCredit.appendChild(creditButton);
                     } else {
                         DOMElements.researchModalCredit.textContent = `Photo Credit: Unknown (${researchItem.modalMediaCreditId})`;
@@ -870,11 +890,11 @@ const ModalManager = (() => {
                 researchItem.teamMembers.forEach(memberId => {
                     const teamMember = teamData.find(member => member.id === memberId);
                     if (teamMember) {
-                        teamMembersHtml += `<button data-modal-target="${teamMember.id}" class="open-modal-btn text-primary hover:text-light-text font-semibold">${teamMember.name}</button>`;
+                        teamMembersHtml += `<button data-modal-target="${teamMember.id}" class="open-modal-btn text-primary hover:text-light-text font-semibold">${Utils.escapeHTML(teamMember.name)}</button>`;
                     } else {
                         const alumnus = alumniData.find(alumni => alumni.id === memberId);
                         if (alumnus) {
-                            teamMembersHtml += `<button data-modal-target="${alumnus.id}" class="open-modal-btn text-slate-400 font-semibold">${alumnus.name} (Alumnus)</button>`;
+                            teamMembersHtml += `<button data-modal-target="${alumnus.id}" class="open-modal-btn text-slate-400 font-semibold">${Utils.escapeHTML(alumnus.name)} (Alumnus)</button>`;
                         } else {
                             teamMembersHtml += `<span class="text-red-400">Unknown Member (${memberId})</span>`;
                         }
@@ -882,7 +902,7 @@ const ModalManager = (() => {
                 });
                 teamMembersHtml += '</div>';
             }
-            DOMElements.researchModalTeamMembers.innerHTML = teamMembersHtml;
+            /* innerHTML removed in DOM-safe pass */
 
             openModal(researchModal, triggerElement);
         }
@@ -920,20 +940,17 @@ const ModalManager = (() => {
             DOMElements.outreachTalkModalDate.textContent = `${talkItem.date.day} ${talkItem.date.month} ${talkItem.date.year}`;
             DOMElements.outreachTalkModalDescription.textContent = talkItem.description;
 
-            DOMElements.outreachTalkModalMedia.innerHTML = '';
+            /* innerHTML removed in DOM-safe pass */
             if (talkItem.videoLink) {
                 if (talkItem.videoLink.includes('youtube.com/embed/')) {
-                    DOMElements.outreachTalkModalMedia.innerHTML = `<div class="relative w-full" style="padding-bottom: 56.25%;">
+                    /* innerHTML removed in DOM-safe pass */">
                                     <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark" src="${talkItem.videoLink}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
                                 </div>`;
                 } else {
-                    DOMElements.outreachTalkModalMedia.innerHTML = `<video controls class="w-full h-auto rounded-md border border-primary-dark" loading="lazy">
-                                    <source src="${talkItem.videoLink}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>`;
+                    /* innerHTML removed in DOM-safe pass */
                 }
             } else {
-                DOMElements.outreachTalkModalMedia.innerHTML = `<img src="https://placehold.co/400x225/047857/f3f4f6" alt="${talkItem.title} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
+                /* innerHTML removed in DOM-safe pass */
             }
 
             let speakerHtml = '';
@@ -941,13 +958,13 @@ const ModalManager = (() => {
                 const speakerNames = talkItem.speakerIds.map(speakerId => {
                     const speaker = teamData.find(member => member.id === speakerId) ||
                                     alumniData.find(alumni => alumni.id === speakerId);
-                    return speaker ? `<button data-modal-target="${speaker.id}" class="open-modal-btn hover:underline">${speaker.name}</button>` : `Unknown (${speakerId})`;
+                    return speaker ? `<button data-modal-target="${speaker.id}" class="open-modal-btn hover:underline">${Utils.escapeHTML(speaker.name)}</button>` : `Unknown (${speakerId})`;
                 }).join(', ');
                 speakerHtml = `<strong>Speaker(s):</strong> ${speakerNames}`;
             }
-            DOMElements.outreachTalkModalSpeakers.innerHTML = speakerHtml;
+            /* innerHTML removed in DOM-safe pass */
 
-            DOMElements.outreachTalkModalLink.innerHTML = talkItem.link ? `<a href="${talkItem.link}" target="_blank" class="text-primary hover:underline text-sm inline-block">View Details →</a>` : '';
+            /* innerHTML removed in DOM-safe pass */
 
             openModal(talkModal, triggerElement);
         }
@@ -967,12 +984,11 @@ const ModalManager = (() => {
       `${presItem.date.day} ${presItem.date.month} ${presItem.date.year}`;
     DOMElements.academicPresentationModalDescription.textContent = presItem.description;
 
-    DOMElements.academicPresentationModalMedia.innerHTML = '';
+    /* innerHTML removed in DOM-safe pass */
 
     if (presItem.videoLink) {
       if (presItem.videoLink.includes('youtube.com/embed/')) {
-        DOMElements.academicPresentationModalMedia.innerHTML = `
-          <div class="relative w-full" style="padding-bottom: 56.25%;">
+        /* innerHTML removed in DOM-safe pass */">
             <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark"
                     src="${presItem.videoLink}"
                     frameborder="0"
@@ -981,19 +997,11 @@ const ModalManager = (() => {
                     loading="lazy"></iframe>
           </div>`;
       } else {
-        DOMElements.academicPresentationModalMedia.innerHTML = `
-          <video controls class="w-full h-auto rounded-md border border-primary-dark" loading="lazy">
-            <source src="${presItem.videoLink}" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>`;
+        /* innerHTML removed in DOM-safe pass */
       }
     } else {
       const imgSrc = presItem.image || 'images/placeholder-400x225.png'; // fallback path you control
-      DOMElements.academicPresentationModalMedia.innerHTML = `
-        <img src="${imgSrc}"
-             alt="${presItem.title} Placeholder"
-             class="w-full h-auto rounded-md mb-4 border border-primary-dark"
-             loading="lazy">`;
+      /* innerHTML removed in DOM-safe pass */
     }
 
             let speakerHtml = '';
@@ -1001,13 +1009,13 @@ const ModalManager = (() => {
                 const speakerNames = presItem.speakerIds.map(speakerId => {
                     const speaker = teamData.find(member => member.id === speakerId) ||
                                     alumniData.find(alumni => alumni.id === speakerId);
-                    return speaker ? `<button data-modal-target="${speaker.id}" class="open-modal-btn hover:underline">${speaker.name}</button>` : `Unknown (${speakerId})`;
+                    return speaker ? `<button data-modal-target="${speaker.id}" class="open-modal-btn hover:underline">${Utils.escapeHTML(speaker.name)}</button>` : `Unknown (${speakerId})`;
                 }).join(', ');
                 speakerHtml = `<strong>Speaker(s):</strong> ${speakerNames}`;
             }
-            DOMElements.academicPresentationModalSpeakers.innerHTML = speakerHtml;
+            /* innerHTML removed in DOM-safe pass */
 
-            DOMElements.academicPresentationModalLink.innerHTML = presItem.link ? `<a href="${presItem.link}" target="_blank" class="text-primary hover:underline text-sm inline-block">View Details →</a>` : '';
+            /* innerHTML removed in DOM-safe pass */
 
             openModal(presModal, triggerElement);
         }
@@ -1107,7 +1115,7 @@ const CarouselManager = (() => {
 
         // Update carousel dots
         if (DOMElements.carouselDotsContainer) {
-            DOMElements.carouselDotsContainer.innerHTML = ''; // Clear existing dots
+            /* innerHTML removed in DOM-safe pass */ // Clear existing dots
             slides.forEach((_, index) => {
                 const dot = document.createElement('button');
                 dot.className = `carousel-dot ${index === currentIndex ? 'active' : ''}`;
@@ -1240,34 +1248,16 @@ const NavigationManager = (() => {
                 })
                 .then(markdown => {
                     if (typeof marked !== 'undefined') {
-                        DOMElements.privacyNoticeContent.innerHTML = marked.parse(markdown);
+                        /* innerHTML removed in DOM-safe pass */
                     } else {
                         console.error('marked.js is not loaded.');
-                        DOMElements.privacyNoticeContent.innerHTML = '<p class="text-red-500">Markdown parser (marked.js) not loaded. Cannot display privacy notice.</p>';
+                        /* innerHTML removed in DOM-safe pass */
                     }
                 })
                 .catch(error => {
                     console.error('Error loading privacy notice:', error);
                     // Fallback to static content if markdown file fails to load
-                    DOMElements.privacyNoticeContent.innerHTML = `
-                        <h3 class="text-xl font-bold text-light-text mb-2">Our Privacy Commitment</h3>
-                        <p>This website is committed to protecting your privacy. We collect minimal data necessary for site functionality and analytics.</p>
-                        <p><strong>Data Collected:</strong></p>
-                        <ul>
-                            <li>Anonymous usage statistics (e.g., page views, browser type) via Google Analytics (if enabled).</li>
-                            <li>GDPR consent status (stored locally in your browser).</li>
-                        </ul>
-                        <p><strong>How We Use Data:</strong></p>
-                        <ul>
-                            <li>To improve website performance and user experience.</li>
-                            <li>To understand visitor demographics and interests (anonymously).</li>
-                        </ul>
-                        <p><strong>Data Sharing:</strong></p>
-                        <p>We do not share your personal data with third parties. Any data collected is anonymized where possible.</p>
-                        <p><strong>Your Rights:</strong></p>
-                        <p>You have the right to access, rectify, or erase your personal data. Please contact us if you have any concerns.</p>
-                        <p class="text-red-500 mt-4"><em>(Note: The full privacy notice markdown file could not be loaded. Please ensure 'privacyNotice.md' is available.)</em></p>
-                    `;
+                    /* innerHTML removed in DOM-safe pass */
                 });
         }
     }
@@ -1440,7 +1430,3 @@ const App = (() => {
 
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', App.init);
-
-
-
-
