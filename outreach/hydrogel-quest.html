@@ -5,8 +5,11 @@
   <link rel="stylesheet" href="../assets/css/fonts.css">
   <link rel="stylesheet" href="../assets/css/style.css">
   <style>body{font-family: var(--font-sans-exo);}
-/* Fallback for Tailwind's .hidden */
-.hidden{display:none!important}
+/* On-screen D-pad for mobile */
+#dpad{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;display:grid;grid-template-columns:60px 60px 60px;gap:8px;z-index:9999}
+#dpad button{background:#111827cc;color:#10b981;border:1px solid #10b98155;border-radius:12px;padding:12px;font-weight:700}
+#dpad .spacer{visibility:hidden}
+@media (min-width:768px){#dpad{display:none}} /* hide on desktop */
 </style>
 
     <meta charset="UTF-8">
@@ -98,7 +101,6 @@
             color: white;
         }
     </style>
-  <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
 </head>
 <body class="antialiased">
     <div class="py-20">
@@ -106,7 +108,8 @@
             <h2 class="text-3xl font-bold text-center mb-8 section-title">Hydrogel Quest</h2>
             <p class="text-medium-text mb-8 max-w-2xl mx-auto">Explore the lab and collect the ingredients to synthesize a hydrogel! Use the arrow keys to move.</p>
             <div id="game-container" class="card p-4">
-                <canvas id="game-canvas" width="800" height="600"></canvas>
+                \1
+<div id="dpad"><button data-dir="up">↑</button><div class="spacer"></div><div></div><button data-dir="left">←</button><button data-dir="down">↓</button><button data-dir="right">→</button></div>
                 <div id="game-inventory">
                     <h3 class="font-bold mb-2">Inventory:</h3>
                     <ul id="inventory-list">
@@ -227,9 +230,35 @@
         });
     </script>
 
-  <script src="../assets/js/marked.min.js"></script>
-  <script src="../assets/js/three.min.js"></script>
-  <script src="../assets/js/OrbitControls.js"></script>
-  <script src="../assets/js/particles.min.js"></script>
+  <script src="./assets/js/marked.min.js"></script>
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js"></script>
+
+<script>
+(function(){
+  const dpad = document.getElementById('dpad');
+  if (!dpad) return;
+  function move(dir){
+    // If your code defines movePlayer or handleInput, use that. Else, adjust player directly.
+    if (typeof movePlayer === 'function') { movePlayer(dir); return; }
+    if (typeof handleInput === 'function') { handleInput(dir); return; }
+    try {
+      window.__hq_dir = dir;
+      document.dispatchEvent(new KeyboardEvent('keydown', {key: (dir==='up'?'ArrowUp':dir==='down'?'ArrowDown':dir==='left'?'ArrowLeft':'ArrowRight')}));
+    } catch(e){}
+  }
+  dpad.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-dir]');
+    if (btn) move(btn.dataset.dir);
+  });
+  // Touchstart for better responsiveness
+  dpad.addEventListener('touchstart', (e)=>{
+    const btn = e.target.closest('button[data-dir]');
+    if (btn) { e.preventDefault(); move(btn.dataset.dir); }
+  }, {passive:false});
+})();
+</script>
+
 </body>
 </html>

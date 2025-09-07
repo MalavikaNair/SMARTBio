@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="../assets/css/tailwind.css">
-  <link rel="stylesheet" href="../assets/css/fonts.css">
-  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
+  <link rel="stylesheet" href="./assets/css/fonts.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
   <style>body{font-family: var(--font-sans-exo);}
-/* Fallback for Tailwind's .hidden */
-.hidden{display:none!important}
+/* Ensure the game canvas is visible and responsive */
+#gameCanvas{width:100%;height:auto;background:#0b1020;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.game-shell{width:min(100%,1100px);margin:0 auto;padding:12px}
+@media (max-width:640px){.game-shell{padding:8px}}
 </style>
 
     <meta charset="UTF-8">
@@ -214,9 +216,9 @@
         }
 
     </style>
-  <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
 </head>
-<body>
+\1
+<div class="game-shell">
     <div class="main-content-wrapper">
         <canvas id="gameCanvas"></canvas>
         <button id="pauseButton" class="pause-button" style="display: none;">Pause</button>
@@ -251,26 +253,6 @@
     </div>
 
     <script>
-// --- Web Audio policy: ensure audio context resumes on first user gesture ---
-let __audioReady = false;
-async function ensureAudio() {
-  try {
-    if (!__audioReady && typeof Tone !== 'undefined' && Tone && Tone.start) {
-      await Tone.start();
-      __audioReady = true;
-      console.log('[Audio] Tone.js context started');
-    }
-  } catch (e) { console.warn('[Audio] Failed to start audio context', e); }
-}
-// One-time global listeners to resume audio on first user gesture
-['pointerdown','touchstart','click','keydown'].forEach((evt) => {
-  window.addEventListener(evt, function once() {
-    ensureAudio();
-    window.removeEventListener(evt, once, true);
-  }, true);
-});
-
-
         // --- DOM Elements ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -1198,10 +1180,36 @@ async function ensureAudio() {
         window.addEventListener('resize', resizeCanvas);
     </script>
 
-  <script src="../assets/js/marked.min.js"></script>
-  <script src="../assets/js/three.min.js"></script>
-  <script src="../assets/js/OrbitControls.js"></script>
-  <script src="../assets/js/particles.min.js"></script>
-  <script src="../assets/js/Tone.min.js"></script>
+  <script src="./assets/js/marked.min.js"></script>
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js"></script>
+  <script src="./assets/js/Tone.min.js"></script>
+</div>
+
+<script>
+// __flappyResizeInstalled__
+(function(){
+  const canvas = document.getElementById('gameCanvas');
+  if (!canvas) return;
+  const container = canvas.parentElement;
+  function sizeCanvas(){
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const cssW = Math.min(container.clientWidth || window.innerWidth, 1100);
+    const cssH = Math.min(window.innerHeight * 0.7, 640);
+    canvas.style.width = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+    canvas.width = Math.floor(cssW * dpr);
+    canvas.height = Math.floor(cssH * dpr);
+    const ctx = canvas.getContext('2d');
+    if (ctx && ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', sizeCanvas);
+  document.addEventListener('DOMContentLoaded', sizeCanvas);
+  // call immediately in case scripts run late
+  setTimeout(sizeCanvas, 0);
+})();
+</script>
+
 </body>
 </html>

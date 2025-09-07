@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="../assets/css/tailwind.css">
-  <link rel="stylesheet" href="../assets/css/fonts.css">
-  <link rel="stylesheet" href="../assets/css/style.css">
-  <style>body{font-family: var(--font-sans-exo);}.welcome-screen.hidden{display:none!important;opacity:0!important;pointer-events:none!important}
-</style>
+  <link rel="stylesheet" href="./assets/css/tailwind.css">
+  <link rel="stylesheet" href="./assets/css/fonts.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>body{font-family: var(--font-sans-exo);}</style>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -407,7 +406,7 @@
 
         /* Removed encyclopaedia-specific styles */
     </style>
-  <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
+<style>.hidden{display:none!important}</style>
 </head>
 <body>
     <!-- Welcome Screen -->
@@ -523,26 +522,6 @@
     </div>
 
     <script>
-// --- Web Audio policy: ensure audio context resumes on first user gesture ---
-let __audioReady = false;
-async function ensureAudio() {
-  try {
-    if (!__audioReady && typeof Tone !== 'undefined' && Tone && Tone.start) {
-      await Tone.start();
-      __audioReady = true;
-      console.log('[Audio] Tone.js context started');
-    }
-  } catch (e) { console.warn('[Audio] Failed to start audio context', e); }
-}
-// One-time global listeners to resume audio on first user gesture
-['pointerdown','touchstart','click','keydown'].forEach((evt) => {
-  window.addEventListener(evt, function once() {
-    ensureAudio();
-    window.removeEventListener(evt, once, true);
-  }, true);
-});
-
-
         // Canvas setup
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -2030,10 +2009,10 @@ async function ensureAudio() {
         initializeGame();
     </script>
 
-  <script src="../assets/js/marked.min.js"></script>
-  <script src="../assets/js/three.min.js"></script>
-  <script src="../assets/js/OrbitControls.js"></script>
-  <script src="../assets/js/particles.min.js"></script>
-  <script src="../assets/js/Tone.min.js"></script>
+  <script src="./assets/js/marked.min.js"></script>
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js"></script>
+  <script src="./assets/js/Tone.min.js"></script>
 </body>
 </html>
