@@ -190,7 +190,7 @@ body{font-family: var(--font-sans-exo);}
             background-color: #fff; /* White background for the drawing area */
             border-radius: 12px;
             width: 100%;
-            height: 100%;
+            height: auto;
         }
 
         .controls-panel {
@@ -482,8 +482,42 @@ body{font-family: var(--font-sans-exo);}
             }
         }
     
+
+
+/* --- Mobile-specific fixes for Actuation Station --- */
+@media (max-width: 640px) {
+  body {
+    display: block;
+    align-items: stretch;
+    padding: 12px;
+    min-height: auto;
+  }
+  .game-container {
+    padding: 16px;
+    gap: 16px;
+  }
+  /* Make the canvas area taller in portrait so content isn't scrunched */
+  .canvas-container {
+    aspect-ratio: 4/3;
+    min-height: 220px;
+  }
+  /* Let the canvas scale naturally inside its container */
+  .canvas-container canvas {
+    width: 100%;
+    height: auto;
+  }
+  /* Allow more, smaller columns for controls on phones */
+  .controls-panel {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  /* Prevent overly large headings from pushing content */
+  .welcome-screen-content h2 { font-size: 1.25rem; }
+  .action-button { padding: 10px 14px; }
+}
 </style>
-  <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="outreach-style.min.css">
 </head>
 <body>
     <div class="game-container">
