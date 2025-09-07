@@ -4,12 +4,15 @@
   <link rel="stylesheet" href="../assets/css/tailwind.css">
   <link rel="stylesheet" href="../assets/css/fonts.css">
   <link rel="stylesheet" href="../assets/css/style.css">
-  <style>body{font-family: var(--font-sans-exo);}</style>
+  <style>
+body{font-family: var(--font-sans-exo);}
+</style>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actuation Station: The Robot Challenge</title>
 <style>
+
         /* Custom CSS for the game */
         body {
             font-family: 'Inter', sans-serif;
@@ -165,7 +168,6 @@
             cursor: not-allowed;
         }
 
-
         .main-content {
             display: flex;
             flex-direction: column; /* Default to column for small screens */
@@ -179,7 +181,7 @@
             border-radius: 12px;
             overflow: hidden;
             position: relative;
-            min-height: 400px;
+            min-height: auto; aspect-ratio: 16/9;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Added shadow for canvas */
         }
 
@@ -479,7 +481,9 @@
                 opacity: 1;
             }
         }
-    </style>
+    
+</style>
+  <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
 </head>
 <body>
     <div class="game-container">
@@ -774,7 +778,6 @@
         // --- Tutorial Pointer Element ---
         const tutorialPointer = document.getElementById('tutorialPointer');
 
-
         // --- Message box functions ---
         let messageTimeoutId;
         function showMessage(message, duration = 1500, type = 'info') {
@@ -874,11 +877,9 @@
         const ELECTRO_MAGNETIC_OFF_THRESHOLD = 20;
         const ELECTRO_MAGNETIC_RELEASE_THRESHOLD = MIN_ELECTRO_MAGNETIC_GRASP_FORCE - 5;
 
-
         // Crushing thresholds for fragile ball
         const FRAGILE_CRUSH_RIGID_THRESHOLD = 8;
         const FRAGILE_CRUSH_PNEUMATIC_THRESHOLD = 70;
-
 
         // --- Drawing Functions ---
 
@@ -994,7 +995,6 @@
             }
         }
 
-
         function drawRobot() {
             // Clear and draw dynamic background particles
             drawBackgroundParticles();
@@ -1066,7 +1066,6 @@
             }
             ctx.restore(); // Restore to initial canvas transform (0,0)
 
-
             const robotBaseY = canvas.height - 80; // Define robotBaseY here
 
             // Wound properties
@@ -1114,7 +1113,6 @@
             ctx.fillStyle = 'rgba(139, 0, 0, 0.5)'; // Dark red, semi-transparent
             ctx.fill();
             ctx.restore();
-
 
             // Now draw the robot based on its type
             ctx.save(); // Save context before drawing robot
@@ -1807,7 +1805,6 @@
         softElectroMagneticDownElectrodeSlider.addEventListener('input', () => { softElectroMagneticDownElectrodeValue.textContent = `${parseFloat(softElectroMagneticDownElectrodeSlider.value)} units`; });
         softElectroMagneticGraspingForceSlider.addEventListener('input', () => { softElectroMagneticGraspingForceValue.textContent = `${parseFloat(softElectroMagneticGraspingForceSlider.value)}%`; });
 
-
         // Function to update control panel visibility
         function updateControlPanelVisibility() {
             controlsPanel.classList.remove('rigid-active', 'soft-pneumatic-active', 'soft-electro-magnetic-active');
@@ -2063,9 +2060,36 @@
         });
     </script>
 
-  <script src="../assets/js/marked.min.js"></script>
-  <script src="../assets/js/three.min.js"></script>
-  <script src="../assets/js/OrbitControls.js"></script>
-  <script src="../assets/js/particles.min.js"></script>
+  <script src="./assets/js/marked.min.js"></script>
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js"></script>
+<script>
+// --- Canvas fit helper (idempotent) ---
+(function(){
+  if (window.__canvasFitHelperInstalled__) return;
+  window.__canvasFitHelperInstalled__ = true;
+
+  function fitCanvasToParent(canvas) {
+    if (!canvas) return;
+    var ratio = (canvas.width && canvas.height) ? (canvas.width / canvas.height) : (16/9);
+    var parent = canvas.parentElement || document.body;
+    var parentW = parent.clientWidth || window.innerWidth;
+    var cssW = Math.min(parentW, 1000);
+    var cssH = Math.round(cssW / ratio);
+    canvas.style.width  = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+  }
+
+  function autoFitAllCanvases(){
+    var nodes = document.querySelectorAll('canvas');
+    for (var i=0; i<nodes.length; i++) fitCanvasToParent(nodes[i]);
+  }
+
+  window.addEventListener('resize', autoFitAllCanvases);
+  window.addEventListener('orientationchange', autoFitAllCanvases);
+  document.addEventListener('DOMContentLoaded', autoFitAllCanvases);
+})();
+</script>
 </body>
 </html>

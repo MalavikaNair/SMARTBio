@@ -4,7 +4,9 @@
   <link rel="stylesheet" href="../assets/css/tailwind.css">
   <link rel="stylesheet" href="../assets/css/fonts.css">
   <link rel="stylesheet" href="../assets/css/style.css">
-  <style>body{font-family: var(--font-sans-exo);}</style>
+  <style>
+body{font-family: var(--font-sans-exo);}
+</style>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +14,7 @@
     <!-- Tailwind CSS CDN -->
 <!-- Tone.js CDN for sound effects -->
 <style>
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8; /* Light blue-grey background */
@@ -46,7 +49,7 @@
             border: 2px solid #d4b090; /* Border to define the "body" area */
             display: block;
             width: 100%; /* Make canvas responsive */
-            height: 400px; /* Fixed height for now, can be dynamic later */
+            height: auto; aspect-ratio: 16/9; /* Fixed height for now, can be dynamic later */
             box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         .game-info {
@@ -405,7 +408,9 @@
         }
 
         /* Removed encyclopaedia-specific styles */
-    </style>
+    
+</style>
+  <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
 </head>
 <body>
     <!-- Welcome Screen -->
@@ -482,7 +487,6 @@
             </div>
         </div>
 
-
         <div class="game-controls">
             <button id="activateMacrophages" class="control-button" disabled="">Activate Macrophages (10)</button>
             <button id="releaseGrowthFactor" class="control-button" disabled="">Release Growth Factor (20)</button>
@@ -515,8 +519,6 @@
                 <button id="dismissPhaseModalButton" class="dismiss-button">Dismiss</button>
             </div>
         </div>
-
-        <!-- Removed Encyclopaedia Modal Overlay -->
 
     </div>
 
@@ -864,7 +866,6 @@
             hidePhaseModal();
             isModalActive = false; // Ensure modal active flag is false
 
-
             let title = '';
             let isSuccess = false;
             if (outcome === 'success') {
@@ -889,7 +890,6 @@
             } else {
                 finalMessage = `${message} Final Wound Health: ${woundHealth.toFixed(1)}%, Final Scar Level: ${scarLevel.toFixed(1)}%. Time Elapsed: ${(gameTime / 60).toFixed(1)}s`;
             }
-
 
             showGameOverMessageBox(title, finalMessage, isSuccess);
 
@@ -1102,7 +1102,6 @@
             else if (woundCoverage > 30) woundCoverageFill.className = 'slider-fill medium';
             else woundCoverageFill.className = 'slider-fill bad';
 
-
             // Update Scarring slider
             scarLevelVal.textContent = `${scarLevel.toFixed(1)}%`;
             scarLevelFill.style.width = `${scarLevel}%`;
@@ -1130,7 +1129,6 @@
             if (cellularEnergy > 50) cellularEnergyFill.className = 'slider-fill good';
             else if (cellularEnergy > 20) cellularEnergyFill.className = 'slider-fill medium';
             else cellularEnergyFill.className = 'slider-fill bad';
-
 
             // Update button states based on energy and phase
             // Buttons are disabled if game is not running or a modal is active
@@ -1339,7 +1337,6 @@
             ctx.closePath();
             ctx.fill();
 
-
             // Visual for infection (pulsing green overlay) - now clipped to wound shape
             if (infectionLevel > 0) {
                 ctx.save(); // Save current state before clipping
@@ -1379,7 +1376,6 @@
                 ctx.shadowBlur = 0; // Reset shadow
                 ctx.shadowColor = 'transparent';
             }
-
 
             // Draw wound edges (more defined outline)
             ctx.strokeStyle = '#c0392b';
@@ -1654,7 +1650,6 @@
             // Passive reduction of proliferationActivity over time
             proliferationActivity = Math.max(0, proliferationActivity - 0.2);
 
-
             // Check for game over conditions
             if (woundHealth <= 0) {
                 endGame('failure', 'The wound became too severe and failed to heal.');
@@ -1793,7 +1788,6 @@
         // function showEncyclopaediaModal() { ... }
         // function hideEncyclopaediaModal(delay = 300) { ... }
 
-
         // --- Action Handlers ---
 
         // Activate Macrophages
@@ -1867,7 +1861,6 @@
                     }
                 }
 
-
                 woundHealth = Math.min(100, woundHealth + healingBoost); // Boost healing
                 proliferationActivity += proliferationIncrease; // Increase proliferation activity
 
@@ -1939,7 +1932,6 @@
             updateUI();
         });
 
-
         // Mechanical Stimulation (formerly Reorganise)
         mechanicalStimulationBtn.addEventListener('click', () => {
             playSound('click');
@@ -1985,7 +1977,6 @@
             hidePhaseModal();
         });
 
-
         patientButtons.forEach(button => {
             button.addEventListener('click', () => {
                 playSound('click');
@@ -2008,10 +1999,37 @@
         initializeGame();
     </script>
 
-  <script src="../assets/js/marked.min.js"></script>
-  <script src="../assets/js/three.min.js"></script>
-  <script src="../assets/js/OrbitControls.js"></script>
-  <script src="../assets/js/particles.min.js"></script>
-  <script src="../assets/js/Tone.min.js"></script>
+  <script src="./assets/js/marked.min.js"></script>
+  <script src="./assets/js/three.min.js"></script>
+  <script src="./assets/js/OrbitControls.js"></script>
+  <script src="./assets/js/particles.min.js"></script>
+  <script src="./assets/js/Tone.min.js"></script>
+<script>
+// --- Canvas fit helper (idempotent) ---
+(function(){
+  if (window.__canvasFitHelperInstalled__) return;
+  window.__canvasFitHelperInstalled__ = true;
+
+  function fitCanvasToParent(canvas) {
+    if (!canvas) return;
+    var ratio = (canvas.width && canvas.height) ? (canvas.width / canvas.height) : (16/9);
+    var parent = canvas.parentElement || document.body;
+    var parentW = parent.clientWidth || window.innerWidth;
+    var cssW = Math.min(parentW, 1000);
+    var cssH = Math.round(cssW / ratio);
+    canvas.style.width  = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+  }
+
+  function autoFitAllCanvases(){
+    var nodes = document.querySelectorAll('canvas');
+    for (var i=0; i<nodes.length; i++) fitCanvasToParent(nodes[i]);
+  }
+
+  window.addEventListener('resize', autoFitAllCanvases);
+  window.addEventListener('orientationchange', autoFitAllCanvases);
+  document.addEventListener('DOMContentLoaded', autoFitAllCanvases);
+})();
+</script>
 </body>
 </html>
