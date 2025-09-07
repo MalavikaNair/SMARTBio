@@ -96,7 +96,7 @@ const Utils = (() => {
   function sanitizeUrl(url, fallback = '#') {
     return isSafeUrl(url) ? String(url) : fallback;
   }
-  function createEl(tag, attrs = {}, children = []) {
+  function Utils.createEl(tag, attrs = {}, children = []) {
     const el = document.createElement(tag);
     for (const [k, v] of Object.entries(attrs)) {
       if (v === undefined || v === null) continue;
@@ -199,60 +199,7 @@ const Utils = (() => {
     return String(value);
   }
 
-function createYouTubeEmbed(url) {
-  try {
-    const u = new URL(String(url), window.location.origin);
-    const host = u.hostname.toLowerCase();
-
-    // Only allow proper YouTube embed URLs
-    if (!['www.youtube.com', 'youtube.com'].includes(host)) return null;
-    if (!u.pathname.startsWith('/embed/')) return null;
-
-    const iframe = document.createElement('iframe');
-    iframe.src = u.href;
-    iframe.loading = 'lazy';
-    iframe.allowFullscreen = true;
-    iframe.setAttribute(
-      'allow',
-      'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-    );
-    iframe.className = 'absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark';
-
-    return iframe;
-  } catch {
-    return null;
-  }
-}
-
-function createSafeMedia(url) {
-  if (!url) return null;
-
-  // YouTube embeds
-  if (url.includes('youtube.com/embed/')) {
-    const container = document.createElement('div');
-    container.className = 'relative w-full';
-    container.style.paddingBottom = '56.25%'; // 16:9 aspect ratio
-    const iframe = createYouTubeEmbed(url);
-    if (iframe) container.appendChild(iframe);
-    return container;
-  }
-
-  // Fallback: treat as a video
-  const video = document.createElement('video');
-  video.controls = true;
-  video.loading = 'lazy';
-  video.className = 'w-full h-auto rounded-md border border-primary-dark';
-
-  const src = document.createElement('source');
-  src.src = sanitizeUrl(url);
-  src.type = 'video/mp4';
-
-  video.appendChild(src);
-  return video;
-}
-  
-
-/**
+  /**
    * Toggles the visibility of full/truncated text.
    * @param {string} id - The ID of the text block to toggle.
    * @param {HTMLElement} button - The button that triggered the toggle.
@@ -272,7 +219,67 @@ function createSafeMedia(url) {
     }
   }
 
-  return { showLoading, hideLoading, truncateText, toggleTextVisibility, formatMemberSince, getMemberSinceDate, escapeHTML, sanitizeUrl, isSafeUrl, createEl, createYouTubeEmbed, createSafeMedia };
+  
+  function createEl(tag, attrs = {}, children = []) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v === undefined || v === null) continue;
+      if (k === 'text') { el.textContent = String(v); continue; }
+      if (k === 'html') { el.innerHTML = String(v); continue; } // use only for static, trusted snippets
+      if (k === 'dataset' && typeof v === 'object') {
+        for (const [dk, dv] of Object.entries(v)) el.dataset[dk] = String(dv);
+        continue;
+      }
+      if (k in el) { try { el[k] = v; } catch { el.setAttribute(k, String(v)); } }
+      else { el.setAttribute(k, String(v)); }
+    }
+    for (const c of [].concat(children || [])) {
+      if (c == null) continue;
+      el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
+
+
+  function createYouTubeEmbed(url) {
+    try {
+      const u = new URL(String(url), window.location.origin);
+      const host = u.hostname.toLowerCase();
+      if (!['www.youtube.com','youtube.com'].includes(host)) return null;
+      if (!u.pathname.startsWith('/embed/')) return null;
+      const iframe = document.createElement('iframe');
+      iframe.src = u.href;
+      iframe.loading = 'lazy';
+      iframe.allowFullscreen = true;
+      iframe.setAttribute('allow','accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+      iframe.className = 'absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark';
+      return iframe;
+    } catch { return null; }
+  }
+
+
+  function createSafeMedia(url) {
+    if (!url) return null;
+    if (String(url).includes('youtube.com/embed/')) {
+      const container = document.createElement('div');
+      container.className = 'relative w-full';
+      container.style.paddingBottom = '56.25%';
+      const iframe = createYouTubeEmbed(url);
+      if (iframe) container.appendChild(iframe);
+      return container;
+    }
+    const v = document.createElement('video');
+    v.controls = true;
+    v.loading = 'lazy';
+    v.className = 'w-full h-auto rounded-md border border-primary-dark';
+    const src = document.createElement('source');
+    src.src = sanitizeUrl(url);
+    src.type = 'video/mp4';
+    v.appendChild(src);
+    return v;
+  }
+
+return { showLoading, hideLoading, truncateText, toggleTextVisibility, formatMemberSince, getMemberSinceDate, escapeHTML, sanitizeUrl, isSafeUrl, createEl, createYouTubeEmbed, createSafeMedia };
 })();
 
 /**
@@ -415,15 +422,15 @@ const Renderer = (() => {
             return;
         }
         const cards = items.map((item) => {
-            const img = item?.image ? createEl('img', {
+            const img = item?.image ? Utils.createEl('img', {
                 src: Utils.sanitizeUrl(item.image),
                 alt: Utils.escapeHTML(item.title || 'Research image'),
                 className: 'w-full h-48 object-cover rounded-md mb-4 border border-primary-dark',
                 loading: 'lazy'
             }) : null;
-            const title = createEl('h3', { className: 'text-lg font-semibold', text: item?.title || '' });
-            const desc = createEl('p', { className: 'text-sm text-medium-text', text: item?.shortDescription || item?.description || '' });
-            return createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [img, title, desc].filter(Boolean));
+            const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: item?.title || '' });
+            const desc = Utils.createEl('p', { className: 'text-sm text-medium-text', text: item?.shortDescription || item?.description || '' });
+            return Utils.createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [img, title, desc].filter(Boolean));
         });
         grid.append(...cards);
     }
@@ -442,15 +449,15 @@ const Renderer = (() => {
             const media = Utils.createSafeMedia(talk?.videoLink);
             if (media) children.push(media);
             children.push(
-                createEl('h3', { className: 'text-lg font-semibold mt-3', text: talk?.title || '' }),
-                createEl('p', { className: 'text-xs text-medium-text', text: talk?.date || '' }),
-                createEl('p', { className: 'text-sm text-medium-text mt-2', text: talk?.description || '' })
+                Utils.createEl('h3', { className: 'text-lg font-semibold mt-3', text: talk?.title || '' }),
+                Utils.createEl('p', { className: 'text-xs text-medium-text', text: talk?.date || '' }),
+                Utils.createEl('p', { className: 'text-sm text-medium-text mt-2', text: talk?.description || '' })
             );
             if (Array.isArray(talk?.speakers) && talk.speakers.length) {
-                const chips = talk.speakers.map(sp => createEl('span', { className:'px-2 py-1 rounded bg-primary/10 text-primary text-xs' , text: sp }));
-                children.push(createEl('div', { className: 'flex flex-wrap gap-2 mt-2' }, chips));
+                const chips = talk.speakers.map(sp => Utils.createEl('span', { className:'px-2 py-1 rounded bg-primary/10 text-primary text-xs' , text: sp }));
+                children.push(Utils.createEl('div', { className: 'flex flex-wrap gap-2 mt-2' }, chips));
             }
-            return createEl('div', { className: 'card rounded-lg p-4' }, children);
+            return Utils.createEl('div', { className: 'card rounded-lg p-4' }, children);
         });
         grid.append(...nodes);
     }
@@ -465,14 +472,14 @@ const Renderer = (() => {
             return;
         }
         const nodes = items.map((pres) => {
-            const title = createEl('h3', { className: 'text-lg font-semibold', text: pres?.title || '' });
-            const meta = createEl('p', { className: 'text-xs text-medium-text', text: pres?.date || '' });
-            const desc = createEl('p', { className: 'text-sm text-medium-text mt-2', text: pres?.description || '' });
+            const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: pres?.title || '' });
+            const meta = Utils.createEl('p', { className: 'text-xs text-medium-text', text: pres?.date || '' });
+            const desc = Utils.createEl('p', { className: 'text-sm text-medium-text mt-2', text: pres?.description || '' });
             const children = [title, meta, desc];
             if (pres?.link) {
-                children.push(createEl('a', { href: Utils.sanitizeUrl(pres.link, '#'), className: 'text-primary underline mt-2 inline-block', text: 'View presentation' }));
+                children.push(Utils.createEl('a', { href: Utils.sanitizeUrl(pres.link, '#'), className: 'text-primary underline mt-2 inline-block', text: 'View presentation' }));
             }
-            return createEl('div', { className: 'card rounded-lg p-4' }, children);
+            return Utils.createEl('div', { className: 'card rounded-lg p-4' }, children);
         });
         grid.append(...nodes);
     }
@@ -486,10 +493,10 @@ const Renderer = (() => {
             list.textContent = 'No outreach news available at the moment.';
             return;
         }
-        const nodes = items.map((n) => createEl('li', { className: 'p-4 border-b border-primary-dark' }, [
-            createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
-            createEl('p', { className: 'text-sm text-medium-text', text: n?.summary || n?.description || '' }),
-            n?.link ? createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
+        const nodes = items.map((n) => Utils.createEl('li', { className: 'p-4 border-b border-primary-dark' }, [
+            Utils.createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
+            Utils.createEl('p', { className: 'text-sm text-medium-text', text: n?.summary || n?.description || '' }),
+            n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
         ].filter(Boolean)));
         list.append(...nodes);
     }
@@ -506,19 +513,19 @@ const Renderer = (() => {
             return;
         }
         if (listEl) {
-            const nodes = items.map((n) => createEl('li', { className: 'p-4 border-b border-primary-dark' }, [
-                createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
-                createEl('p', { className: 'text-sm text-medium-text', text: n?.summary || n?.description || '' }),
-                n?.link ? createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
+            const nodes = items.map((n) => Utils.createEl('li', { className: 'p-4 border-b border-primary-dark' }, [
+                Utils.createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
+                Utils.createEl('p', { className: 'text-sm text-medium-text', text: n?.summary || n?.description || '' }),
+                n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
             ].filter(Boolean)));
             listEl.append(...nodes);
         }
         if (trackEl) {
-            const slides = items.map((n) => createEl('div', { className: 'carousel-slide p-4' }, [
-                n?.image ? createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML(n?.title || 'News image'), className: 'w-full h-56 object-cover rounded-md mb-3 border border-primary-dark', loading: 'lazy' }) : null,
-                createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
-                createEl('p', { className: 'text-sm text-medium-text', text: n?.summary || n?.description || '' }),
-                n?.link ? createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
+            const slides = items.map((n) => Utils.createEl('div', { className: 'carousel-slide p-4' }, [
+                n?.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML(n?.title || 'News image'), className: 'w-full h-56 object-cover rounded-md mb-3 border border-primary-dark', loading: 'lazy' }) : null,
+                Utils.createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
+                Utils.createEl('p', { className: 'text-sm text-medium-text', text: n?.summary || n?.description || '' }),
+                n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
             ].filter(Boolean)));
             trackEl.append(...slides);
         }
@@ -534,11 +541,11 @@ const Renderer = (() => {
         const aItems = Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData?.items || []);
 
         function personCard(p, isAlumni=false) {
-            const img = p?.image ? createEl('img', { src: Utils.sanitizeUrl(p.image), alt: Utils.escapeHTML(p?.name || (isAlumni ? 'Alumni' : 'Team')), className:'w-32 h-32 object-cover rounded-full mb-3 border border-primary-dark', loading:'lazy' }) : null;
-            const name = createEl('h3', { className: 'text-base font-semibold', text: p?.name || '' });
-            const role = createEl('p', { className: 'text-sm text-medium-text', text: p?.role || '' });
-            const since = p?.memberSince ? createEl('p', { className: 'text-xs text-medium-text', text: Utils.formatMemberSince(p.memberSince) }) : null;
-            return createEl('div', { className: 'card rounded-lg p-4 text-center flex flex-col items-center' }, [img, name, role, since].filter(Boolean));
+            const img = p?.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(p.image), alt: Utils.escapeHTML(p?.name || (isAlumni ? 'Alumni' : 'Team')), className:'w-32 h-32 object-cover rounded-full mb-3 border border-primary-dark', loading:'lazy' }) : null;
+            const name = Utils.createEl('h3', { className: 'text-base font-semibold', text: p?.name || '' });
+            const role = Utils.createEl('p', { className: 'text-sm text-medium-text', text: p?.role || '' });
+            const since = p?.memberSince ? Utils.createEl('p', { className: 'text-xs text-medium-text', text: Utils.formatMemberSince(p.memberSince) }) : null;
+            return Utils.createEl('div', { className: 'card rounded-lg p-4 text-center flex flex-col items-center' }, [img, name, role, since].filter(Boolean));
         }
 
         if (teamGrid) {
@@ -572,22 +579,22 @@ const Renderer = (() => {
         function renderFilters() {
             if (!filtersWrap) return;
             filtersWrap.replaceChildren();
-            const allBtn = createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: 'All' });
+            const allBtn = Utils.createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: 'All' });
             allBtn.addEventListener('click', () => { activeGenre = null; renderGrid(); });
             filtersWrap.appendChild(allBtn);
             genres.forEach(ge => {
-                const b = createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: ge });
+                const b = Utils.createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: ge });
                 b.addEventListener('click', () => { activeGenre = ge; renderGrid(); });
                 filtersWrap.appendChild(b);
             });
         }
 
         function gameCard(gm) {
-            const img = gm?.image ? createEl('img', { src: Utils.sanitizeUrl(gm.image), alt: Utils.escapeHTML(gm?.title || 'Game image'), className:'w-full h-40 object-cover rounded-md mb-3 border border-primary-dark', loading:'lazy' }) : null;
-            const title = createEl('h3', { className: 'text-lg font-semibold', text: gm?.title || '' });
-            const desc = createEl('p', { className: 'text-sm text-medium-text', text: gm?.description || '' });
-            const link = gm?.link ? createEl('a', { href: Utils.sanitizeUrl(gm.link, '#'), className:'text-primary underline mt-2 inline-block', text:'Play / Learn more' }) : null;
-            return createEl('div', { className: 'card rounded-lg p-4' }, [img, title, desc, link].filter(Boolean));
+            const img = gm?.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(gm.image), alt: Utils.escapeHTML(gm?.title || 'Game image'), className:'w-full h-40 object-cover rounded-md mb-3 border border-primary-dark', loading:'lazy' }) : null;
+            const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: gm?.title || '' });
+            const desc = Utils.createEl('p', { className: 'text-sm text-medium-text', text: gm?.description || '' });
+            const link = gm?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(gm.link, '#'), className:'text-primary underline mt-2 inline-block', text:'Play / Learn more' }) : null;
+            return Utils.createEl('div', { className: 'card rounded-lg p-4' }, [img, title, desc, link].filter(Boolean));
         }
 
         function renderGrid() {
