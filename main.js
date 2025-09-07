@@ -553,7 +553,6 @@ const Renderer = (() => {
           const chip = Utils.createEl('button', {
             className: 'px-2 py-1 rounded bg-primary text-white text-xs',
             dataset: { modalTarget: 'open-person-bio', id: id },
-            onclick: (e) => ModalManager && ModalManager.handleModalClicks(e),
             text: nameById(id)
           });
           wrap.appendChild(chip);
@@ -571,7 +570,6 @@ const Renderer = (() => {
       const btn = Utils.createEl('button', {
         className: 'read-more-btn text-primary hover:underline text-sm mt-2',
         dataset: { modalTarget: 'open-research-modal', id: (item && item.id) || (item && item.title) },
-        onclick: (e)=>ModalManager && ModalManager.handleModalClicks(e),
         text: (descText.length > 180 ? 'Read More →' : 'More Info')
       });
 
@@ -610,7 +608,6 @@ const Renderer = (() => {
         const link = Utils.createEl('button', {
           className: 'text-primary hover:text-light-text font-semibold',
           dataset: { modalTarget: 'open-person-bio', id: id },
-          onclick: (e)=>ModalManager && ModalManager.handleModalClicks(e),
           text: nameById(id)
         });
         speakersRow.appendChild(link);
@@ -658,7 +655,6 @@ const Renderer = (() => {
         const link = Utils.createEl('button', {
           className: 'text-primary hover:text-light-text font-semibold',
           dataset: { modalTarget: 'open-person-bio', id: id },
-          onclick: (e)=>ModalManager && ModalManager.handleModalClicks(e),
           text: nameById(id)
         });
         speakersRow.appendChild(link);
@@ -710,7 +706,6 @@ function renderOutreachNews() {
         const linkBtn = Utils.createEl('button', {
           className:'text-primary hover:text-light-text font-semibold',
           dataset:{ modalTarget:'open-person-bio', id },
-          onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e),
           text: nameById(id)
         });
         row.appendChild(linkBtn);
@@ -775,7 +770,6 @@ function renderOutreachNews() {
       const viewBio = Utils.createEl('button', {
         className: 'read-more-btn text-primary hover:underline text-sm mt-2',
         dataset: { modalTarget: 'open-person-bio', id: p && p.id },
-        onclick: (e) => ModalManager && ModalManager.handleModalClicks(e),
         text: 'View Bio →'
       });
       return Utils.createEl('div', { className: 'card rounded-lg p-4 text-center flex flex-col items-center' },
@@ -908,46 +902,51 @@ const ModalManager = (() => {
   function openResearchDescriptionModal(item, trigger) {
     const container = DOMElements.modalContainer || document.body;
     const overlay = Utils.createEl('div', { className:'modal-overlay active', tabindex:'-1', role:'dialog', 'aria-modal':'true' });
-    const panel = Utils.createEl('div', { className:'modal-content text-left' });
+    
+    const panel = Utils.createEl('div', { className:'modal-content flex flex-col md:flex-row items-center gap-8' });
     const closeBtn = Utils.createEl('button', { className:'modal-close', text:'×', dataset:{ closeModal:'true' } });
     panel.appendChild(closeBtn);
 
-    // Header
-    panel.appendChild(Utils.createEl('h3', { className:'text-2xl font-bold text-light-text', text: item && item.title || '' }));
-    if (item && item.description) panel.appendChild(Utils.createEl('p', { className:'mt-2 text-sm text-medium-text', text: String(item.description) }));
+    // Left (media/avatar)
+    const leftCol = Utils.createEl('div', { className:'w-full md:w-1/2' });
+    
+const media = Utils.createSafeMedia(item && (item.modalMedia || item.image));
+if (media) {
+  if (media.tagName && media.tagName.toLowerCase() === 'img') {
+    media.className = 'w-full h-auto rounded-md object-cover border border-primary-dark';
+  }
+  leftCol.appendChild(media);
+}
 
-    // Media
-    const media = Utils.createSafeMedia(item && (item.modalMedia || item.image));
-    if (media) {
-      if (media.tagName && media.tagName.toLowerCase() === 'img') {
-        media.className = 'w-full h-auto rounded-md object-cover border border-primary-dark mt-3';
-      }
-      panel.appendChild(media);
-    }
+    panel.appendChild(leftCol);
 
-    // Caption & credit
-    if (item && item.modalMediaCaption) panel.appendChild(Utils.createEl('p', { className:'text-xs text-medium-text mt-2', text: item.modalMediaCaption }));
-    if (item && item.modalMediaCreditId != null) {
-      const dataset = (Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || [])).concat(Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []));
-      const person = dataset.find(p => String(p.id) === String(item.modalMediaCreditId));
-      const creditName = person ? person.name : String(item.modalMediaCreditId);
-      panel.appendChild(Utils.createEl('p', { className:'text-xs text-medium-text', text: 'Credit: ' + creditName }));
-    }
+    // Right (text)
+    const rightCol = Utils.createEl('div', { className:'w-full md:w-1/2 text-left' });
+    
+rightCol.appendChild(Utils.createEl('h3', { className:'text-2xl font-bold text-light-text', text: item && item.title || '' }));
+if (item && item.description) rightCol.appendChild(Utils.createEl('p', { className:'mt-2 text-sm text-medium-text', text: String(item.description) }));
+if (item && item.modalMediaCaption) rightCol.appendChild(Utils.createEl('p', { className:'text-xs text-medium-text mt-2', text: item.modalMediaCaption }));
+if (item && item.modalMediaCreditId != null) {
+  const dataset = (Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || [])).concat(Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []));
+  const person = dataset.find(p => String(p.id) === String(item.modalMediaCreditId));
+  const creditName = person ? person.name : String(item.modalMediaCreditId);
+  rightCol.appendChild(Utils.createEl('p', { className:'text-xs text-medium-text', text: 'Credit: ' + creditName }));
+}
+if (item && Array.isArray(item.teamMembers) && item.teamMembers.length) {
+  const dataset = (Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || [])).concat(Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []));
+  const sec = Utils.createEl('div', { className:'mt-3 text-sm text-medium-text' });
+  sec.appendChild(Utils.createEl('strong', { text: 'Associated Members:' }));
+  const row = Utils.createEl('div', { className:'flex flex-wrap justify-start gap-2 mt-2' });
+  item.teamMembers.forEach(id => {
+    const person = dataset.find(p => String(p.id) === String(id));
+    const linkBtn = Utils.createEl('button', { className:'text-primary hover:text-light-text font-semibold', dataset:{ modalTarget:'open-person-bio', id }, text: person ? person.name : String(id) });
+    row.appendChild(linkBtn);
+  });
+  sec.appendChild(row);
+  rightCol.appendChild(sec);
+}
 
-    // Team chips
-    if (item && Array.isArray(item.teamMembers) && item.teamMembers.length) {
-      const dataset = (Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || [])).concat(Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []));
-      const chips = Utils.createEl('div', { className:'mt-3 flex flex-wrap justify-center gap-2 text-sm text-medium-text' });
-      chips.appendChild(Utils.createEl('strong', { text: 'Associated Members:' }));
-      const wrap = Utils.createEl('div', { className:'flex flex-wrap justify-center gap-2 mt-2' });
-      item.teamMembers.forEach(id => {
-        const person = dataset.find(p => String(p.id) === String(id));
-        const chip = Utils.createEl('button', { className:'text-primary hover:text-light-text font-semibold', dataset:{ modalTarget:'open-person-bio', id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text: person ? person.name : String(id) });
-        wrap.appendChild(chip);
-      });
-      chips.appendChild(wrap);
-      panel.appendChild(chips);
-    }
+    panel.appendChild(rightCol);
 
     overlay.appendChild(panel);
     container.appendChild(overlay);
@@ -1080,14 +1079,32 @@ function openNewsModal(newsItem, trigger) {
   function openPersonBioModal(person, trigger) {
     const container = DOMElements.modalContainer || document.body;
     const overlay = Utils.createEl('div', { className:'modal-overlay active', tabindex:'-1', role:'dialog', 'aria-modal':'true' });
-    const panel = Utils.createEl('div', { className:'modal-content flex flex-col items-center gap-4' });
+    
+    const panel = Utils.createEl('div', { className:'modal-content flex flex-col md:flex-row items-center gap-8' });
     const closeBtn = Utils.createEl('button', { className:'modal-close', text:'×', dataset:{ closeModal:'true' } });
     panel.appendChild(closeBtn);
 
-    if (person && person.image) panel.appendChild(Utils.createEl('img', { src: Utils.sanitizeUrl(person.image), alt: Utils.escapeHTML(person.name || 'Person'), className:'w-32 h-32 object-cover rounded-full border-4 border-primary' }));
-    panel.appendChild(Utils.createEl('h3', { className:'text-xl font-bold text-light-text', text: person && person.name || '' }));
-    if (person && person.role) panel.appendChild(Utils.createEl('p', { className:'text-sm text-medium-text', text: person.role }));
-    if (person && person.bio) panel.appendChild(Utils.createEl('p', { className:'text-sm mt-3 text-medium-text', text: person.bio }));
+    // Left (media/avatar)
+    const leftCol = Utils.createEl('div', { className:'w-full md:w-1/2' });
+    
+if (person && person.image) {
+  leftCol.appendChild(Utils.createEl('img', {
+    src: Utils.sanitizeUrl(person.image),
+    alt: Utils.escapeHTML(person.name || 'Person'),
+    className:'w-full h-auto rounded-md border-4 border-primary'
+  }));
+}
+
+    panel.appendChild(leftCol);
+
+    // Right (text)
+    const rightCol = Utils.createEl('div', { className:'w-full md:w-1/2 text-left' });
+    
+rightCol.appendChild(Utils.createEl('h3', { className:'text-2xl font-bold text-light-text', text: person && person.name || '' }));
+if (person && person.role) rightCol.appendChild(Utils.createEl('p', { className:'text-sm text-medium-text mt-1', text: person.role }));
+if (person && person.bio) rightCol.appendChild(Utils.createEl('p', { className:'text-sm text-medium-text mt-3', text: person.bio }));
+
+    panel.appendChild(rightCol);
 
     overlay.appendChild(panel);
     container.appendChild(overlay);
@@ -1152,7 +1169,6 @@ function openNewsModal(newsItem, trigger) {
         chips.appendChild(Utils.createEl('button', {
           className:'px-2 py-1 rounded bg-primary text-white text-xs',
           dataset:{ modalTarget:'open-person-bio', id },
-          onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e),
           text: person ? person.name : String(id)
         }));
       });
