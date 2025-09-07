@@ -115,6 +115,29 @@ const Utils = (() => {
             <button class="read-more-btn text-primary hover:underline text-sm mt-2 inline-block" data-target-id="${id}" aria-expanded="false">Read More →</button>
         `;
     }
+    function getMemberSinceDate(value) {
+      if (!value) return new Date(8640000000000000); // push missing to end
+      try {
+        const str = String(value);
+        const parts = str.split("-");
+        if (parts.length === 1) { return new Date(Number(parts[0]), 0, 1); }
+        if (parts.length === 2) { return new Date(Number(parts[0]), Number(parts[1]) - 1, 1); }
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) return d;
+      } catch(e){}
+      return new Date(8640000000000000);
+    }
+      const date = new Date(str);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+      }
+    } catch(e) {}
+    return String(value);
+  }
+  return { formatMemberSince, getMemberSinceDate, formatMemberSince };
+})();
+
+    
 
     function formatMemberSince(value) {
       if (!value) return "";
@@ -164,7 +187,7 @@ const Utils = (() => {
         }
     }
 
-    return { showLoading, hideLoading, truncateText, toggleTextVisibility, formatMemberSince  };
+    return { showLoading, hideLoading, truncateText, toggleTextVisibility, formatMemberSince, getMemberSinceDate  };
 })();
 
 /**
@@ -1417,6 +1440,7 @@ const App = (() => {
 
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', App.init);
+
 
 
 
