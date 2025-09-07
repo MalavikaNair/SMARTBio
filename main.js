@@ -462,6 +462,7 @@ const t = target.closest('[data-modal-target]'); if (!t) return;
     }
   }
 
+  }
   return { openModal, closeModal, handleModalClicks, openResearchDescriptionModal, openNewsModal, openPersonBioModal };
 })();
 
