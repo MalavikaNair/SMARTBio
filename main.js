@@ -789,7 +789,29 @@ const ModalManager = (() => {
     }
   }
 
-  return { openModal, closeModal, handleModalClicks, openResearchDescriptionModal, openNewsModal, openOutreachTalkModal, openAcademicPresentationModal };
+  
+  // Person Bio modal (team/alumni)
+  function openPersonBioModal(person, trigger) {
+    const container = DOMElements.modalContainer || document.body;
+    // Build overlay
+    const overlay = Utils.createEl('div', { className:'modal-overlay active', tabindex:'-1', role:'dialog', 'aria-modal':'true' });
+    const panel = Utils.createEl('div', { className:'modal-panel max-w-lg mx-auto bg-white dark:bg-slate-900 rounded-lg p-6 border border-primary-dark shadow-lg mt-10' });
+    const closeBtn = Utils.createEl('button', { className:'absolute top-2 right-2 px-2 py-1 rounded border', text:'×' });
+    closeBtn.addEventListener('click', () => closeModal(overlay));
+    panel.appendChild(closeBtn);
+
+    const img = person?.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(person.image), alt: Utils.escapeHTML(person.name || 'Person'), className: 'w-32 h-32 object-cover rounded-full mb-3 border border-primary-dark' }) : null;
+    const name = Utils.createEl('h3', { className:'text-xl font-semibold', text: person?.name || '' });
+    const role = Utils.createEl('p', { className:'text-sm text-medium-text', text: person?.role || '' });
+    const since = person?.memberSince ? Utils.createEl('p', { className:'text-xs text-medium-text', text: 'Member since: ' + Utils.formatMemberSince(person.memberSince) }) : null;
+    const bio = person?.bio ? Utils.createEl('p', { className:'text-sm mt-3', text: person.bio }) : null;
+
+    [img, name, role, since, bio].filter(Boolean).forEach(n => panel.appendChild(n));
+    overlay.appendChild(panel);
+    container.appendChild(overlay);
+    openModal(overlay, trigger);
+  }
+return { openModal, closeModal, handleModalClicks, openResearchDescriptionModal, openNewsModal, openOutreachTalkModal, openAcademicPresentationModal, openPersonBioModal };
 })();;
 
 /**
@@ -1077,6 +1099,16 @@ const App = (() => {
     }
 
     function setupEventListeners() {
+        // Global click delegation for modals
+        document.addEventListener('click', ModalManager.handleModalClicks);
+
+        // Read More / Show Less toggle
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.read-more-btn');
+            if (!btn) return;
+            const id = btn.getAttribute('data-target-id');
+            if (id) Utils.toggleTextVisibility(id, btn);
+        });
         DOMElements.navLinks.forEach(link => link.addEventListener('click', NavigationManager.handleNavClick));
         DOMElements.navLinkHeader.addEventListener('click', NavigationManager.handleNavClick);
 
@@ -1110,4 +1142,3 @@ const App = (() => {
 
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', App.init);
-
