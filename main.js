@@ -518,6 +518,7 @@ const Renderer = (() => {
                 <img src="${member.image}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-primary" alt="${member.name}" loading="lazy">
                 <h3 class="text-xl font-bold text-light-text">${member.name}</h3>
                 <p class="text-primary font-semibold">${member.role}</p>
+                <p class="text-primary font">${member.memberSince}</p>
                 <button data-modal-target="${member.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
             </div>
         `;
@@ -1394,3 +1395,4 @@ const App = (() => {
 
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', App.init);
+
