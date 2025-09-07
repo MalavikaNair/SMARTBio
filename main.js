@@ -1,4 +1,3 @@
-r"""
 /* SMARTBio generated.js — consolidated & data-shape aware (style.css untouched)
  * - Research modal: LEFT media/caption/credit, RIGHT details/members
  * - Team bio modal: LEFT image, RIGHT bio + bold green links + related talks/presentations
@@ -709,7 +708,7 @@ const ModalManager = (() => {
       left.appendChild(Utils.createEl('img', {
         src: Utils.sanitizeUrl(person.image),
         alt: Utils.escapeHTML(person?.name || 'Person'),
-        className: 'w-full h-auto rounded-md object-cover border border-primary-dark'
+        className: 'w-full h-auto rounded-full object-cover border border-primary-dark'
       }));
     }
 
