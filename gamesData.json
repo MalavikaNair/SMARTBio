@@ -41,7 +41,7 @@
         "description": "Design and manage a network of biological sensors to accurately read environmental values at specific target concentration zones, while managing energy costs",
         "thumbnail": "./assets/img/biosense.png",
         "file": "./outreach/bionetwork.html",
-        "themes": ["Sensing", "Adaptive"]
+        "themes": ["Sensing", "Adaptive"],
 		"ageRange": "12+"
     },
     {
