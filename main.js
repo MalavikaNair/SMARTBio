@@ -412,6 +412,19 @@ const Renderer = (() => {
                 className: 'w-full h-48 object-cover rounded-md mb-4 border border-primary-dark',
                 loading: 'lazy'
             });
+            const title = createEl('h3', { className: 'text-lg font-semibold', text: item.title || '' });
+            const desc = createEl('p', { className: 'text-sm text-medium-text', text: item.shortDescription || item.description || '' });
+            return createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [img, title, desc]);
+        });
+        grid.append(...cards);
+    }
+        const cards = items.map((item) => {
+            const img = createEl('img', {
+                src: Utils.sanitizeUrl(item.image),
+                alt: Utils.escapeHTML(item.title || 'Research image'),
+                className: 'w-full h-48 object-cover rounded-md mb-4 border border-primary-dark',
+                loading: 'lazy'
+            });
             const title = createEl('h3', { className: 'text-lg font-semibold' , text: item.title || ''});
             const desc = createEl('p', { className: 'text-sm text-medium-text', text: item.shortDescription || item.description || ''});
             const card = createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [img, title, desc]);
