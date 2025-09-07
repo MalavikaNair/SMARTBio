@@ -279,7 +279,53 @@ const Utils = (() => {
     return v;
   }
 
-return { showLoading, hideLoading, truncateText, toggleTextVisibility, formatMemberSince, getMemberSinceDate, escapeHTML, sanitizeUrl, isSafeUrl, createEl, createYouTubeEmbed, createSafeMedia };
+
+  // Create an SVG element with proper namespace
+  function createSvgEl(tag, attrs = {}, children = []) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v === undefined || v === null) continue;
+      el.setAttribute(k, String(v));
+    }
+    for (const c of [].concat(children || [])) {
+      if (c == null) continue;
+      el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
+
+  // Build a "Read More" DOM group with toggle (no innerHTML)
+  function buildReadMore(text, id) {
+    const t = String(text ?? '');
+    const container = document.createElement('div');
+    if (t.length <= 180) {
+      const p = document.createElement('p');
+      p.textContent = t;
+      container.appendChild(p);
+      return container;
+    }
+    const truncated = t.slice(0, 180) + '...';
+    const pTrunc = document.createElement('p');
+    pTrunc.id = `truncated-text-${id}`;
+    pTrunc.textContent = truncated;
+
+    const pFull = document.createElement('p');
+    pFull.id = `full-text-${id}`;
+    pFull.style.display = 'none';
+    pFull.textContent = t;
+
+    const btn = document.createElement('button');
+    btn.className = 'read-more-btn text-primary hover:underline text-sm mt-2 inline-block';
+    btn.setAttribute('data-target-id', id);
+    btn.setAttribute('aria-expanded', 'false');
+    btn.textContent = 'Read More →';
+
+    container.appendChild(pTrunc);
+    container.appendChild(pFull);
+    container.appendChild(btn);
+    return container;
+  }
+return { showLoading, hideLoading, truncateText, toggleTextVisibility, formatMemberSince, getMemberSinceDate, escapeHTML, sanitizeUrl, isSafeUrl, createEl, createYouTubeEmbed, createSafeMedia, createSvgEl, buildReadMore };
 })();
 
 /**
@@ -429,8 +475,11 @@ const Renderer = (() => {
                 loading: 'lazy'
             }) : null;
             const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: item?.title || '' });
-            const desc = Utils.createEl('p', { className: 'text-sm text-medium-text', text: item?.shortDescription || item?.description || '' });
-            return Utils.createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [img, title, desc].filter(Boolean));
+            const descGroup = Utils.buildReadMore(item.shortDescription || item.description || '', 'research-' + String(item.id));
+            return Utils.createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [
+              img, title, descGroup,
+              Utils.createEl('button', { className:'mt-3 px-3 py-1 rounded border border-primary-dark', dataset: { modalTarget: 'open-research-modal', id: item.id }, text:'More Info' })
+            ].filter(Boolean));
         });
         grid.append(...cards);
     }
@@ -545,7 +594,20 @@ const Renderer = (() => {
             const name = Utils.createEl('h3', { className: 'text-base font-semibold', text: p?.name || '' });
             const role = Utils.createEl('p', { className: 'text-sm text-medium-text', text: p?.role || '' });
             const since = p?.memberSince ? Utils.createEl('p', { className: 'text-xs text-medium-text', text: Utils.formatMemberSince(p.memberSince) }) : null;
-            return Utils.createEl('div', { className: 'card rounded-lg p-4 text-center flex flex-col items-center' }, [img, name, role, since].filter(Boolean));
+             
+            // Google Scholar link if present
+            let scholar = null;
+            if (p && p.scholar) {
+              const a = Utils.createEl('a', { href: Utils.sanitizeUrl(p.scholar, '#'), target: '_blank', rel: 'noopener noreferrer', className:'mt-2 inline-flex items-center gap-2 text-primary underline' });
+              const svg = Utils.createSvgEl('svg', { viewBox:'0 0 24 24', width:'18', height:'18', fill:'currentColor', 'aria-hidden':'true' }, [
+                Utils.createSvgEl('path', { d:'M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm-1 8.73L4.74 9 11 5.27 17.26 9 11 11.73zM3 19v2h16v-2H3z' })
+              ]);
+              a.appendChild(svg);
+              a.appendChild(document.createTextNode('Google Scholar'));
+              scholar = a;
+            }
+
+            return Utils.createEl('div', { className: 'card rounded-lg p-4 text-center flex flex-col items-center' }, [img, name, role, since, scholar, Utils.createEl('button', { className:'mt-2 px-3 py-1 rounded border border-primary-dark', dataset:{ modalTarget:'open-person-bio', id:p.id }, text:'View Bio' })].filter(Boolean));
         }
 
         if (teamGrid) {
@@ -1038,28 +1100,54 @@ const ScrollManager = (() => {
 /**
  * Manages collapsible sections.
  */
+
 const CollapsibleManager = (() => {
-    function setupCollapsibleSections() {
-        document.querySelectorAll('.collapsible-header').forEach(header => {
-            header.addEventListener('click', () => {
-                const contentId = header.getAttribute('aria-controls');
-                const content = document.getElementById(contentId);
-                const isExpanded = header.getAttribute('aria-expanded') === 'true';
+  function toggle(header) {
+    if (!header) return;
+    const contentId = header.getAttribute('aria-controls');
+    const content = contentId ? document.getElementById(contentId) : header.nextElementSibling;
+    const isExpanded = header.getAttribute('aria-expanded') === 'true';
+    const newState = !isExpanded;
 
-                if (content) {
-                    if (isExpanded) {
-                        content.classList.remove('expanded');
-                        header.classList.remove('expanded');
-                        header.setAttribute('aria-expanded', 'false');
-                    }
-                }
-            });
-        });
+    header.setAttribute('aria-expanded', String(newState));
+    header.classList.toggle('expanded', newState);
+    if (content) {
+      content.classList.toggle('hidden', !newState);
+      content.classList.toggle('expanded', newState);
+      content.setAttribute('aria-hidden', String(!newState));
     }
-    return { setupCollapsibleSections };
+  }
+
+  function setupCollapsibleSections() {
+    // Initialize ARIA/hidden state from markup
+    document.querySelectorAll('.collapsible-header').forEach(h => {
+      const contentId = h.getAttribute('aria-controls');
+      const content = contentId ? document.getElementById(contentId) : h.nextElementSibling;
+      const isExpanded = h.getAttribute('aria-expanded') === 'true';
+      h.setAttribute('role', h.getAttribute('role') || 'button');
+      h.setAttribute('tabindex', h.getAttribute('tabindex') || '0');
+      if (content) {
+        content.classList.toggle('hidden', !isExpanded);
+        content.setAttribute('aria-hidden', String(!isExpanded));
+      }
+    });
+
+    // Click delegation
+    document.addEventListener('click', (e) => {
+      const header = e.target.closest('.collapsible-header');
+      if (header) toggle(header);
+    });
+
+    // Keyboard support (Enter/Space)
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const header = e.target.closest && e.target.closest('.collapsible-header');
+      if (header) { e.preventDefault(); toggle(header); }
+    });
+  }
+
+  return { setupCollapsibleSections };
 })();
-
-
 // Main application initialization
 const App = (() => {
     function init() {
