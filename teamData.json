@@ -5,7 +5,8 @@
         "image": "./assets/img/malavika-nair.jpg",
         "bio": "Malavika Nair is an Associate Professor of Biomaterials at the University of Oxford’s Institute of Biomedical Engineering. She leads the SMART Biomaterials Team, which develops materials with sensing, adaptive, regenerative, and therapeutic functions for healthcare applications. Trained in Natural Sciences (Materials Science) at Cambridge, her earlier work ranged from collagen scaffolds to machine learning for biomaterials. Alongside her research, she is also heavily engaged with the wider community, and is the current Chair of the UK Joint Biomedical Engineering Steering Group, the Membership Secretary of the IOM3 Biomedical Materials Division, and a Research Area Lead in Biomedical Materials for the Henry Royce Institute.",
         "themes": ["Sensing", "Modulating", "Adaptive", "Regenerative", "Therapeutic"],
-        "googleScholar": "FVKgcAsAAAAJ"
+        "googleScholar": "FVKgcAsAAAAJ",
+        "memberSince":"2022-09"
     },
     {
         "id": "veronica-lucian",
@@ -14,7 +15,8 @@
         "image": "./assets/img/veronica-lucian.jpg",
         "bio": "Veronica Lucian graduated summa cum laude from the United States Military Academy at West Point in 2022, obtaining a BS in Life Science with a minor in Nuclear Science.  Her undergraduate research focused on novel synthesis techniques for biocompatible conductive aerogels and cell alignment in tissue engineering applications. She joined the BUBBL Group in October 2022 as a DPhil student under the joint supervision of Prof Constantin Coussios and Prof Malavika Nair. Her project focuses on utilising ultrasound to engineer vascularised skin constructs. Veronica's DPhil is funded by a Rhodes scholarship.",
         "themes": ["Regenerative"],
-       "googleScholar": "f_jvkdQAAAAJ"
+       "googleScholar": "f_jvkdQAAAAJ",
+       "memberSince":"2022-10"
     },
       {
         "id": "sam-baker-jones",
@@ -22,7 +24,8 @@
         "role": "DPhil Student",
         "image": "./assets/img/sam-baker-jones.jpg",
         "bio": "Sam completed her undergraduate and master’s studies at the University of Nottingham, graduating with a BEng. Mechanical Engineering and MSc. Additive Manufacturing and 3D Printing. She then started her DPhil in Materials at Oxford in 2022, focussing on multi-material additive manufacturing, and is collaborating with the IBME to explore 3D bioprinting of hard-soft biomaterial scaffolds, under the supervision of Prof. Patrick Grant and Prof. Malavika Nair.",
-        "themes": ["Regenerative"]
+        "themes": ["Regenerative"],
+         "memberSince":"2023-10"
     },
       {
         "id": "kae-nicolson",
@@ -30,7 +33,8 @@
         "role": "DPhil Student",
         "image": "./assets/img/kae-nicolson.jpg",
         "bio": "Kae Nicolson completed their BSc in Materials Engineering at the University of Alberta, Canada in 2022. During this time they spent two years as an undergraduate research assistant for Prof. Hyun-Joong Chung developing a biomimetic synthetic aorta for use in ex-vivo heart perfusion devices. Kae commenced their DPhil at the Oxford Centre for Tissue Engineering and Bioprocessing in October 2022. Their research focuses on the use of extracellular vesicles for skin wound healing, and they are supervised by Professor Cathy Ye and Professor Malavika Nair.",
-        "themes": ["Regenerative","Therapeutic"]
+        "themes": ["Regenerative","Therapeutic"],
+         "memberSince":"2023-10"
     },
      {
         "id": "matthew-burgess",
@@ -39,7 +43,8 @@
         "image": "./assets/img/matthew-burgess.png",
         "bio": "Matthew Burgess is a DPhil (PhD) student at the University of Oxford. He received his MEng in Biomedical Engineering from Swansea University, focusing on biomaterials in biomedical engineering for regenerative scaffolds. He is currently completing his doctoral studies under the supervision of Professor Malavika Nair in the Institute of Biomedical Engineering. His project aims to enhance the electroactivity of tissue derived biomaterials for regenerative and therapeutic soft robotics.",
         "themes": ["Modulating","Regenerative","Sensing"],
-         "googleScholar": "DYqEpwQAAAAJ"
+         "googleScholar": "DYqEpwQAAAAJ",
+        "memberSince":"2023-10"
     },
     {
         "id": "ryan-murray",
@@ -47,7 +52,8 @@
         "role": "DPhil Student",
         "image": "./assets/img/ryan-murray.jpeg",
         "bio": "Ryan is part of the Smart Biomaterials Team, where he develops innovative biomaterials for tissue regeneration, in vitro disease modelling, and targeted drug delivery. He previously worked in grid-scale energy storage and holds an MEng in Electrical and Mechanical Engineering from the University of Edinburgh.",
-        "themes": ["Adaptive","Regenerative"]
+        "themes": ["Adaptive","Regenerative"],
+       "memberSince":"2024-10"
     },
    {
         "id": "jason-liu",
@@ -56,6 +62,7 @@
         "image": "./assets/img/zekun-liu.jpeg",
         "bio": "Zekun (Jason) Liu is a postdoctoral researcher at the University of Oxford, working on the creation of electroactive biomaterials for cardiac therapies. Jason is supported by the EPSRC-funded BIONIC Hearts Project",
         "themes": ["Modulating", "Regenerative"],
-        "googleScholar": "dL3kWXUAAAAJ"
+        "googleScholar": "dL3kWXUAAAAJ",
+      "memberSince":"2024-11"
     }
 ]
