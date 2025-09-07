@@ -92,7 +92,6 @@ const Utils = (() => {
       // Block javascript:, data:, vbscript:, file:, etc via protocol check above.
       return true;
     } catch { return false; }
-  }
   function sanitizeUrl(url, fallback = '#') {
     return isSafeUrl(url) ? String(url) : fallback;
   }
@@ -107,7 +106,6 @@ const Utils = (() => {
         continue;
       }
       if (k in el) { try { el[k] = v; } catch { el.setAttribute(k, String(v)); } }
-    }
     for (const c of [].concat(children)) {
       if (c == null) continue;
       el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
