@@ -4,8 +4,7 @@
   <link rel="stylesheet" href="../assets/css/tailwind.css">
   <link rel="stylesheet" href="../assets/css/fonts.css">
   <link rel="stylesheet" href="../assets/css/style.css">
-  <style>
-body{font-family: var(--font-sans-exo);}
+  <style>body{font-family: var(--font-sans-exo);}.welcome-screen.hidden{display:none!important;opacity:0!important;pointer-events:none!important}
 </style>
 
     <meta charset="UTF-8">
@@ -14,7 +13,6 @@ body{font-family: var(--font-sans-exo);}
     <!-- Tailwind CSS CDN -->
 <!-- Tone.js CDN for sound effects -->
 <style>
-
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8; /* Light blue-grey background */
@@ -49,7 +47,7 @@ body{font-family: var(--font-sans-exo);}
             border: 2px solid #d4b090; /* Border to define the "body" area */
             display: block;
             width: 100%; /* Make canvas responsive */
-            height: auto; aspect-ratio: 16/9; /* Fixed height for now, can be dynamic later */
+            height: 400px; /* Fixed height for now, can be dynamic later */
             box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         .game-info {
@@ -408,8 +406,7 @@ body{font-family: var(--font-sans-exo);}
         }
 
         /* Removed encyclopaedia-specific styles */
-    
-</style>
+    </style>
   <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
 </head>
 <body>
@@ -487,6 +484,7 @@ body{font-family: var(--font-sans-exo);}
             </div>
         </div>
 
+
         <div class="game-controls">
             <button id="activateMacrophages" class="control-button" disabled="">Activate Macrophages (10)</button>
             <button id="releaseGrowthFactor" class="control-button" disabled="">Release Growth Factor (20)</button>
@@ -520,9 +518,31 @@ body{font-family: var(--font-sans-exo);}
             </div>
         </div>
 
+        <!-- Removed Encyclopaedia Modal Overlay -->
+
     </div>
 
     <script>
+// --- Web Audio policy: ensure audio context resumes on first user gesture ---
+let __audioReady = false;
+async function ensureAudio() {
+  try {
+    if (!__audioReady && typeof Tone !== 'undefined' && Tone && Tone.start) {
+      await Tone.start();
+      __audioReady = true;
+      console.log('[Audio] Tone.js context started');
+    }
+  } catch (e) { console.warn('[Audio] Failed to start audio context', e); }
+}
+// One-time global listeners to resume audio on first user gesture
+['pointerdown','touchstart','click','keydown'].forEach((evt) => {
+  window.addEventListener(evt, function once() {
+    ensureAudio();
+    window.removeEventListener(evt, once, true);
+  }, true);
+});
+
+
         // Canvas setup
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -866,6 +886,7 @@ body{font-family: var(--font-sans-exo);}
             hidePhaseModal();
             isModalActive = false; // Ensure modal active flag is false
 
+
             let title = '';
             let isSuccess = false;
             if (outcome === 'success') {
@@ -890,6 +911,7 @@ body{font-family: var(--font-sans-exo);}
             } else {
                 finalMessage = `${message} Final Wound Health: ${woundHealth.toFixed(1)}%, Final Scar Level: ${scarLevel.toFixed(1)}%. Time Elapsed: ${(gameTime / 60).toFixed(1)}s`;
             }
+
 
             showGameOverMessageBox(title, finalMessage, isSuccess);
 
@@ -1102,6 +1124,7 @@ body{font-family: var(--font-sans-exo);}
             else if (woundCoverage > 30) woundCoverageFill.className = 'slider-fill medium';
             else woundCoverageFill.className = 'slider-fill bad';
 
+
             // Update Scarring slider
             scarLevelVal.textContent = `${scarLevel.toFixed(1)}%`;
             scarLevelFill.style.width = `${scarLevel}%`;
@@ -1129,6 +1152,7 @@ body{font-family: var(--font-sans-exo);}
             if (cellularEnergy > 50) cellularEnergyFill.className = 'slider-fill good';
             else if (cellularEnergy > 20) cellularEnergyFill.className = 'slider-fill medium';
             else cellularEnergyFill.className = 'slider-fill bad';
+
 
             // Update button states based on energy and phase
             // Buttons are disabled if game is not running or a modal is active
@@ -1337,6 +1361,7 @@ body{font-family: var(--font-sans-exo);}
             ctx.closePath();
             ctx.fill();
 
+
             // Visual for infection (pulsing green overlay) - now clipped to wound shape
             if (infectionLevel > 0) {
                 ctx.save(); // Save current state before clipping
@@ -1376,6 +1401,7 @@ body{font-family: var(--font-sans-exo);}
                 ctx.shadowBlur = 0; // Reset shadow
                 ctx.shadowColor = 'transparent';
             }
+
 
             // Draw wound edges (more defined outline)
             ctx.strokeStyle = '#c0392b';
@@ -1650,6 +1676,7 @@ body{font-family: var(--font-sans-exo);}
             // Passive reduction of proliferationActivity over time
             proliferationActivity = Math.max(0, proliferationActivity - 0.2);
 
+
             // Check for game over conditions
             if (woundHealth <= 0) {
                 endGame('failure', 'The wound became too severe and failed to heal.');
@@ -1788,6 +1815,7 @@ body{font-family: var(--font-sans-exo);}
         // function showEncyclopaediaModal() { ... }
         // function hideEncyclopaediaModal(delay = 300) { ... }
 
+
         // --- Action Handlers ---
 
         // Activate Macrophages
@@ -1861,6 +1889,7 @@ body{font-family: var(--font-sans-exo);}
                     }
                 }
 
+
                 woundHealth = Math.min(100, woundHealth + healingBoost); // Boost healing
                 proliferationActivity += proliferationIncrease; // Increase proliferation activity
 
@@ -1932,6 +1961,7 @@ body{font-family: var(--font-sans-exo);}
             updateUI();
         });
 
+
         // Mechanical Stimulation (formerly Reorganise)
         mechanicalStimulationBtn.addEventListener('click', () => {
             playSound('click');
@@ -1977,6 +2007,7 @@ body{font-family: var(--font-sans-exo);}
             hidePhaseModal();
         });
 
+
         patientButtons.forEach(button => {
             button.addEventListener('click', () => {
                 playSound('click');
@@ -1999,37 +2030,10 @@ body{font-family: var(--font-sans-exo);}
         initializeGame();
     </script>
 
-  <script src="./assets/js/marked.min.js"></script>
-  <script src="./assets/js/three.min.js"></script>
-  <script src="./assets/js/OrbitControls.js"></script>
-  <script src="./assets/js/particles.min.js"></script>
-  <script src="./assets/js/Tone.min.js"></script>
-<script>
-// --- Canvas fit helper (idempotent) ---
-(function(){
-  if (window.__canvasFitHelperInstalled__) return;
-  window.__canvasFitHelperInstalled__ = true;
-
-  function fitCanvasToParent(canvas) {
-    if (!canvas) return;
-    var ratio = (canvas.width && canvas.height) ? (canvas.width / canvas.height) : (16/9);
-    var parent = canvas.parentElement || document.body;
-    var parentW = parent.clientWidth || window.innerWidth;
-    var cssW = Math.min(parentW, 1000);
-    var cssH = Math.round(cssW / ratio);
-    canvas.style.width  = cssW + 'px';
-    canvas.style.height = cssH + 'px';
-  }
-
-  function autoFitAllCanvases(){
-    var nodes = document.querySelectorAll('canvas');
-    for (var i=0; i<nodes.length; i++) fitCanvasToParent(nodes[i]);
-  }
-
-  window.addEventListener('resize', autoFitAllCanvases);
-  window.addEventListener('orientationchange', autoFitAllCanvases);
-  document.addEventListener('DOMContentLoaded', autoFitAllCanvases);
-})();
-</script>
+  <script src="../assets/js/marked.min.js"></script>
+  <script src="../assets/js/three.min.js"></script>
+  <script src="../assets/js/OrbitControls.js"></script>
+  <script src="../assets/js/particles.min.js"></script>
+  <script src="../assets/js/Tone.min.js"></script>
 </body>
 </html>

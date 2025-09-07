@@ -4,15 +4,12 @@
   <link rel="stylesheet" href="../assets/css/tailwind.css">
   <link rel="stylesheet" href="../assets/css/fonts.css">
   <link rel="stylesheet" href="../assets/css/style.css">
-  <style>
-body{font-family: var(--font-sans-exo);}
-</style>
+  <style>body{font-family: var(--font-sans-exo);}</style>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sponge Snake 2D Enhanced</title>
 <style>
-
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f0f0;
@@ -21,7 +18,7 @@ body{font-family: var(--font-sans-exo);}
             align-items: center;
             min-height: 100vh;
             margin: 0;
-              /* Prevent scrollbars */
+            overflow: hidden; /* Prevent scrollbars */
         }
         .game-wrapper {
             display: flex;
@@ -263,11 +260,10 @@ body{font-family: var(--font-sans-exo);}
             .game-sidebar {
                 margin-top: 20px;
                 width: 100%; /* Full width on small screens */
-                max-width: 100%; /* Limit max width even on full width */
+                max-width: 300px; /* Limit max width even on full width */
             }
         }
-    
-</style>
+    </style>
   <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -1139,6 +1135,7 @@ body{font-family: var(--font-sans-exo);}
             showMessage('Welcome to Sponge Snake!', welcomeMessageHTML);
         }
 
+
         // --- Event Listeners ---
 
         // Keyboard controls
@@ -1207,36 +1204,9 @@ body{font-family: var(--font-sans-exo);}
         };
     </script>
 
-  <script src="./assets/js/marked.min.js"></script>
-  <script src="./assets/js/three.min.js"></script>
-  <script src="./assets/js/OrbitControls.js"></script>
-  <script src="./assets/js/particles.min.js"></script>
-<script>
-// --- Canvas fit helper (idempotent) ---
-(function(){
-  if (window.__canvasFitHelperInstalled__) return;
-  window.__canvasFitHelperInstalled__ = true;
-
-  function fitCanvasToParent(canvas) {
-    if (!canvas) return;
-    var ratio = (canvas.width && canvas.height) ? (canvas.width / canvas.height) : (16/9);
-    var parent = canvas.parentElement || document.body;
-    var parentW = parent.clientWidth || window.innerWidth;
-    var cssW = Math.min(parentW, 1000);
-    var cssH = Math.round(cssW / ratio);
-    canvas.style.width  = cssW + 'px';
-    canvas.style.height = cssH + 'px';
-  }
-
-  function autoFitAllCanvases(){
-    var nodes = document.querySelectorAll('canvas');
-    for (var i=0; i<nodes.length; i++) fitCanvasToParent(nodes[i]);
-  }
-
-  window.addEventListener('resize', autoFitAllCanvases);
-  window.addEventListener('orientationchange', autoFitAllCanvases);
-  document.addEventListener('DOMContentLoaded', autoFitAllCanvases);
-})();
-</script>
+  <script src="../assets/js/marked.min.js"></script>
+  <script src="../assets/js/three.min.js"></script>
+  <script src="../assets/js/OrbitControls.js"></script>
+  <script src="../assets/js/particles.min.js"></script>
 </body>
 </html>

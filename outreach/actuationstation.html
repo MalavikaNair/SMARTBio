@@ -4,15 +4,13 @@
   <link rel="stylesheet" href="../assets/css/tailwind.css">
   <link rel="stylesheet" href="../assets/css/fonts.css">
   <link rel="stylesheet" href="../assets/css/style.css">
-  <style>
-body{font-family: var(--font-sans-exo);}
+  <style>body{font-family: var(--font-sans-exo);}.welcome-screen.hidden{display:none!important;opacity:0!important;pointer-events:none!important}
 </style>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actuation Station: The Robot Challenge</title>
 <style>
-
         /* Custom CSS for the game */
         body {
             font-family: 'Inter', sans-serif;
@@ -168,6 +166,7 @@ body{font-family: var(--font-sans-exo);}
             cursor: not-allowed;
         }
 
+
         .main-content {
             display: flex;
             flex-direction: column; /* Default to column for small screens */
@@ -181,7 +180,7 @@ body{font-family: var(--font-sans-exo);}
             border-radius: 12px;
             overflow: hidden;
             position: relative;
-            min-height: auto; aspect-ratio: 16/9;
+            min-height: 400px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Added shadow for canvas */
         }
 
@@ -190,7 +189,7 @@ body{font-family: var(--font-sans-exo);}
             background-color: #fff; /* White background for the drawing area */
             border-radius: 12px;
             width: 100%;
-            height: auto;
+            height: 100%;
         }
 
         .controls-panel {
@@ -481,41 +480,7 @@ body{font-family: var(--font-sans-exo);}
                 opacity: 1;
             }
         }
-    
-
-
-/* --- Mobile-specific fixes for Actuation Station --- */
-@media (max-width: 640px) {
-  body {
-    display: block;
-    align-items: stretch;
-    padding: 12px;
-    min-height: auto;
-  }
-  .game-container {
-    padding: 16px;
-    gap: 16px;
-  }
-  /* Make the canvas area taller in portrait so content isn't scrunched */
-  .canvas-container {
-    aspect-ratio: 4/3;
-    min-height: 220px;
-  }
-  /* Let the canvas scale naturally inside its container */
-  .canvas-container canvas {
-    width: 100%;
-    height: auto;
-  }
-  /* Allow more, smaller columns for controls on phones */
-  .controls-panel {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-  }
-  /* Prevent overly large headings from pushing content */
-  .welcome-screen-content h2 { font-size: 1.25rem; }
-  .action-button { padding: 10px 14px; }
-}
-</style>
+    </style>
   <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
 </head>
 <body>
@@ -811,6 +776,7 @@ body{font-family: var(--font-sans-exo);}
         // --- Tutorial Pointer Element ---
         const tutorialPointer = document.getElementById('tutorialPointer');
 
+
         // --- Message box functions ---
         let messageTimeoutId;
         function showMessage(message, duration = 1500, type = 'info') {
@@ -910,9 +876,11 @@ body{font-family: var(--font-sans-exo);}
         const ELECTRO_MAGNETIC_OFF_THRESHOLD = 20;
         const ELECTRO_MAGNETIC_RELEASE_THRESHOLD = MIN_ELECTRO_MAGNETIC_GRASP_FORCE - 5;
 
+
         // Crushing thresholds for fragile ball
         const FRAGILE_CRUSH_RIGID_THRESHOLD = 8;
         const FRAGILE_CRUSH_PNEUMATIC_THRESHOLD = 70;
+
 
         // --- Drawing Functions ---
 
@@ -1028,6 +996,7 @@ body{font-family: var(--font-sans-exo);}
             }
         }
 
+
         function drawRobot() {
             // Clear and draw dynamic background particles
             drawBackgroundParticles();
@@ -1099,6 +1068,7 @@ body{font-family: var(--font-sans-exo);}
             }
             ctx.restore(); // Restore to initial canvas transform (0,0)
 
+
             const robotBaseY = canvas.height - 80; // Define robotBaseY here
 
             // Wound properties
@@ -1146,6 +1116,7 @@ body{font-family: var(--font-sans-exo);}
             ctx.fillStyle = 'rgba(139, 0, 0, 0.5)'; // Dark red, semi-transparent
             ctx.fill();
             ctx.restore();
+
 
             // Now draw the robot based on its type
             ctx.save(); // Save context before drawing robot
@@ -1838,6 +1809,7 @@ body{font-family: var(--font-sans-exo);}
         softElectroMagneticDownElectrodeSlider.addEventListener('input', () => { softElectroMagneticDownElectrodeValue.textContent = `${parseFloat(softElectroMagneticDownElectrodeSlider.value)} units`; });
         softElectroMagneticGraspingForceSlider.addEventListener('input', () => { softElectroMagneticGraspingForceValue.textContent = `${parseFloat(softElectroMagneticGraspingForceSlider.value)}%`; });
 
+
         // Function to update control panel visibility
         function updateControlPanelVisibility() {
             controlsPanel.classList.remove('rigid-active', 'soft-pneumatic-active', 'soft-electro-magnetic-active');
@@ -2097,32 +2069,5 @@ body{font-family: var(--font-sans-exo);}
   <script src="../assets/js/three.min.js"></script>
   <script src="../assets/js/OrbitControls.js"></script>
   <script src="../assets/js/particles.min.js"></script>
-<script>
-// --- Canvas fit helper (idempotent) ---
-(function(){
-  if (window.__canvasFitHelperInstalled__) return;
-  window.__canvasFitHelperInstalled__ = true;
-
-  function fitCanvasToParent(canvas) {
-    if (!canvas) return;
-    var ratio = (canvas.width && canvas.height) ? (canvas.width / canvas.height) : (16/9);
-    var parent = canvas.parentElement || document.body;
-    var parentW = parent.clientWidth || window.innerWidth;
-    var cssW = Math.min(parentW, 1000);
-    var cssH = Math.round(cssW / ratio);
-    canvas.style.width  = cssW + 'px';
-    canvas.style.height = cssH + 'px';
-  }
-
-  function autoFitAllCanvases(){
-    var nodes = document.querySelectorAll('canvas');
-    for (var i=0; i<nodes.length; i++) fitCanvasToParent(nodes[i]);
-  }
-
-  window.addEventListener('resize', autoFitAllCanvases);
-  window.addEventListener('orientationchange', autoFitAllCanvases);
-  document.addEventListener('DOMContentLoaded', autoFitAllCanvases);
-})();
-</script>
 </body>
 </html>

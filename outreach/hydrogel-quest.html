@@ -4,9 +4,7 @@
   <link rel="stylesheet" href="../assets/css/tailwind.css">
   <link rel="stylesheet" href="../assets/css/fonts.css">
   <link rel="stylesheet" href="../assets/css/style.css">
-  <style>
-body{font-family: var(--font-sans-exo);}
-</style>
+  <style>body{font-family: var(--font-sans-exo);}</style>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +26,6 @@ body{font-family: var(--font-sans-exo);}
         }
     </script>
     <style>
-
         body {
             background-color: #000000;
             color: #f3f4f6;
@@ -97,8 +94,7 @@ body{font-family: var(--font-sans-exo);}
             border: 1px solid #10b981;
             color: white;
         }
-    
-</style>
+    </style>
   <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
 </head>
 <body class="antialiased">
@@ -232,32 +228,5 @@ body{font-family: var(--font-sans-exo);}
   <script src="../assets/js/three.min.js"></script>
   <script src="../assets/js/OrbitControls.js"></script>
   <script src="../assets/js/particles.min.js"></script>
-<script>
-// --- Canvas fit helper (idempotent) ---
-(function(){
-  if (window.__canvasFitHelperInstalled__) return;
-  window.__canvasFitHelperInstalled__ = true;
-
-  function fitCanvasToParent(canvas) {
-    if (!canvas) return;
-    var ratio = (canvas.width && canvas.height) ? (canvas.width / canvas.height) : (16/9);
-    var parent = canvas.parentElement || document.body;
-    var parentW = parent.clientWidth || window.innerWidth;
-    var cssW = Math.min(parentW, 1000);
-    var cssH = Math.round(cssW / ratio);
-    canvas.style.width  = cssW + 'px';
-    canvas.style.height = cssH + 'px';
-  }
-
-  function autoFitAllCanvases(){
-    var nodes = document.querySelectorAll('canvas');
-    for (var i=0; i<nodes.length; i++) fitCanvasToParent(nodes[i]);
-  }
-
-  window.addEventListener('resize', autoFitAllCanvases);
-  window.addEventListener('orientationchange', autoFitAllCanvases);
-  document.addEventListener('DOMContentLoaded', autoFitAllCanvases);
-})();
-</script>
 </body>
 </html>

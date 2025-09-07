@@ -4,16 +4,13 @@
   <link rel="stylesheet" href="../assets/css/tailwind.css">
   <link rel="stylesheet" href="../assets/css/fonts.css">
   <link rel="stylesheet" href="../assets/css/style.css">
-  <style>
-body{font-family: var(--font-sans-exo);}
-</style>
+  <style>body{font-family: var(--font-sans-exo);}</style>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flappy Blob</title>
 <!-- Include Tone.js for sound effects -->
 <style>
-
         /* Custom CSS for the game elements */
         body {
             font-family: "Inter", sans-serif;
@@ -23,7 +20,7 @@ body{font-family: var(--font-sans-exo);}
             min-height: 100vh;
             background-color: #f0f8ff; /* Alice Blue */
             margin: 0;
-              /* Prevent scrollbars */
+            overflow: hidden; /* Prevent scrollbars */
         }
         .main-content-wrapper {
             display: flex;
@@ -213,8 +210,7 @@ body{font-family: var(--font-sans-exo);}
             background-color: rgba(0, 0, 0, 0.7);
         }
 
-    
-</style>
+    </style>
   <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
 </head>
 <body>
@@ -252,6 +248,26 @@ body{font-family: var(--font-sans-exo);}
     </div>
 
     <script>
+// --- Web Audio policy: ensure audio context resumes on first user gesture ---
+let __audioReady = false;
+async function ensureAudio() {
+  try {
+    if (!__audioReady && typeof Tone !== 'undefined' && Tone && Tone.start) {
+      await Tone.start();
+      __audioReady = true;
+      console.log('[Audio] Tone.js context started');
+    }
+  } catch (e) { console.warn('[Audio] Failed to start audio context', e); }
+}
+// One-time global listeners to resume audio on first user gesture
+['pointerdown','touchstart','click','keydown'].forEach((evt) => {
+  window.addEventListener(evt, function once() {
+    ensureAudio();
+    window.removeEventListener(evt, once, true);
+  }, true);
+});
+
+
         // --- DOM Elements ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -687,6 +703,7 @@ body{font-family: var(--font-sans-exo);}
                 ctx.closePath();
                 ctx.fill();
 
+
                 ctx.restore();
             }
 
@@ -740,6 +757,7 @@ body{font-family: var(--font-sans-exo);}
             }
         }
 
+
         // --- Game Initialization and Core Logic ---
 
         function resizeCanvas() {
@@ -787,6 +805,7 @@ body{font-family: var(--font-sans-exo);}
             game.currentMaxPipeWidth = INITIAL_MAX_PIPE_WIDTH;
             game.currentPipeVerticalAmplitude = INITIAL_PIPE_VERTICAL_AMPLITUDE;
             game.currentPipeVerticalSpeed = INITIAL_PIPE_VERTICAL_SPEED;
+
 
             // Initialize trampoline aligned with blob's fixed X position
             game.trampoline = new Trampoline(
@@ -1053,9 +1072,11 @@ body{font-family: var(--font-sans-exo);}
                 game.currentMinPipeWidth = game.currentMaxPipeWidth - 10;
             }
 
+
             // Adjust vertical movement of pipes
             game.currentPipeVerticalAmplitude = INITIAL_PIPE_VERTICAL_AMPLITUDE + Math.floor(game.score / 25) * 5; // Increase amplitude
             game.currentPipeVerticalSpeed = INITIAL_PIPE_VERTICAL_SPEED + Math.floor(game.score / 25) * 0.0005; // Increase speed
+
 
             // Pipe generation
             if (currentTime - (game.pipes.length > 0 ? game.pipes[game.pipes.length - 1].spawnTime : 0) > 1500) {
@@ -1179,32 +1200,5 @@ body{font-family: var(--font-sans-exo);}
   <script src="../assets/js/OrbitControls.js"></script>
   <script src="../assets/js/particles.min.js"></script>
   <script src="../assets/js/Tone.min.js"></script>
-<script>
-// --- Canvas fit helper (idempotent) ---
-(function(){
-  if (window.__canvasFitHelperInstalled__) return;
-  window.__canvasFitHelperInstalled__ = true;
-
-  function fitCanvasToParent(canvas) {
-    if (!canvas) return;
-    var ratio = (canvas.width && canvas.height) ? (canvas.width / canvas.height) : (16/9);
-    var parent = canvas.parentElement || document.body;
-    var parentW = parent.clientWidth || window.innerWidth;
-    var cssW = Math.min(parentW, 1000);
-    var cssH = Math.round(cssW / ratio);
-    canvas.style.width  = cssW + 'px';
-    canvas.style.height = cssH + 'px';
-  }
-
-  function autoFitAllCanvases(){
-    var nodes = document.querySelectorAll('canvas');
-    for (var i=0; i<nodes.length; i++) fitCanvasToParent(nodes[i]);
-  }
-
-  window.addEventListener('resize', autoFitAllCanvases);
-  window.addEventListener('orientationchange', autoFitAllCanvases);
-  document.addEventListener('DOMContentLoaded', autoFitAllCanvases);
-})();
-</script>
 </body>
 </html>
