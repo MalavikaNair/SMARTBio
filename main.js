@@ -517,11 +517,50 @@ const Renderer = (() => {
             const img = item?.image ? Utils.createEl('img', {
                 src: Utils.sanitizeUrl(item.image),
                 alt: Utils.escapeHTML(item.title || 'Research image'),
-                className: 'w-full h-48 object-cover rounded-md mb-4 border border-primary-dark',
+                className: 'research-card-img rounded-md mb-4 border border-primary-dark',
                 loading: 'lazy'
             }) : null;
             const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: item?.title || '' });
-            const descGroup = Utils.buildReadMore(item.shortDescription || item.description || '', 'research-' + String(item.id));
+            const extra = Utils.createEl('div', { className:'mt-3 hidden', id: 'research-extra-' + String(item.id) });
+            // media
+            const media = Utils.createSafeMedia(item.modalMedia || item.image);
+            if (media) extra.appendChild(media);
+            // caption & credit
+            if (item.modalMediaCaption) extra.appendChild(Utils.createEl('p', { className:'text-xs text-medium-text mt-2', text: item.modalMediaCaption }));
+            if (item.modalMediaCreditId != null) {
+              const team = Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || []);
+              const alumni = Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []);
+              const person = (team || []).find(p => String(p.id) === String(item.modalMediaCreditId)) || (alumni || []).find(a => String(a.id) === String(item.modalMediaCreditId));
+              const creditName = person ? person.name : String(item.modalMediaCreditId);
+              extra.appendChild(Utils.createEl('p', { className:'text-xs text-medium-text', text: 'Credit: ' + creditName }));
+            }
+            // team chips
+            if (Array.isArray(item.teamMembers) && item.teamMembers.length) {
+              const wrap = Utils.createEl('div', { className:'mt-2 flex flex-wrap gap-2' });
+              const team = Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || []);
+              const alumni = Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []);
+              item.teamMembers.forEach(id => {
+                const person = (team || []).find(p => String(p.id) === String(id)) || (alumni || []).find(a => String(a.id) === String(id));
+                const chip = Utils.createEl('button', { className:'px-2 py-1 rounded bg-primary text-white text-xs', dataset:{ modalTarget:'open-person-bio', id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text: person ? person.name : String(id) });
+                wrap.appendChild(chip);
+              });
+              extra.appendChild(wrap);
+            }
+            // read more toggle
+            const descText = item.description || '';
+            const truncated = descText.length > 180 ? (descText.slice(0,180) + '…') : descText;
+            const pTrunc = Utils.createEl('p', { id:'truncated-text-research-'+String(item.id), text: truncated });
+            const pFull = Utils.createEl('p', { id:'full-text-research-'+String(item.id), text: descText });
+            if (descText.length > 180) pFull.style.display = 'none';
+            const btn = Utils.createEl('button', { className:'read-more-btn text-primary hover:underline text-sm mt-2', dataset:{ targetId: 'research-'+String(item.id) }, text: (descText.length > 180 ? 'Read More →' : 'Show Details') });
+            btn.addEventListener('click', (e)=>{
+              const showFull = pFull.style.display === 'none';
+              pFull.style.display = showFull ? '' : 'none';
+              pTrunc.style.display = showFull ? 'none' : '';
+              extra.classList.toggle('hidden', !showFull);
+              btn.textContent = showFull ? 'Show Less ↑' : (descText.length > 180 ? 'Read More →' : 'Show Details');
+            });
+            const descGroup = Utils.createEl('div', {}, [pTrunc, pFull, btn, extra]);
             return Utils.createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [
               img, title, descGroup,
               Utils.createEl('button', { className:'mt-3 px-3 py-1 rounded border border-primary-dark', dataset:{ modalTarget:'open-research-modal', id:item.id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text:'More Info' })
@@ -676,7 +715,7 @@ const Renderer = (() => {
               scholar = a;
             }
 
-            return Utils.createEl('div', { className: 'card rounded-lg p-4 text-center flex flex-col items-center' }, [img, name, role, since, scholar, Utils.createEl('button', { className:'mt-2 px-3 py-1 rounded border border-primary-dark', dataset:{ modalTarget:'open-person-bio', id:p.id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text:'View Bio' })].filter(Boolean));
+            return Utils.createEl('div', { className: 'card rounded-lg p-4 text-center flex flex-col items-center' }, [img, name, role, since, scholar, Utils.createEl('button', { className:'read-more-btn text-primary hover:underline text-sm mt-2', dataset:{ modalTarget:'open-person-bio', id:p.id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text:'View Bio' })].filter(Boolean));
         }
 
         if (teamGrid) {
@@ -692,41 +731,57 @@ const Renderer = (() => {
         }
     }
 
-    function renderGamesAndFilters() {
-        const grid = DOMElements.gamesGrid;
-        const filtersWrap = DOMElements.gameFiltersContainer;
-        if (grid) grid.replaceChildren();
-        if (filtersWrap) filtersWrap.replaceChildren();
+    
+function renderGamesAndFilters() {
+  const grid = DOMElements.gamesGrid;
+  const filtersWrap = DOMElements.gameFiltersContainer;
+  if (grid) grid.replaceChildren();
+  if (filtersWrap) filtersWrap.replaceChildren();
 
-        const items = Array.isArray(window.gamesData) ? window.gamesData : (window.gamesData?.items || []);
-        if (!items || items.length === 0) {
-            if (grid) grid.textContent = 'No games available at the moment.';
-            return;
-        }
+  const items = Array.isArray(window.gamesData) ? window.gamesData : (window.gamesData && window.gamesData.items || []);
+  if (!items || items.length === 0) {
+    if (grid) grid.textContent = 'No games available at the moment.';
+    return;
+  }
 
-        const themesAll = Array.from(new Set(items.flatMap(g => Array.isArray(g?.themes) ? g.themes : []))).filter(Boolean);
-        let activeTheme = null;
+  const themesAll = Array.from(new Set(items.flatMap(g => Array.isArray(g && g.themes) ? g.themes : []))).filter(Boolean);
+  let activeTheme = null;
 
-        function renderFilters() {
-  if (!filtersWrap) return;
-  filtersWrap.replaceChildren();
-  const allBtn = Utils.createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: 'All' });
-  allBtn.addEventListener('click', () => { activeTheme = null; renderGrid(); });
-  filtersWrap.appendChild(allBtn);
-  themesAll.forEach(t => {
-    const b = Utils.createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: t });
-    b.addEventListener('click', () => { activeTheme = t; renderGrid(); });
-    filtersWrap.appendChild(b);
-  });
-});
-            allBtn.addEventListener('click', () => { activeGenre = null; renderGrid(); });
-            filtersWrap.appendChild(allBtn);
-            genres.forEach(ge => {
-                const b = Utils.createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: ge });
-                b.addEventListener('click', () => { activeGenre = ge; renderGrid(); });
-                filtersWrap.appendChild(b);
-            });
-        }
+  function renderFilters() {
+    if (!filtersWrap) return;
+    filtersWrap.replaceChildren();
+    const allBtn = Utils.createEl('button', { className: 'px-3 py-1 rounded', text: 'All' });
+    allBtn.addEventListener('click', () => { activeTheme = null; renderGrid(); });
+    filtersWrap.appendChild(allBtn);
+    themesAll.forEach(t => {
+      const b = Utils.createEl('button', { className: 'px-3 py-1 rounded', text: t });
+      b.addEventListener('click', () => { activeTheme = t; renderGrid(); });
+      filtersWrap.appendChild(b);
+    });
+  }
+
+  function gameCard(gm) {
+    const img = gm && gm.thumbnail ? Utils.createEl('img', { src: Utils.sanitizeUrl(gm.thumbnail), alt: Utils.escapeHTML(gm.title || 'Game image'), className:'w-full h-40 object-cover rounded-md mb-3 border border-primary-dark', loading:'lazy' }) : null;
+    const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: (gm && gm.title) || '' });
+    const desc = Utils.createEl('p', { className: 'text-sm text-medium-text', text: (gm && gm.description) || '' });
+    const themes = Array.isArray(gm && gm.themes) ? Utils.createEl('div', { className:'mt-2 flex flex-wrap gap-2' }, gm.themes.map(t => Utils.createEl('span', { className:'px-2 py-1 rounded bg-primary text-white text-xs', text: t }))) : null;
+    const link = gm && gm.file ? Utils.createEl('a', { href: Utils.sanitizeUrl(gm.file, '#'), className:'text-primary underline mt-2 inline-block', text:'Play / Learn more' }) : null;
+    return Utils.createEl('div', { className: 'card rounded-lg p-4' }, [img, title, desc, themes, link].filter(Boolean));
+  }
+
+  function renderGrid() {
+    if (!grid) return;
+    grid.replaceChildren();
+    const filtered = activeTheme ? items.filter(x => Array.isArray(x && x.themes) && x.themes.includes(activeTheme)) : items;
+    const nodes = filtered.map(gameCard);
+    if (nodes.length) grid.append(...nodes);
+    else grid.textContent = 'No games match the selected filter.';
+  }
+
+  renderFilters();
+  renderGrid();
+}
+
 
         function gameCard(gm) {
             const img = gm?.thumbnail ? Utils.createEl('img', { src: Utils.sanitizeUrl(gm.thumbnail), alt: Utils.escapeHTML(gm?.title || 'Game image'), className:'w-full h-40 object-cover rounded-md mb-3 border border-primary-dark', loading:'lazy' }) : null;
