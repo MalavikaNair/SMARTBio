@@ -493,320 +493,364 @@ const DataManager = (() => {
 /**
  * Handles rendering of various content sections and their individual items.
  */
+
 const Renderer = (() => {
-    function renderAllContent() {
-        renderResearchItems();
-        renderOutreachTalks();
-        renderAcademicPresentations();
-        renderOutreachNews();
-        renderNewsCarouselAndList();
-        renderTeamAndAlumni();
-        renderGamesAndFilters();
-    }
-
-    function renderResearchItems() {
-        const grid = DOMElements.researchContentGrid;
-        if (!grid) return;
-        grid.replaceChildren();
-        const items = Array.isArray(window.researchData) ? window.researchData : (window.researchData?.items || []);
-        if (!items || items.length === 0) {
-            grid.textContent = 'No research items available at the moment.';
-            return;
-        }
-        const cards = items.map((item) => {
-            const img = item?.image ? Utils.createEl('img', {
-                src: Utils.sanitizeUrl(item.image),
-                alt: Utils.escapeHTML(item.title || 'Research image'),
-                className: 'research-card-img rounded-md mb-4 border border-primary-dark',
-                loading: 'lazy'
-            }) : null;
-            const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: item?.title || '' });
-            const extra = Utils.createEl('div', { className:'mt-3 hidden', id: 'research-extra-' + String(item.id) });
-            // media
-            const media = Utils.createSafeMedia(item.modalMedia || item.image);
-            if (media) extra.appendChild(media);
-            // caption & credit
-            if (item.modalMediaCaption) extra.appendChild(Utils.createEl('p', { className:'text-xs text-medium-text mt-2', text: item.modalMediaCaption }));
-            if (item.modalMediaCreditId != null) {
-              const team = Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || []);
-              const alumni = Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []);
-              const person = (team || []).find(p => String(p.id) === String(item.modalMediaCreditId)) || (alumni || []).find(a => String(a.id) === String(item.modalMediaCreditId));
-              const creditName = person ? person.name : String(item.modalMediaCreditId);
-              extra.appendChild(Utils.createEl('p', { className:'text-xs text-medium-text', text: 'Credit: ' + creditName }));
-            }
-            // team chips
-            if (Array.isArray(item.teamMembers) && item.teamMembers.length) {
-              const wrap = Utils.createEl('div', { className:'mt-2 flex flex-wrap gap-2' });
-              const team = Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || []);
-              const alumni = Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []);
-              item.teamMembers.forEach(id => {
-                const person = (team || []).find(p => String(p.id) === String(id)) || (alumni || []).find(a => String(a.id) === String(id));
-                const chip = Utils.createEl('button', { className:'px-2 py-1 rounded bg-primary text-white text-xs', dataset:{ modalTarget:'open-person-bio', id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text: person ? person.name : String(id) });
-                wrap.appendChild(chip);
-              });
-              extra.appendChild(wrap);
-            }
-            // read more toggle
-            const descText = item.description || '';
-            const truncated = descText.length > 180 ? (descText.slice(0,180) + '…') : descText;
-            const pTrunc = Utils.createEl('p', { id:'truncated-text-research-'+String(item.id), text: truncated });
-            const pFull = Utils.createEl('p', { id:'full-text-research-'+String(item.id), text: descText });
-            if (descText.length > 180) pFull.style.display = 'none';
-            const btn = Utils.createEl('button', { className:'read-more-btn text-primary hover:underline text-sm mt-2', dataset:{ targetId: 'research-'+String(item.id) }, text: (descText.length > 180 ? 'Read More →' : 'Show Details') });
-            btn.addEventListener('click', (e)=>{
-              const showFull = pFull.style.display === 'none';
-              pFull.style.display = showFull ? '' : 'none';
-              pTrunc.style.display = showFull ? 'none' : '';
-              extra.classList.toggle('hidden', !showFull);
-              btn.textContent = showFull ? 'Show Less ↑' : (descText.length > 180 ? 'Read More →' : 'Show Details');
-            });
-            const descGroup = Utils.createEl('div', {}, [pTrunc, pFull, btn, extra]);
-            return Utils.createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [
-              img, title, descGroup,
-              Utils.createEl('button', { className:'mt-3 px-3 py-1 rounded border border-primary-dark', dataset:{ modalTarget:'open-research-modal', id:item.id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text:'More Info' })
-            ].filter(Boolean));
-        });
-        grid.append(...cards);
-    }
-
-    function renderOutreachTalks() {
-        const grid = DOMElements.outreachTalksGrid;
-        if (!grid) return;
-        grid.replaceChildren();
-        const items = Array.isArray(window.outreachTalksData) ? window.outreachTalksData : (window.outreachTalksData?.items || []);
-        if (!items || items.length === 0) {
-            grid.textContent = 'No outreach talks available at the moment.';
-            return;
-        }
-        const nodes = items.map((talk) => {
-            const children = [];
-            const media = Utils.createSafeMedia(talk?.videoLink);
-            if (media) children.push(media);
-            children.push(
-                Utils.createEl('h3', { className: 'text-lg font-semibold mt-3', text: talk?.title || '' }),
-                Utils.createEl('p', { className: 'text-xs text-medium-text', text: talk?.date || '' }),
-                Utils.createEl('p', { className: 'text-sm text-medium-text mt-2', text: talk?.description || '' })
-            );
-            if (Array.isArray(talk?.speakers) && talk.speakers.length) {
-                const chips = talk.speakers.map(sp => Utils.createEl('span', { className:'px-2 py-1 rounded bg-primary/10 text-primary text-xs' , text: sp }));
-                children.push(Utils.createEl('div', { className: 'flex flex-wrap gap-2 mt-2' }, chips));
-            }
-            return Utils.createEl('div', { className: 'card rounded-lg p-4' }, children);
-        });
-        grid.append(...nodes);
-    }
-
-    function renderAcademicPresentations() {
-        const grid = DOMElements.academicPresentationsGrid;
-        if (!grid) return;
-        grid.replaceChildren();
-        const items = Array.isArray(window.academicPresentationsData) ? window.academicPresentationsData : (window.academicPresentationsData?.items || []);
-        if (!items || items.length === 0) {
-            grid.textContent = 'No academic presentations available at the moment.';
-            return;
-        }
-        const nodes = items.map((pres) => {
-      const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: pres?.title || '' });
-      const meta = Utils.createEl('p', { className: 'text-xs text-medium-text', text: pres?.date || '' });
-      const desc = Utils.createEl('p', { className: 'text-sm text-medium-text mt-2', text: pres?.description || '' });
-      const thumb = pres?.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(pres.image), alt: Utils.escapeHTML(pres?.title || 'Presentation'), className:'w-full h-40 object-cover rounded-md mb-3 border border-primary-dark', loading:'lazy' }) : null;
-      const children = [thumb, title, meta, desc].filter(Boolean);
-      if (pres?.link) {
-                children.push(Utils.createEl('a', { href: Utils.sanitizeUrl(pres.link, '#'), className: 'text-primary underline mt-2 inline-block', text: 'View presentation' }));
-            }
-            return Utils.createEl('div', { className: 'card rounded-lg p-4' }, children);
-        });
-        grid.append(...nodes);
-    }
-
-    function renderOutreachNews() {
-        const list = DOMElements.outreachNewsList;
-        if (!list) return;
-        list.replaceChildren();
-        const items = Array.isArray(window.outreachNewsData) ? window.outreachNewsData : (window.outreachNewsData?.items || []);
-        if (!items || items.length === 0) {
-            list.textContent = 'No outreach news available at the moment.';
-            return;
-        }
-        const nodes = items.map((n) => Utils.createEl('li', { className: 'p-4 border-b border-primary-dark' }, [
-            Utils.createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
-            n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null,
-            Utils.createEl('p', { className: 'text-sm text-medium-text', text: n?.description || '' }),
-            n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
-        ].filter(Boolean)));
-        // Append associated team members as chips under each item if present
-        nodes.forEach((li, idx) => {
-          const n = (Array.isArray(window.outreachNewsData) ? window.outreachNewsData : (window.outreachNewsData && window.outreachNewsData.items || []))[idx];
-          const ids = (n && Array.isArray(n.associatedTeamMembers)) ? n.associatedTeamMembers : [];
-          if (ids.length) {
-            const wrap = Utils.createEl('div', { className:'mt-2 flex flex-wrap gap-2' });
-            const team = Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || []);
-            const alumni = Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []);
-            ids.forEach(id => {
-              const person = (team || []).find(p => String(p.id) === String(id)) || (alumni || []).find(a => String(a.id) === String(id));
-              const chip = Utils.createEl('button', { className:'px-2 py-1 rounded-full border border-primary-dark text-primary text-xs', dataset:{ modalTarget:'open-person-bio', id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text: person ? person.name : String(id) });
-              wrap.appendChild(chip);
-            });
-            li.appendChild(wrap);
-          }
-        });
-        list.append(...nodes);
-    }
-
-    function renderNewsCarouselAndList() {
-        const listEl = DOMElements.newsList;
-        const trackEl = DOMElements.newsCarouselTrack;
-        if (listEl) listEl.replaceChildren();
-        if (trackEl) trackEl.replaceChildren();
-        const items = Array.isArray(window.newsData) ? window.newsData : (window.newsData?.items || []);
-        if (!items || items.length === 0) {
-            if (listEl) listEl.textContent = 'No news available at the moment.';
-            if (trackEl) trackEl.textContent = 'No news available at the moment.';
-            return;
-        }
-        if (listEl) {
-            const nodes = items.map((n) => Utils.createEl('li', { className: 'p-4 border-b border-primary-dark card flex flex-col gap-2' }, [
-                n?.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML(n?.title || 'News image'), className:'w-full h-40 object-cover rounded-md border border-primary-dark', loading:'lazy' }) : null,
-                Utils.createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
-                n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null,
-            n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null,
-                Utils.createEl('p', { className: 'text-sm text-medium-text', text: n?.description || '' }),
-                n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
-            ].filter(Boolean)));
-            listEl.append(...nodes);
-        }
-        if (trackEl) {
-            const slides = items.map((n) => Utils.createEl('div', { className: 'carousel-slide p-4' }, [
-                n?.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML(n?.title || 'News image'), className: 'w-full h-56 object-cover rounded-md mb-3 border border-primary-dark', loading: 'lazy' }) : null,
-                Utils.createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
-                n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null,
-            n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null,
-                Utils.createEl('p', { className: 'text-sm text-medium-text', text: n?.description || '' }),
-                n?.link ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
-            ].filter(Boolean)));
-            trackEl.append(...slides);
-        }
-    }
-
-    function renderTeamAndAlumni() {
-        const teamGrid = DOMElements.teamGrid;
-        const alumniGrid = DOMElements.alumniGrid;
-        if (teamGrid) teamGrid.replaceChildren();
-        if (alumniGrid) alumniGrid.replaceChildren();
-
-        const tItems = Array.isArray(window.teamData) ? window.teamData : (window.teamData?.items || []);
-        const aItems = Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData?.items || []);
-
-        function personCard(p, isAlumni=false) {
-            const img = p?.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(p.image), alt: Utils.escapeHTML(p?.name || (isAlumni ? 'Alumni' : 'Team')), className:'w-32 h-32 object-cover rounded-full mb-3 border border-primary-dark', loading:'lazy' }) : null;
-            const name = Utils.createEl('h3', { className: 'text-base font-semibold', text: p?.name || '' });
-            const role = Utils.createEl('p', { className: 'text-sm text-medium-text', text: p?.role || '' });
-            const since = p?.memberSince ? Utils.createEl('p', { className: 'text-xs text-medium-text', text: Utils.formatMemberSince(p.memberSince) }) : null;
-             
-            // Google Scholar link if present
-            let scholar = null;
-            if (p && p.scholar) {
-              const a = Utils.createEl('a', { href: Utils.sanitizeUrl(p.scholar, '#'), target: '_blank', rel: 'noopener noreferrer', className:'mt-2 inline-flex items-center gap-2 text-primary underline' });
-              const svg = Utils.createSvgEl('svg', { viewBox:'0 0 24 24', width:'18', height:'18', fill:'currentColor', 'aria-hidden':'true' }, [
-                Utils.createSvgEl('path', { d:'M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm-1 8.73L4.74 9 11 5.27 17.26 9 11 11.73zM3 19v2h16v-2H3z' })
-              ]);
-              a.appendChild(svg);
-              a.appendChild(document.createTextNode('Google Scholar'));
-              scholar = a;
-            }
-
-            return Utils.createEl('div', { className: 'card rounded-lg p-4 text-center flex flex-col items-center' }, [img, name, role, since, scholar, Utils.createEl('button', { className:'read-more-btn text-primary hover:underline text-sm mt-2', dataset:{ modalTarget:'open-person-bio', id:p.id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text:'View Bio' })].filter(Boolean));
-        }
-
-        if (teamGrid) {
-            const nodes = tItems.map(p => personCard(p, false));
-            if (nodes.length) teamGrid.append(...nodes);
-            else teamGrid.textContent = 'No team members available at the moment.';
-        }
-
-        if (alumniGrid) {
-            const nodes = aItems.map(p => personCard(p, true));
-            if (nodes.length) alumniGrid.append(...nodes);
-            else alumniGrid.textContent = 'No alumni available at the moment.';
-        }
-    }
-
-    
-function renderGamesAndFilters() {
-  const grid = DOMElements.gamesGrid;
-  const filtersWrap = DOMElements.gameFiltersContainer;
-  if (grid) grid.replaceChildren();
-  if (filtersWrap) filtersWrap.replaceChildren();
-
-  const items = Array.isArray(window.gamesData) ? window.gamesData : (window.gamesData && window.gamesData.items || []);
-  if (!items || items.length === 0) {
-    if (grid) grid.textContent = 'No games available at the moment.';
-    return;
+  function resolveCollection(raw) {
+    if (Array.isArray(raw)) return raw;
+    if (raw && Array.isArray(raw.items)) return raw.items;
+    return [];
   }
 
-  const themesAll = Array.from(new Set(items.flatMap(g => Array.isArray(g && g.themes) ? g.themes : []))).filter(Boolean);
-  let activeTheme = null;
-
-  function renderFilters() {
-    if (!filtersWrap) return;
-    filtersWrap.replaceChildren();
-    const allBtn = Utils.createEl('button', { className: 'px-3 py-1 rounded', text: 'All' });
-    allBtn.addEventListener('click', () => { activeTheme = null; renderGrid(); });
-    filtersWrap.appendChild(allBtn);
-    themesAll.forEach(t => {
-      const b = Utils.createEl('button', { className: 'px-3 py-1 rounded', text: t });
-      b.addEventListener('click', () => { activeTheme = t; renderGrid(); });
-      filtersWrap.appendChild(b);
-    });
-  }
-
-  function gameCard(gm) {
-    const img = gm && gm.thumbnail ? Utils.createEl('img', { src: Utils.sanitizeUrl(gm.thumbnail), alt: Utils.escapeHTML(gm.title || 'Game image'), className:'w-full h-40 object-cover rounded-md mb-3 border border-primary-dark', loading:'lazy' }) : null;
-    const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: (gm && gm.title) || '' });
-    const desc = Utils.createEl('p', { className: 'text-sm text-medium-text', text: (gm && gm.description) || '' });
-    const themes = Array.isArray(gm && gm.themes) ? Utils.createEl('div', { className:'mt-2 flex flex-wrap gap-2' }, gm.themes.map(t => Utils.createEl('span', { className:'px-2 py-1 rounded bg-primary text-white text-xs', text: t }))) : null;
-    const link = gm && gm.file ? Utils.createEl('a', { href: Utils.sanitizeUrl(gm.file, '#'), className:'text-primary underline mt-2 inline-block', text:'Play / Learn more' }) : null;
-    return Utils.createEl('div', { className: 'card rounded-lg p-4' }, [img, title, desc, themes, link].filter(Boolean));
-  }
-
-  function renderGrid() {
+  function renderResearchItems() {
+    const grid = DOMElements.researchContentGrid;
     if (!grid) return;
     grid.replaceChildren();
-    const filtered = activeTheme ? items.filter(x => Array.isArray(x && x.themes) && x.themes.includes(activeTheme)) : items;
-    const nodes = filtered.map(gameCard);
-    if (nodes.length) grid.append(...nodes);
-    else grid.textContent = 'No games match the selected filter.';
-  }
-
-  renderFilters();
-  renderGrid();
-}
-
-
-        function gameCard(gm) {
-            const img = gm?.thumbnail ? Utils.createEl('img', { src: Utils.sanitizeUrl(gm.thumbnail), alt: Utils.escapeHTML(gm?.title || 'Game image'), className:'w-full h-40 object-cover rounded-md mb-3 border border-primary-dark', loading:'lazy' }) : null;
-            const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: gm?.title || '' });
-            const desc = Utils.createEl('p', { className: 'text-sm text-medium-text', text: gm?.description || '' });
-            const themes = Array.isArray(gm?.themes) ? Utils.createEl('div', { className:'mt-2 flex flex-wrap gap-2' }, gm.themes.map(t => Utils.createEl('span', { className:'px-2 py-1 rounded-full bg-primary/10 text-primary text-xs', text: t }))) : null;
-            const link = gm?.file ? Utils.createEl('a', { href: Utils.sanitizeUrl(gm.file, '#'), className:'text-primary underline mt-2 inline-block', text:'Play / Learn more' }) : null;
-            return Utils.createEl('div', { className: 'card rounded-lg p-4' }, [img, title, desc, themes, link].filter(Boolean));
-        }
-
-        function renderGrid() {
-            if (!grid) return;
-            grid.replaceChildren();
-            const filtered = activeTheme ? items.filter(x => Array.isArray(x?.themes) && x.themes.includes(activeTheme)) : items;
-            const nodes = filtered.map(gameCard);
-            if (nodes.length) grid.append(...nodes);
-            else grid.textContent = 'No games match the selected filter.';
-        }
-
-        renderFilters();
-        renderGrid();
+    const items = resolveCollection(window.researchData);
+    if (items.length === 0) {
+      grid.textContent = 'No research items available at the moment.';
+      return;
     }
 
-    return { renderAllContent };
-})();;
+    const team = resolveCollection(window.teamData);
+    const alumni = resolveCollection(window.alumniData);
+
+    function nameById(id) {
+      const p = team.find(x => String(x.id) === String(id)) || alumni.find(x => String(x.id) === String(id));
+      return p ? p.name : String(id);
+    }
+
+    const cards = items.map(item => {
+      // Top image uses crop class from CSS
+      const topImg = item && item.image ? Utils.createEl('img', {
+        src: Utils.sanitizeUrl(item.image),
+        alt: Utils.escapeHTML(item.title || 'Research image'),
+        className: 'research-card-img rounded-md mb-4 border border-primary-dark',
+        loading: 'lazy'
+      }) : null;
+
+      const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: (item && item.title) || '' });
+
+      // Read-more block that expands to show full content + media + chips
+      const extra = Utils.createEl('div', { className: 'mt-3 hidden', id: 'research-extra-' + String(item && item.id) });
+
+      // Media prefers modalMedia else image
+      const media = Utils.createSafeMedia((item && item.modalMedia) || (item && item.image));
+      if (media) extra.appendChild(media);
+
+      // Caption & Credit
+      if (item && item.modalMediaCaption) {
+        extra.appendChild(Utils.createEl('p', { className: 'text-xs text-medium-text mt-2', text: item.modalMediaCaption }));
+      }
+      if (item && item.modalMediaCreditId != null) {
+        const creditName = nameById(item.modalMediaCreditId);
+        extra.appendChild(Utils.createEl('p', { className: 'text-xs text-medium-text', text: 'Credit: ' + creditName }));
+      }
+
+      // Team members chips (dark green solid, clickable -> bio)
+      if (item && Array.isArray(item.teamMembers) && item.teamMembers.length) {
+        const wrap = Utils.createEl('div', { className: 'mt-2 flex flex-wrap gap-2' });
+        item.teamMembers.forEach(id => {
+          const chip = Utils.createEl('button', {
+            className: 'px-2 py-1 rounded bg-primary text-white text-xs',
+            dataset: { modalTarget: 'open-person-bio', id: id },
+            onclick: (e) => ModalManager && ModalManager.handleModalClicks(e),
+            text: nameById(id)
+          });
+          wrap.appendChild(chip);
+        });
+        extra.appendChild(wrap);
+      }
+
+      // Truncated/full description
+      const descText = (item && item.description) ? String(item.description) : '';
+      const truncated = descText.length > 180 ? (descText.slice(0, 180) + '…') : descText;
+      const pTrunc = Utils.createEl('p', { id: 'truncated-text-research-' + String(item && item.id), text: truncated });
+      const pFull  = Utils.createEl('p', { id: 'full-text-research-' + String(item && item.id), text: descText });
+      if (descText.length > 180) pFull.style.display = 'none';
+
+      const btn = Utils.createEl('button', {
+        className: 'read-more-btn text-primary hover:underline text-sm mt-2',
+        text: (descText.length > 180 ? 'Read More →' : 'Show Details')
+      });
+      btn.addEventListener('click', () => {
+        const showFull = pFull.style.display === 'none';
+        pFull.style.display = showFull ? '' : 'none';
+        pTrunc.style.display = showFull ? 'none' : '';
+        extra.classList.toggle('hidden', !showFull);
+        btn.textContent = showFull ? 'Show Less ↑' : (descText.length > 180 ? 'Read More →' : 'Show Details');
+      });
+
+      return Utils.createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' },
+        [topImg, title, pTrunc, pFull, btn, extra].filter(Boolean)
+      );
+    });
+
+    grid.append(...cards);
+  }
+
+  function renderOutreachTalks() {
+    const grid = DOMElements.outreachTalksGrid;
+    if (!grid) return;
+    grid.replaceChildren();
+    const items = resolveCollection(window.outreachTalksData);
+    if (items.length === 0) { grid.textContent = 'No outreach talks available at the moment.'; return; }
+
+    const team = resolveCollection(window.teamData);
+    const alumni = resolveCollection(window.alumniData);
+    function nameById(id) {
+      const p = team.find(x => String(x.id) === String(id)) || alumni.find(x => String(x.id) === String(id));
+      return p ? p.name : String(id);
+    }
+
+    const nodes = items.map(talk => {
+      const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: (talk && talk.title) || '' });
+      const dateEl = Utils.buildDateBadge(talk && talk.date);
+      const desc = Utils.createEl('p', { className: 'text-sm text-medium-text mt-2', text: (talk && talk.description) || '' });
+
+      const speakersWrap = Utils.createEl('div', { className: 'mt-2 flex flex-wrap gap-2' });
+      const ids = (talk && Array.isArray(talk.speakerIds)) ? talk.speakerIds : [];
+      ids.forEach(id => {
+        const chip = Utils.createEl('button', {
+          className: 'px-2 py-1 rounded bg-primary text-white text-xs',
+          dataset: { modalTarget: 'open-person-bio', id: id },
+          onclick: (e) => ModalManager && ModalManager.handleModalClicks(e),
+          text: nameById(id)
+        });
+        speakersWrap.appendChild(chip);
+      });
+
+      const media = talk && talk.videoLink ? Utils.createSafeMedia(talk.videoLink) : null;
+
+      return Utils.createEl('div', { className: 'card rounded-lg p-4' },
+        [dateEl, media, title, desc, speakersWrap].filter(Boolean)
+      );
+    });
+
+    grid.append(...nodes);
+  }
+
+  function renderAcademicPresentations() {
+    const grid = DOMElements.academicPresentationsGrid;
+    if (!grid) return;
+    grid.replaceChildren();
+    const items = resolveCollection(window.academicPresentationsData);
+    if (items.length === 0) { grid.textContent = 'No academic presentations available at the moment.'; return; }
+
+    const team = resolveCollection(window.teamData);
+    const alumni = resolveCollection(window.alumniData);
+    function nameById(id) {
+      const p = team.find(x => String(x.id) === String(id)) || alumni.find(x => String(x.id) === String(id));
+      return p ? p.name : String(id);
+    }
+
+    const nodes = items.map(pres => {
+      const thumb = (pres && pres.image) ? Utils.createEl('img', {
+        src: Utils.sanitizeUrl(pres.image),
+        alt: Utils.escapeHTML((pres && pres.title) || 'Presentation'),
+        className: 'w-full h-40 object-cover rounded-md mb-3 border border-primary-dark', loading: 'lazy'
+      }) : null;
+      const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: (pres && pres.title) || '' });
+      const dateEl = Utils.buildDateBadge(pres && pres.date);
+      const desc = Utils.createEl('p', { className: 'text-sm text-medium-text mt-2', text: (pres && pres.description) || '' });
+
+      const speakersWrap = Utils.createEl('div', { className: 'mt-2 flex flex-wrap gap-2' });
+      const ids = (pres && Array.isArray(pres.speakerIds)) ? pres.speakerIds : [];
+      ids.forEach(id => {
+        const chip = Utils.createEl('button', {
+          className: 'px-2 py-1 rounded bg-primary text-white text-xs',
+          dataset: { modalTarget: 'open-person-bio', id: id },
+          onclick: (e) => ModalManager && ModalManager.handleModalClicks(e),
+          text: nameById(id)
+        });
+        speakersWrap.appendChild(chip);
+      });
+
+      const link = (pres && pres.link) ? Utils.createEl('a', { href: Utils.sanitizeUrl(pres.link, '#'), className: 'text-primary underline mt-2 inline-block', text: 'Open link' }) : null;
+
+      return Utils.createEl('div', { className: 'card rounded-lg p-4' },
+        [thumb, dateEl, title, desc, speakersWrap, link].filter(Boolean)
+      );
+    });
+
+    grid.append(...nodes);
+  }
+
+  function renderOutreachNews() {
+    const list = DOMElements.outreachNewsList;
+    if (!list) return;
+    list.replaceChildren();
+    const items = resolveCollection(window.outreachNewsData);
+    if (items.length === 0) { list.textContent = 'No outreach news available at the moment.'; return; }
+
+    const team = resolveCollection(window.teamData);
+    const alumni = resolveCollection(window.alumniData);
+    function nameById(id) {
+      const p = team.find(x => String(x.id) === String(id)) || alumni.find(x => String(x.id) === String(id));
+      return p ? p.name : String(id);
+    }
+
+    const nodes = items.map(n => {
+      const img = (n && n.image) ? Utils.createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML((n && n.title) || 'Outreach image'), className:'w-full h-40 object-cover rounded-md border border-primary-dark', loading:'lazy' }) : null;
+      const dateEl = Utils.buildDateBadge(n && n.date);
+      const title = Utils.createEl('h4', { className: 'font-semibold', text: (n && n.title) || '' });
+      const desc = Utils.createEl('p', { className: 'text-sm text-medium-text', text: (n && n.description) || '' });
+      const link = (n && n.link) ? Utils.createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className:'text-primary underline text-sm', text:'Read more' }) : null;
+
+      const wrap = Utils.createEl('li', { className: 'p-4 border-b border-primary-dark card flex flex-col gap-2' },
+        [img, dateEl, title, desc, link].filter(Boolean)
+      );
+
+      // associatedTeamMembers chips
+      const ids = (n && Array.isArray(n.associatedTeamMembers)) ? n.associatedTeamMembers : [];
+      if (ids.length) {
+        const chips = Utils.createEl('div', { className:'mt-2 flex flex-wrap gap-2' });
+        ids.forEach(id => {
+          const chip = Utils.createEl('button', {
+            className: 'px-2 py-1 rounded bg-primary text-white text-xs',
+            dataset: { modalTarget: 'open-person-bio', id: id },
+            onclick: (e) => ModalManager && ModalManager.handleModalClicks(e),
+            text: nameById(id)
+          });
+          chips.appendChild(chip);
+        });
+        wrap.appendChild(chips);
+      }
+
+      return wrap;
+    });
+
+    list.append(...nodes);
+  }
+
+  function renderNewsCarouselAndList() {
+    const listEl = DOMElements.newsList;
+    const trackEl = DOMElements.newsCarouselTrack;
+    if (listEl) listEl.replaceChildren();
+    if (trackEl) trackEl.replaceChildren();
+    const items = resolveCollection(window.newsData);
+    if (items.length === 0) {
+      if (listEl) listEl.textContent = 'No news available at the moment.';
+      if (trackEl) trackEl.textContent = 'No news available at the moment.';
+      return;
+    }
+
+    if (listEl) {
+      const nodes = items.map(n => Utils.createEl('li', { className: 'p-4 border-b border-primary-dark card flex flex-col gap-2' }, [
+        (n && n.image) ? Utils.createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML((n && n.title) || 'News image'), className:'w-full h-40 object-cover rounded-md border border-primary-dark', loading:'lazy' }) : null,
+        Utils.buildDateBadge(n && n.date),
+        Utils.createEl('h4', { className: 'font-semibold', text: (n && n.title) || '' }),
+        Utils.createEl('p', { className: 'text-sm text-medium-text', text: (n && n.description) || '' })
+      ].filter(Boolean)));
+      listEl.append(...nodes);
+    }
+
+    if (trackEl) {
+      const slides = items.map(n => Utils.createEl('div', { className: 'carousel-slide p-4' }, [
+        (n && n.image) ? Utils.createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML((n && n.title) || 'News image'), className:'w-full h-56 object-cover rounded-md mb-3 border border-primary-dark', loading:'lazy' }) : null,
+        Utils.buildDateBadge(n && n.date),
+        Utils.createEl('h4', { className: 'font-semibold', text: (n && n.title) || '' }),
+        Utils.createEl('p', { className: 'text-sm text-medium-text', text: (n && n.description) || '' })
+      ].filter(Boolean)));
+      trackEl.append(...slides);
+    }
+  }
+
+  function renderTeamAndAlumni() {
+    const teamGrid = DOMElements.teamGrid;
+    const alumniGrid = DOMElements.alumniGrid;
+    if (teamGrid) teamGrid.replaceChildren();
+    if (alumniGrid) alumniGrid.replaceChildren();
+
+    const team = resolveCollection(window.teamData);
+    const alumni = resolveCollection(window.alumniData);
+
+    function personCard(p) {
+      const img = p && p.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(p.image), alt: Utils.escapeHTML((p && p.name) || 'Person'), className:'w-32 h-32 object-cover rounded-full mb-3 border border-primary-dark', loading:'lazy' }) : null;
+      const name = Utils.createEl('h3', { className: 'text-base font-semibold', text: (p && p.name) || '' });
+      const role = Utils.createEl('p', { className: 'text-sm text-medium-text', text: (p && p.role) || '' });
+      const viewBio = Utils.createEl('button', {
+        className: 'read-more-btn text-primary hover:underline text-sm mt-2',
+        dataset: { modalTarget: 'open-person-bio', id: p && p.id },
+        onclick: (e) => ModalManager && ModalManager.handleModalClicks(e),
+        text: 'View Bio →'
+      });
+      return Utils.createEl('div', { className: 'card rounded-lg p-4 text-center flex flex-col items-center' },
+        [img, name, role, viewBio].filter(Boolean)
+      );
+    }
+
+    if (teamGrid) {
+      const nodes = team.map(personCard);
+      if (nodes.length) teamGrid.append(...nodes);
+      else teamGrid.textContent = 'No team members available at the moment.';
+    }
+
+    if (alumniGrid) {
+      const nodes = alumni.map(personCard);
+      if (nodes.length) alumniGrid.append(...nodes);
+      else alumniGrid.textContent = 'No alumni available at the moment.';
+    }
+  }
+
+  function renderGamesAndFilters() {
+    const grid = DOMElements.gamesGrid;
+    const filtersWrap = DOMElements.gameFiltersContainer;
+    if (grid) grid.replaceChildren();
+    if (filtersWrap) filtersWrap.replaceChildren();
+
+    const items = resolveCollection(window.gamesData);
+    if (items.length === 0) { if (grid) grid.textContent = 'No games available at the moment.'; return; }
+
+    const themesAll = Array.from(new Set(items.flatMap(g => (g && Array.isArray(g.themes)) ? g.themes : []))).filter(Boolean);
+    let activeTheme = null;
+
+    function renderFilters() {
+      if (!filtersWrap) return;
+      filtersWrap.replaceChildren();
+      const allBtn = Utils.createEl('button', { className: 'px-3 py-1 rounded', text: 'All' });
+      allBtn.addEventListener('click', () => { activeTheme = null; renderGrid(); });
+      filtersWrap.appendChild(allBtn);
+      themesAll.forEach(t => {
+        const b = Utils.createEl('button', { className: 'px-3 py-1 rounded', text: t });
+        b.addEventListener('click', () => { activeTheme = t; renderGrid(); });
+        filtersWrap.appendChild(b);
+      });
+    }
+
+    function gameCard(gm) {
+      const img = (gm && gm.thumbnail) ? Utils.createEl('img', { src: Utils.sanitizeUrl(gm.thumbnail), alt: Utils.escapeHTML((gm && gm.title) || 'Game image'), className:'w-full h-40 object-cover rounded-md mb-3 border border-primary-dark', loading:'lazy' }) : null;
+      const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: (gm && gm.title) || '' });
+      const desc = Utils.createEl('p', { className: 'text-sm text-medium-text', text: (gm && gm.description) || '' });
+      const themes = (gm && Array.isArray(gm.themes)) ? Utils.createEl('div', { className:'mt-2 flex flex-wrap gap-2' }, gm.themes.map(t => Utils.createEl('span', { className:'px-2 py-1 rounded bg-primary text-white text-xs', text: t }))) : null;
+      const link = (gm && gm.file) ? Utils.createEl('a', { href: Utils.sanitizeUrl(gm.file, '#'), className:'text-primary underline mt-2 inline-block', text:'Play / Learn more' }) : null;
+      return Utils.createEl('div', { className: 'card rounded-lg p-4' }, [img, title, desc, themes, link].filter(Boolean));
+    }
+
+    function renderGrid() {
+      if (!grid) return;
+      grid.replaceChildren();
+      const filtered = activeTheme ? items.filter(x => (x && Array.isArray(x.themes) && x.themes.includes(activeTheme))) : items;
+      const nodes = filtered.map(gameCard);
+      if (nodes.length) grid.append(...nodes);
+      else grid.textContent = 'No games match the selected filter.';
+    }
+
+    renderFilters();
+    renderGrid();
+  }
+
+  function renderAllContent() {
+    renderResearchItems();
+    renderOutreachTalks();
+    renderAcademicPresentations();
+    renderOutreachNews();
+    renderNewsCarouselAndList();
+    renderTeamAndAlumni();
+    renderGamesAndFilters();
+  }
+
+  return { renderAllContent };
+})();;;
 
 /**
  * Manages modal opening, closing, and focus trapping.
