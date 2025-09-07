@@ -91,7 +91,7 @@ const Utils = (() => {
       if (!['http:', 'https:'].includes(u.protocol)) return false;
       // Block javascript:, data:, vbscript:, file:, etc via protocol check above.
       return true;
-    } catch { return false; }
+    } catch (e) { return false; }
   function sanitizeUrl(url, fallback = '#') {
     return isSafeUrl(url) ? String(url) : fallback;
   }
@@ -105,7 +105,7 @@ const Utils = (() => {
         for (const [dk, dv] of Object.entries(v)) { el.dataset[dk] = String(dv); }
         continue;
       }
-      if (k in el) { try { el[k] = v; } catch { el.setAttribute(k, String(v)); } }
+      if (k in el) { try { el[k] = v; } catch (e) { el.setAttribute(k, String(v)); } }
     for (const c of [].concat(children)) {
       if (c == null) continue;
       el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
@@ -228,7 +228,7 @@ const Utils = (() => {
         for (const [dk, dv] of Object.entries(v)) el.dataset[dk] = String(dv);
         continue;
       }
-      if (k in el) { try { el[k] = v; } catch { el.setAttribute(k, String(v)); } }
+      if (k in el) { try { el[k] = v; } catch (e) { el.setAttribute(k, String(v)); } }
       else { el.setAttribute(k, String(v)); }
     }
     for (const c of [].concat(children || [])) {
@@ -252,7 +252,7 @@ const Utils = (() => {
       iframe.setAttribute('allow','accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
       iframe.className = 'absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark';
       return iframe;
-    } catch { return null; }
+    } catch (e) { return null; }
   }
 
 
@@ -365,7 +365,7 @@ const Utils = (() => {
           label = raw;
         }
       }
-    } catch { label = String(dateVal ?? ''); }
+    } catch (e) { label = String(dateVal ?? ''); }
     const attrs = iso ? { dateTime: iso, className: 'date-badge', text: label } : { className: 'date-badge', text: label };
     return createEl('time', attrs);
   }
@@ -846,7 +846,7 @@ function renderOutreachNews() {
   }
 
   return { renderAllContent };
-})();;;
+})();;
 
 /**
  * Manages modal opening, closing, and focus trapping.
@@ -858,7 +858,7 @@ const ModalManager = (() => {
   }
   function closeAllModals() {
     getOverlays().forEach(ov => {
-      try { ov.remove(); } catch {}
+      try { ov.remove(); } catch (e) {}
     });
     document.body.classList.remove('no-scroll');
   }
@@ -878,7 +878,7 @@ const ModalManager = (() => {
     document.body.classList.add('no-scroll');
     overlay.classList.add('active');
     // Focus trap basics
-    try { overlay.focus(); } catch {}
+    try { overlay.focus(); } catch (e) {}
   }
       } else {
         if (document.activeElement === last) {
@@ -894,7 +894,7 @@ const ModalManager = (() => {
 
   function closeModal(overlay) {
     if (!overlay) return;
-    try { overlay.remove(); } catch {}
+    try { overlay.remove(); } catch (e) {}
     // Remove any stragglers
     if (!document.querySelector('.modal-overlay')) {
       document.body.classList.remove('no-scroll');
@@ -1222,7 +1222,7 @@ if (person && person.bio) rightCol.appendChild(Utils.createEl('p', { className:'
     }
   }
 return { openModal, closeModal, handleModalClicks, openResearchDescriptionModal, openNewsModal, openOutreachTalkModal, openAcademicPresentationModal, openPersonBioModal };
-})();;
+})();
 
 /**
  * Manages the news carousel functionality.
