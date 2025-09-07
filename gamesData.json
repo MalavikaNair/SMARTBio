@@ -5,7 +5,8 @@
         "description": "Explore the capabilities of different robot types as you deliver various drugs and cells to a wound site",
         "thumbnail": "./assets/img/actuation-station.png",
         "file": "./outreach/actuationstation.html",
-        "themes": ["Modulating", "Adaptive"]
+        "themes": ["Modulating", "Adaptive"],
+		"ageRange": "9+"
     },
     {
         "id": "game2",
@@ -13,7 +14,8 @@
         "description": "Be the adaptive controller for flappy blob as it navigates through different pipes under different conditions!",
         "thumbnail": "./assets/img/flappy-blob.png",
         "file": "./outreach/flappyblob.html",
-        "themes": ["Adaptive", "Modulating"]
+        "themes": ["Adaptive", "Modulating"],
+		"ageRange": "7+"
     },
   {
         "id": "game3",
@@ -21,7 +23,8 @@
         "description": "Become the Cellular Commander and guide a patient's wound through healing. Manage cells, fight threats, and ensure minimal scarring.",
         "thumbnail": "./assets/img/wound-healing.png",
         "file": "./outreach/woundhealingsaga.html",
-        "themes": ["Therapeutic","Regenerative"]
+        "themes": ["Therapeutic","Regenerative"],
+	  	"ageRange": "12+"
     },
     {
         "id": "game4",
@@ -29,7 +32,8 @@
         "description": "Keep your blood vessel (snake) alive by eating growth food, avoiding shrink food, and providing some stimulation from time to time, as it navigates through a porous sponge!",
         "thumbnail": "./assets/img/sponge-snake.png",
         "file": "./outreach/spongesnake.html",
-        "themes": ["Therapeutic","Regenerative"]
+        "themes": ["Therapeutic","Regenerative"],
+		"ageRange": "10+"
     },
     {
         "id": "game5",
@@ -38,6 +42,7 @@
         "thumbnail": "./assets/img/biosense.png",
         "file": "./outreach/bionetwork.html",
         "themes": ["Sensing", "Adaptive"]
+		"ageRange": "12+"
     },
     {
 	    "id": "hydrogel-quest",
@@ -45,6 +50,7 @@
         "description": "Navigate the lab, collect ingredients, and synthesise a hydrogel in this fun educational game!",
         "thumbnail": "./assets/img/hydrogel-quest.png",
         "file": "./outreach/hydrogel-quest.html",
-        "themes": []
+        "themes": [],
+		"ageRange": "6+"
     }
    ]
