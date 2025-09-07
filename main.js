@@ -199,7 +199,60 @@ const Utils = (() => {
     return String(value);
   }
 
-  /**
+function createYouTubeEmbed(url) {
+  try {
+    const u = new URL(String(url), window.location.origin);
+    const host = u.hostname.toLowerCase();
+
+    // Only allow proper YouTube embed URLs
+    if (!['www.youtube.com', 'youtube.com'].includes(host)) return null;
+    if (!u.pathname.startsWith('/embed/')) return null;
+
+    const iframe = document.createElement('iframe');
+    iframe.src = u.href;
+    iframe.loading = 'lazy';
+    iframe.allowFullscreen = true;
+    iframe.setAttribute(
+      'allow',
+      'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+    );
+    iframe.className = 'absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark';
+
+    return iframe;
+  } catch {
+    return null;
+  }
+}
+
+function createSafeMedia(url) {
+  if (!url) return null;
+
+  // YouTube embeds
+  if (url.includes('youtube.com/embed/')) {
+    const container = document.createElement('div');
+    container.className = 'relative w-full';
+    container.style.paddingBottom = '56.25%'; // 16:9 aspect ratio
+    const iframe = createYouTubeEmbed(url);
+    if (iframe) container.appendChild(iframe);
+    return container;
+  }
+
+  // Fallback: treat as a video
+  const video = document.createElement('video');
+  video.controls = true;
+  video.loading = 'lazy';
+  video.className = 'w-full h-auto rounded-md border border-primary-dark';
+
+  const src = document.createElement('source');
+  src.src = sanitizeUrl(url);
+  src.type = 'video/mp4';
+
+  video.appendChild(src);
+  return video;
+}
+  
+
+/**
    * Toggles the visibility of full/truncated text.
    * @param {string} id - The ID of the text block to toggle.
    * @param {HTMLElement} button - The button that triggered the toggle.
@@ -1050,11 +1103,3 @@ const App = (() => {
 
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', App.init);
-
-// ---- Back-compat shims for legacy global calls ----
-try {
-  if (typeof window !== 'undefined') {
-    window.createYouTubeEmbed = window.createYouTubeEmbed || Utils.createYouTubeEmbed;
-    window.createSafeMedia = window.createSafeMedia || Utils.createSafeMedia;
-  }
-} catch (e) { /* no-op */ }
