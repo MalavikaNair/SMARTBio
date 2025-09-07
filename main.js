@@ -325,7 +325,41 @@ const Utils = (() => {
     container.appendChild(btn);
     return container;
   }
-return { showLoading, hideLoading, truncateText, toggleTextVisibility, formatMemberSince, getMemberSinceDate, escapeHTML, sanitizeUrl, isSafeUrl, createEl, createYouTubeEmbed, createSafeMedia, createSvgEl, buildReadMore };
+
+  // Build a compact date <time> element for news/outreach
+  function buildDateBadge(dateVal) {
+    // Accept string ('2024-06-01', '1 Jun 2024') or object {day, month, year}
+    let label = '';
+    let iso = '';
+    try {
+      if (dateVal && typeof dateVal === 'object') {
+        const d = dateVal;
+        const day = (d.day != null) ? String(d.day).padStart(2, '0') : '';
+        const monthName = String(d.month || '').trim();
+        const monthIdx = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec']
+          .indexOf(monthName.slice(0,3).toLowerCase());
+        const month = monthIdx >= 0 ? String(monthIdx+1).padStart(2, '0') : '';
+        const year = d.year != null ? String(d.year) : '';
+        if (year && month && day) iso = `${year}-${month}-${day}`;
+        label = [d.day, d.month, d.year].filter(Boolean).join(' ');
+      } else if (dateVal) {
+        // Try to parse with Date for ISO
+        const raw = String(dateVal);
+        const dt = new Date(raw);
+        if (!isNaN(dt)) {
+          iso = dt.toISOString().slice(0,10);
+          // Use a friendlier label
+          const opts = { year: 'numeric', month: 'short', day: 'numeric' };
+          label = dt.toLocaleDateString(undefined, opts);
+        } else {
+          label = raw;
+        }
+      }
+    } catch { label = String(dateVal ?? ''); }
+    const attrs = iso ? { dateTime: iso, className: 'date-badge', text: label } : { className: 'date-badge', text: label };
+    return createEl('time', attrs);
+  }
+return { showLoading, hideLoading, truncateText, toggleTextVisibility, formatMemberSince, getMemberSinceDate, escapeHTML, sanitizeUrl, isSafeUrl, createEl, createYouTubeEmbed, createSafeMedia, createSvgEl, buildReadMore, buildDateBadge };
 })();
 
 /**
