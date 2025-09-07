@@ -602,22 +602,24 @@ const Renderer = (() => {
       const dateEl = Utils.buildDateBadge(talk && talk.date);
       const desc = Utils.createEl('p', { className: 'text-sm text-medium-text mt-2', text: (talk && talk.description) || '' });
 
-      const speakersWrap = Utils.createEl('div', { className: 'mt-2 flex flex-wrap gap-2' });
+      const speakersSection = Utils.createEl('div', { className: 'mt-3 text-sm text-medium-text' });
+      speakersSection.appendChild(Utils.createEl('strong', { text: 'Speakers:' }));
+      const speakersRow = Utils.createEl('div', { className: 'flex flex-wrap justify-center gap-2 mt-2' });
       const ids = (talk && Array.isArray(talk.speakerIds)) ? talk.speakerIds : [];
       ids.forEach(id => {
-        const chip = Utils.createEl('button', {
-          className: 'px-2 py-1 rounded bg-primary text-white text-xs',
+        const link = Utils.createEl('button', {
+          className: 'text-primary hover:text-light-text font-semibold',
           dataset: { modalTarget: 'open-person-bio', id: id },
-          onclick: (e) => ModalManager && ModalManager.handleModalClicks(e),
+          onclick: (e)=>ModalManager && ModalManager.handleModalClicks(e),
           text: nameById(id)
         });
-        speakersWrap.appendChild(chip);
+        speakersRow.appendChild(link);
       });
-
+      speakersSection.appendChild(speakersRow);
       const media = talk && talk.videoLink ? Utils.createSafeMedia(talk.videoLink) : null;
 
       return Utils.createEl('div', { className: 'card rounded-lg p-4' },
-        [dateEl, media, title, desc, speakersWrap].filter(Boolean)
+        [dateEl, media, title, desc, speakersSection].filter(Boolean)
       );
     });
 
@@ -648,22 +650,24 @@ const Renderer = (() => {
       const dateEl = Utils.buildDateBadge(pres && pres.date);
       const desc = Utils.createEl('p', { className: 'text-sm text-medium-text mt-2', text: (pres && pres.description) || '' });
 
-      const speakersWrap = Utils.createEl('div', { className: 'mt-2 flex flex-wrap gap-2' });
+      const speakersSection = Utils.createEl('div', { className: 'mt-3 text-sm text-medium-text' });
+      speakersSection.appendChild(Utils.createEl('strong', { text: 'Speakers:' }));
+      const speakersRow = Utils.createEl('div', { className: 'flex flex-wrap justify-center gap-2 mt-2' });
       const ids = (pres && Array.isArray(pres.speakerIds)) ? pres.speakerIds : [];
       ids.forEach(id => {
-        const chip = Utils.createEl('button', {
-          className: 'px-2 py-1 rounded bg-primary text-white text-xs',
+        const link = Utils.createEl('button', {
+          className: 'text-primary hover:text-light-text font-semibold',
           dataset: { modalTarget: 'open-person-bio', id: id },
-          onclick: (e) => ModalManager && ModalManager.handleModalClicks(e),
+          onclick: (e)=>ModalManager && ModalManager.handleModalClicks(e),
           text: nameById(id)
         });
-        speakersWrap.appendChild(chip);
+        speakersRow.appendChild(link);
       });
-
+      speakersSection.appendChild(speakersRow);
       const link = (pres && pres.link) ? Utils.createEl('a', { href: Utils.sanitizeUrl(pres.link, '#'), className: 'text-primary underline mt-2 inline-block', text: 'Open link' }) : null;
 
       return Utils.createEl('div', { className: 'card rounded-lg p-4' },
-        [thumb, dateEl, title, desc, speakersWrap, link].filter(Boolean)
+        [thumb, dateEl, title, desc, speakersSection, link].filter(Boolean)
       );
     });
 
@@ -698,19 +702,16 @@ const Renderer = (() => {
       // associatedTeamMembers chips
       const ids = (n && Array.isArray(n.associatedTeamMembers)) ? n.associatedTeamMembers : [];
       if (ids.length) {
-        const chips = Utils.createEl('div', { className:'mt-2 flex flex-wrap gap-2' });
+        const sec = Utils.createEl('div', { className:'mt-2 text-sm text-medium-text' });
+        sec.appendChild(Utils.createEl('strong', { text: 'Associated Members:' }));
+        const row = Utils.createEl('div', { className:'flex flex-wrap justify-center gap-2 mt-2' });
         ids.forEach(id => {
-          const chip = Utils.createEl('button', {
-            className: 'px-2 py-1 rounded bg-primary text-white text-xs',
-            dataset: { modalTarget: 'open-person-bio', id: id },
-            onclick: (e) => ModalManager && ModalManager.handleModalClicks(e),
-            text: nameById(id)
-          });
-          chips.appendChild(chip);
+          const link = Utils.createEl('button', { className:'text-primary hover:text-light-text font-semibold', dataset:{ modalTarget:'open-person-bio', id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text: nameById(id) });
+          row.appendChild(link);
         });
-        wrap.appendChild(chips);
+        sec.appendChild(row);
+        wrap.appendChild(sec);
       }
-
       return wrap;
     });
 
@@ -895,56 +896,56 @@ const ModalManager = (() => {
 
   // Research modal
   
-function openResearchDescriptionModal(researchItem, trigger) {
-  const researchModal = DOMElements.researchDescriptionModal;
-  if (!researchItem || !researchModal) return;
 
-  if (DOMElements.researchModalTitle) DOMElements.researchModalTitle.textContent = researchItem.title || '';
-  if (DOMElements.researchModalDescription) DOMElements.researchModalDescription.textContent = researchItem.description || '';
+  function openResearchDescriptionModal(item, trigger) {
+    const container = DOMElements.modalContainer || document.body;
+    const overlay = Utils.createEl('div', { className:'modal-overlay active', tabindex:'-1', role:'dialog', 'aria-modal':'true' });
+    const panel = Utils.createEl('div', { className:'modal-content text-left' });
+    const closeBtn = Utils.createEl('button', { className:'modal-close', text:'×', dataset:{ closeModal:'true' } });
+    panel.appendChild(closeBtn);
 
-  // Caption & Credit from datashape
-  if (DOMElements.researchModalCaption) DOMElements.researchModalCaption.textContent = researchItem.modalMediaCaption || '';
-  if (DOMElements.researchModalCredit) {
-    let creditText = '';
-    const creditId = researchItem.modalMediaCreditId;
-    if (creditId != null) {
-      const team = Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || []);
-      const alumni = Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []);
-      const person = (team || []).find(p => String(p.id) === String(creditId)) || (alumni || []).find(a => String(a.id) === String(creditId));
-      creditText = person ? person.name : String(creditId);
+    // Header
+    panel.appendChild(Utils.createEl('h3', { className:'text-2xl font-bold text-light-text', text: item && item.title || '' }));
+    if (item && item.description) panel.appendChild(Utils.createEl('p', { className:'mt-2 text-sm text-medium-text', text: String(item.description) }));
+
+    // Media
+    const media = Utils.createSafeMedia(item && (item.modalMedia || item.image));
+    if (media) {
+      if (media.tagName && media.tagName.toLowerCase() === 'img') {
+        media.className = 'w-full h-auto rounded-md object-cover border border-primary-dark mt-3';
+      }
+      panel.appendChild(media);
     }
-    DOMElements.researchModalCredit.textContent = creditText;
-  }
 
-  // Team members list (IDs -> names)
-  if (DOMElements.researchModalTeamMembers) {
-    const c = DOMElements.researchModalTeamMembers;
-    while (c.firstChild) c.removeChild(c.firstChild);
-    const ids = Array.isArray(researchItem.teamMembers) ? researchItem.teamMembers : [];
-    const team = Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || []);
-    const alumni = Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []);
-    ids.forEach(mid => {
-      const person = (team || []).find(p => String(p.id) === String(mid)) || (alumni || []).find(a => String(a.id) === String(mid));
-      const btn = Utils.createEl('button', {
-        className: 'px-2 py-1 rounded-full border border-primary-dark text-primary text-xs mr-2 mb-2',
-        dataset: { modalTarget: 'open-person-bio', id: mid },
-        onclick: (e)=>ModalManager && ModalManager.handleModalClicks(e),
-        text: person ? person.name : String(mid)
+    // Caption & credit
+    if (item && item.modalMediaCaption) panel.appendChild(Utils.createEl('p', { className:'text-xs text-medium-text mt-2', text: item.modalMediaCaption }));
+    if (item && item.modalMediaCreditId != null) {
+      const dataset = (Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || [])).concat(Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []));
+      const person = dataset.find(p => String(p.id) === String(item.modalMediaCreditId));
+      const creditName = person ? person.name : String(item.modalMediaCreditId);
+      panel.appendChild(Utils.createEl('p', { className:'text-xs text-medium-text', text: 'Credit: ' + creditName }));
+    }
+
+    // Team chips
+    if (item && Array.isArray(item.teamMembers) && item.teamMembers.length) {
+      const dataset = (Array.isArray(window.teamData) ? window.teamData : (window.teamData && window.teamData.items || [])).concat(Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData && window.alumniData.items || []));
+      const chips = Utils.createEl('div', { className:'mt-3 flex flex-wrap justify-center gap-2 text-sm text-medium-text' });
+      chips.appendChild(Utils.createEl('strong', { text: 'Associated Members:' }));
+      const wrap = Utils.createEl('div', { className:'flex flex-wrap justify-center gap-2 mt-2' });
+      item.teamMembers.forEach(id => {
+        const person = dataset.find(p => String(p.id) === String(id));
+        const chip = Utils.createEl('button', { className:'text-primary hover:text-light-text font-semibold', dataset:{ modalTarget:'open-person-bio', id }, onclick:(e)=>ModalManager && ModalManager.handleModalClicks(e), text: person ? person.name : String(id) });
+        wrap.appendChild(chip);
       });
-      c.appendChild(btn);
-    });
+      chips.appendChild(wrap);
+      panel.appendChild(chips);
+    }
+
+    overlay.appendChild(panel);
+    container.appendChild(overlay);
+    openModal(overlay, trigger);
   }
 
-  // Media prefers modalMedia, else image
-  if (DOMElements.researchModalMedia) {
-    const m = DOMElements.researchModalMedia;
-    while (m.firstChild) m.removeChild(m.firstChild);
-    const mediaEl = Utils.createSafeMedia(researchItem.modalMedia || researchItem.image);
-    if (mediaEl) m.appendChild(mediaEl);
-  }
-
-  openModal(researchModal, trigger);
-}
 function openNewsModal(newsItem, trigger) {
     const m = DOMElements.newsDescriptionModal;
     if (!m || !newsItem) return;
@@ -1067,26 +1068,24 @@ function openNewsModal(newsItem, trigger) {
 
   
   // Person Bio modal (team/alumni)
+  
   function openPersonBioModal(person, trigger) {
     const container = DOMElements.modalContainer || document.body;
-    // Build overlay
     const overlay = Utils.createEl('div', { className:'modal-overlay active', tabindex:'-1', role:'dialog', 'aria-modal':'true' });
-    const panel = Utils.createEl('div', { className:'modal-panel max-w-lg mx-auto bg-white dark:bg-slate-900 rounded-lg p-6 border border-primary-dark shadow-lg mt-10' });
-    const closeBtn = Utils.createEl('button', { className:'absolute top-2 right-2 px-2 py-1 rounded border', text:'×' });
-    closeBtn.addEventListener('click', () => closeModal(overlay));
+    const panel = Utils.createEl('div', { className:'modal-content flex flex-col items-center gap-4' });
+    const closeBtn = Utils.createEl('button', { className:'modal-close', text:'×', dataset:{ closeModal:'true' } });
     panel.appendChild(closeBtn);
 
-    const img = person?.image ? Utils.createEl('img', { src: Utils.sanitizeUrl(person.image), alt: Utils.escapeHTML(person.name || 'Person'), className: 'w-32 h-32 object-cover rounded-full mb-3 border border-primary-dark' }) : null;
-    const name = Utils.createEl('h3', { className:'text-xl font-semibold', text: person?.name || '' });
-    const role = Utils.createEl('p', { className:'text-sm text-medium-text', text: person?.role || '' });
-    const since = person?.memberSince ? Utils.createEl('p', { className:'text-xs text-medium-text', text: 'Member since: ' + Utils.formatMemberSince(person.memberSince) }) : null;
-    const bio = person?.bio ? Utils.createEl('p', { className:'text-sm mt-3', text: person.bio }) : null;
+    if (person && person.image) panel.appendChild(Utils.createEl('img', { src: Utils.sanitizeUrl(person.image), alt: Utils.escapeHTML(person.name || 'Person'), className:'w-32 h-32 object-cover rounded-full border-4 border-primary' }));
+    panel.appendChild(Utils.createEl('h3', { className:'text-xl font-bold text-light-text', text: person && person.name || '' }));
+    if (person && person.role) panel.appendChild(Utils.createEl('p', { className:'text-sm text-medium-text', text: person.role }));
+    if (person && person.bio) panel.appendChild(Utils.createEl('p', { className:'text-sm mt-3 text-medium-text', text: person.bio }));
 
-    [img, name, role, since, bio].filter(Boolean).forEach(n => panel.appendChild(n));
     overlay.appendChild(panel);
     container.appendChild(overlay);
     openModal(overlay, trigger);
   }
+
 
   // Person Bio modal
   function openPersonBioModal(person, trigger) {
@@ -1164,7 +1163,7 @@ function openNewsModal(newsItem, trigger) {
 
     // Close via overlay click or [data-close-modal]
     if (target.classList.contains('modal-overlay')) { closeModal(target); return; }
-    const closeBtn = target.closest('[data-close-modal]');
+    const closeBtn = target.closest('[data-close-modal]') || target.closest('.modal-close');
     if (closeBtn) { const m = closeBtn.closest('.modal-overlay'); if (m) closeModal(m); return; }
 
     const t = target.closest('[data-modal-target]');
@@ -1557,4 +1556,4 @@ const App = (() => {
 })();
 
 // Initialize the application when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', App.init);
+document.addEventListener('DOMContentLoaded', App.init);return wrap;
