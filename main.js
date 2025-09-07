@@ -342,9 +342,6 @@ const DataManager = (() => {
  * Handles rendering of various content sections and their individual items.
  */
 const Renderer = (() => {
-    /**
-     * Renders all content sections after data is loaded.
-     */
     function renderAllContent() {
         renderResearchItems();
         renderOutreachTalks();
@@ -355,108 +352,48 @@ const Renderer = (() => {
         renderGamesAndFilters();
     }
 
-    /**
-     * Creates an HTML string for a research card.
-     * @param {object} item - The research item data.
-     * @returns {string} HTML string for            });
-            teamMembersHtml += '</div></div>';
-        }
-
-        return `
-            <div class="card rounded-lg p-6 text-center flex flex-col items-center">
-                <img src="${item.image}" alt="${Utils.escapeHTML(item.title)}" class="w-full h-48 object-cover rounded-md mb-4 border border-primary-dark" loading="lazy">
-                <h3 class="text-xl font-bold text-light-text mb-2">${Utils.escapeHTML(item.title)}</h3>
-                ${teamMembersHtml}
-                <button data-research-id="${item.id}" class="open-research-modal-btn bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300 mt-auto">More Info →</button>
-            </div>
-        `;
-    }
-
     function renderResearchItems() {
         const grid = DOMElements.researchContentGrid;
         if (!grid) return;
         grid.replaceChildren();
-        const items = Array.isArray(researchData) ? researchData : (researchData?.items || []);
+        const items = Array.isArray(window.researchData) ? window.researchData : (window.researchData?.items || []);
         if (!items || items.length === 0) {
             grid.textContent = 'No research items available at the moment.';
             return;
         }
         const cards = items.map((item) => {
-            const img = createEl('img', {
+            const img = item?.image ? createEl('img', {
                 src: Utils.sanitizeUrl(item.image),
                 alt: Utils.escapeHTML(item.title || 'Research image'),
                 className: 'w-full h-48 object-cover rounded-md mb-4 border border-primary-dark',
                 loading: 'lazy'
-            });
-            const title = createEl('h3', { className: 'text-lg font-semibold', text: item.title || '' });
-            const desc = createEl('p', { className: 'text-sm text-medium-text', text: item.shortDescription || item.description || '' });
-            return createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [img, title, desc]);
+            }) : null;
+            const title = createEl('h3', { className: 'text-lg font-semibold', text: item?.title || '' });
+            const desc = createEl('p', { className: 'text-sm text-medium-text', text: item?.shortDescription || item?.description || '' });
+            return createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [img, title, desc].filter(Boolean));
         });
         grid.append(...cards);
-    }
-        const cards = items.map((item) => {
-            const img = createEl('img', {
-                src: Utils.sanitizeUrl(item.image),
-                alt: Utils.escapeHTML(item.title || 'Research image'),
-                className: 'w-full h-48 object-cover rounded-md mb-4 border border-primary-dark',
-                loading: 'lazy'
-            });
-            const title = createEl('h3', { className: 'text-lg font-semibold' , text: item.title || ''});
-            const desc = createEl('p', { className: 'text-sm text-medium-text', text: item.shortDescription || item.description || ''});
-            const card = createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' }, [img, title, desc]);
-            return card;
-        });
-        grid.append(...cards);
-    }
-    }
-
-    /**
-     * Creates an HTML string for an outreach talk card.
-     * @param {object} talk - The outreach talk data.
-     * @returns {string} HTML st Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
-        }
-
-        let speakerHtml = '';
-        if (talk.speakerIds && Array.isArray(talk.speakerIds) && talk.speakerIds.length > 0) {
-            const speakerNames = talk.speakerIds.map(speakerId => {
-                const speaker = teamData.find(member => member.id === speakerId) ||
-                                alumniData.find(alumni => alumni.id === speakerId);
-                return speaker ? `<button data-modal-target="${speaker.id}" class="open-modal-btn hover:underline">${Utils.escapeHTML(speaker.name)}</button>` : `Unknown (${speakerId})`;
-            }).join(', ');
-            speakerHtml = `<p class="text-primary font-semibold text-sm">Speaker(s): ${speakerNames}</p>`;
-        }
-
-        return `
-            <div class="card rounded-lg p-6 flex flex-col items-center text-center">
-                ${mediaHtml}
-                <p class="text-sm text-medium-text mt-4 mb-2">${talk.date.day} ${talk.date.month} ${talk.date.year}</p>
-                <h3 class="text-xl font-bold text-light-text mb-2">${Utils.escapeHTML(talk.title)}</h3>
-                ${Utils.truncateText(talk.description, 150, `outreach-talk-${talk.id}`)}
-                ${speakerHtml}
-                <button data-outreach-talk-id="${talk.id}" class="open-outreach-talk-modal-btn bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300 mt-auto">More Info →</button>
-            </div>
-        `;
     }
 
     function renderOutreachTalks() {
         const grid = DOMElements.outreachTalksGrid;
         if (!grid) return;
         grid.replaceChildren();
-        const items = Array.isArray(outreachTalksData) ? outreachTalksData : (outreachTalksData?.items || []);
+        const items = Array.isArray(window.outreachTalksData) ? window.outreachTalksData : (window.outreachTalksData?.items || []);
         if (!items || items.length === 0) {
             grid.textContent = 'No outreach talks available at the moment.';
             return;
         }
         const nodes = items.map((talk) => {
             const children = [];
-            const media = Utils.createSafeMedia(talk.videoLink);
+            const media = Utils.createSafeMedia(talk?.videoLink);
             if (media) children.push(media);
             children.push(
-                createEl('h3', { className: 'text-lg font-semibold mt-3', text: talk.title || '' }),
-                createEl('p', { className: 'text-xs text-medium-text', text: talk.date || '' }),
-                createEl('p', { className: 'text-sm text-medium-text mt-2', text: talk.description || '' })
+                createEl('h3', { className: 'text-lg font-semibold mt-3', text: talk?.title || '' }),
+                createEl('p', { className: 'text-xs text-medium-text', text: talk?.date || '' }),
+                createEl('p', { className: 'text-sm text-medium-text mt-2', text: talk?.description || '' })
             );
-            if (Array.isArray(talk.speakers) && talk.speakers.length) {
+            if (Array.isArray(talk?.speakers) && talk.speakers.length) {
                 const chips = talk.speakers.map(sp => createEl('span', { className:'px-2 py-1 rounded bg-primary/10 text-primary text-xs' , text: sp }));
                 children.push(createEl('div', { className: 'flex flex-wrap gap-2 mt-2' }, chips));
             }
@@ -465,217 +402,156 @@ const Renderer = (() => {
         grid.append(...nodes);
     }
 
-    /**
-     * Creates an HTML string for a news list item.
-     * @param {object} item - The news item data.
-     * @returns {string} HTML string for     function renderNewsCarouselAndList() {
+    function renderAcademicPresentations() {
+        const grid = DOMElements.academicPresentationsGrid;
+        if (!grid) return;
+        grid.replaceChildren();
+        const items = Array.isArray(window.academicPresentationsData) ? window.academicPresentationsData : (window.academicPresentationsData?.items || []);
+        if (!items || items.length === 0) {
+            grid.textContent = 'No academic presentations available at the moment.';
+            return;
+        }
+        const nodes = items.map((pres) => {
+            const title = createEl('h3', { className: 'text-lg font-semibold', text: pres?.title || '' });
+            const meta = createEl('p', { className: 'text-xs text-medium-text', text: pres?.date || '' });
+            const desc = createEl('p', { className: 'text-sm text-medium-text mt-2', text: pres?.description || '' });
+            const children = [title, meta, desc];
+            if (pres?.link) {
+                children.push(createEl('a', { href: Utils.sanitizeUrl(pres.link, '#'), className: 'text-primary underline mt-2 inline-block', text: 'View presentation' }));
+            }
+            return createEl('div', { className: 'card rounded-lg p-4' }, children);
+        });
+        grid.append(...nodes);
+    }
+
+    function renderOutreachNews() {
+        const list = DOMElements.outreachNewsList;
+        if (!list) return;
+        list.replaceChildren();
+        const items = Array.isArray(window.outreachNewsData) ? window.outreachNewsData : (window.outreachNewsData?.items || []);
+        if (!items || items.length === 0) {
+            list.textContent = 'No outreach news available at the moment.';
+            return;
+        }
+        const nodes = items.map((n) => createEl('li', { className: 'p-4 border-b border-primary-dark' }, [
+            createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
+            createEl('p', { className: 'text-sm text-medium-text', text: n?.summary || n?.description || '' }),
+            n?.link ? createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
+        ].filter(Boolean)));
+        list.append(...nodes);
+    }
+
+    function renderNewsCarouselAndList() {
         const listEl = DOMElements.newsList;
         const trackEl = DOMElements.newsCarouselTrack;
         if (listEl) listEl.replaceChildren();
         if (trackEl) trackEl.replaceChildren();
-
-        const items = Array.isArray(newsData) ? newsData : (newsData?.items || []);
+        const items = Array.isArray(window.newsData) ? window.newsData : (window.newsData?.items || []);
         if (!items || items.length === 0) {
             if (listEl) listEl.textContent = 'No news available at the moment.';
             if (trackEl) trackEl.textContent = 'No news available at the moment.';
             return;
         }
-
-        // List
         if (listEl) {
-            const nodes = items.map((n) => {
-                const li = createEl('li', { className: 'p-4 border-b border-primary-dark' }, [
-                    createEl('h4', { className: 'font-semibold', text: n.title || '' }),
-                    createEl('p', { className: 'text-sm text-medium-text', text: n.summary || n.description || '' }),
-                    n.link ? createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
-                ]);
-                return li;
-            });
+            const nodes = items.map((n) => createEl('li', { className: 'p-4 border-b border-primary-dark' }, [
+                createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
+                createEl('p', { className: 'text-sm text-medium-text', text: n?.summary || n?.description || '' }),
+                n?.link ? createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
+            ].filter(Boolean)));
             listEl.append(...nodes);
         }
-
-        // Carousel
         if (trackEl) {
-            const slides = items.map((n) => {
-                const slide = createEl('div', { className: 'carousel-slide p-4' }, [
-                    n.image ? createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML(n.title || 'News image'), className: 'w-full h-56 object-cover rounded-md mb-3 border border-primary-dark', loading: 'lazy' }) : null,
-                    createEl('h4', { className: 'font-semibold', text: n.title || '' }),
-                    createEl('p', { className: 'text-sm text-medium-text', text: n.summary || n.description || '' }),
-                    n.link ? createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
-                ]);
-                return slide;
-            });
+            const slides = items.map((n) => createEl('div', { className: 'carousel-slide p-4' }, [
+                n?.image ? createEl('img', { src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML(n?.title || 'News image'), className: 'w-full h-56 object-cover rounded-md mb-3 border border-primary-dark', loading: 'lazy' }) : null,
+                createEl('h4', { className: 'font-semibold', text: n?.title || '' }),
+                createEl('p', { className: 'text-sm text-medium-text', text: n?.summary || n?.description || '' }),
+                n?.link ? createEl('a', { href: Utils.sanitizeUrl(n.link, '#'), className: 'text-primary underline', text: 'Read more' }) : null
+            ].filter(Boolean)));
             trackEl.append(...slides);
         }
-    } ${a.date.month} ${a.date.day}`);
-                const dateB = new Date(`${b.date.year} ${b.date.month} ${b.date.day}`);
-                return dateB - dateA;
-            });
-
-            if (DOMElements.newsCarouselTrack) {
-                /* replaced by DOM rendering */
-            }
-            if (DOMElements.newsList) {
-                /* replaced by DOM rendering */
-            }
-        }
-    }
-
-    /**
-     * Creates an HTML string for a team member card.
-     * @param {object} member - The team member data.
-     * @returns {string} HTML string for    /**
-     * Creates an HTML string for an alumni member card.
-     * @param {object} alumnus - The alumni member data.
-     * @returns {string} HTML string for    /**
-     * Creates an HTML string for a person modal.
-     * @param {object} person - The person data (team or alumni).
-     * @param {string} borderColorClass - Tailwind class for border color.
-     * @returns {string} HTML string for the person modal.
-     */
-    function createPersonModalHtml(person, borderColorClass) {
-        // Get associated content for this person
-        const associatedContentHtml = getAssociatedContentForPerson(person.id);
-
-        return `
-            <div id="${person.id}" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="${person.id}-title" aria-describedby="${person.id}-bio">
-                <div class="modal-content flex flex-col md:flex-row items-center gap-8">
-                    <button class="modal-close" aria-label="Close ${Utils.escapeHTML(person.name)} bio modal">×</button>
-                    <img src="${person.image}" class="w-48 h-48 rounded-full border-4 ${borderColorClass}" alt="${Utils.escapeHTML(person.name)}" loading="lazy">
-                    <div class="text-center md:text-left">
-                        <h2 id="${person.id}-title" class="text-3xl font-bold text-light-text">${Utils.escapeHTML(person.name)}</h2>
-                        <p class="text-primary font-semibold text-xl mb-4">${Utils.escapeHTML(person.role)}</p>
-                                      ${person.memberSince ? `<p class="text-slate-400 text-sm mb-4">Member since: ${Utils.formatMemberSince(person.memberSince)}</p>` : ``}
-              <p id="${person.id}-bio" class="text-medium-text">${person.bio}</p>
-                        ${associatedContentHtml}
-                        <div class="mt-4 text-left">
-                            <label class="flex items-center text-xs text-slate-500">
-                                <input type="checkbox" checked disabled class="form-checkbox h-4 w-4 text-primary bg-slate-700 border-slate-600 rounded mr-2">
-                                GDPR: Consent to display personal information and image has been obtained.
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * Generates HTML for content associated with a given person ID.
-     * @param {string} personId - The ID of the person.
-     * @returns {string} HTML string containing links to associated content.
-     */
-    function getAssociatedContentForPerson(personId) {
-        let contentHtml = '';
-        let hasContent = false;
-
-        // Research Projects
-        const relatedResearch = researchData ? researchData.filter(r => Array.isArray(r.teamMembers) && r.teamMembers.includes(personId)) : [];
-        if (relatedResearch.length > 0) {
-            hasContent = true;
-            contentHtml += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-6 mb-2">Associated Research Projects</h4><div class="space-y-2">`;
-            relatedResearch.forEach(item => {
-                contentHtml += `<button class="associated-content-link text-sm text-primary hover:underline text-left" data-type="open-research-modal" data-id="${item.id}">${Utils.escapeHTML(item.title)}</button>`;
-            });
-            contentHtml += `</div>`;
-        }
-
-        // Academic Presentations
-        const relatedAcademicPresentations = academicPresentationsData ? academicPresentationsData.filter(p => Array.isArray(p.speakerIds) && p.speakerIds.includes(personId)) : [];
-        if (relatedAcademicPresentations.length > 0) {
-            hasContent = true;
-            contentHtml += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-6 mb-2">Academic Presentations</h4><div class="space-y-2">`;
-            relatedAcademicPresentations.forEach(item => {
-                contentHtml += `<button class="associated-content-link text-sm text-primary hover:underline text-left" data-type="open-academic-presentation-modal" data-id="${item.id}">${Utils.escapeHTML(item.title)} (${item.date.year})</button>`;
-            });
-            contentHtml += `</div>`;
-        }
-
-        // Outreach Talks
-        const relatedOutreachTalks = outreachTalksData ? outreachTalksData.filter(t => Array.isArray(t.speakerIds) && t.speakerIds.includes(personId)) : [];
-        if (relatedOutreachTalks.length > 0) {
-            hasContent = true;
-            contentHtml += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-6 mb-2">Outreach Talks</h4><div class="space-y-2">`;
-            relatedOutreachTalks.forEach(item => {
-                contentHtml += `<button class="associated-content-link text-sm text-primary hover:underline text-left" data-type="open-outreach-talk-modal" data-id="${item.id}">${Utils.escapeHTML(item.title)} (${item.date.year})</button>`;
-            });
-            contentHtml += `</div>`;
-        }
-
-        return hasContent ? contentHtml : `<p class="text-medium-text text-sm mt-4">No directly associated content found.</p>`;
     }
 
     function renderTeamAndAlumni() {
-        if (DOMElements.teamGrid && teamData && teamData.length > 0) {
-            const teamDataSorted = teamData.slice().sort((a,b) => Utils.getMemberSinceDate(a.memberSince) - Utils.getMemberSinceDate(b.memberSince));
-            /* innerHTML removed in DOM-safe pass */
-            teamDataSorted.forEach(member => {
-                DOMElements.modalContainer.insertAdjacentHTML('beforeend', createPersonModalHtml(member, 'border-primary'));
+        const teamGrid = DOMElements.teamGrid;
+        const alumniGrid = DOMElements.alumniGrid;
+        if (teamGrid) teamGrid.replaceChildren();
+        if (alumniGrid) alumniGrid.replaceChildren();
+
+        const tItems = Array.isArray(window.teamData) ? window.teamData : (window.teamData?.items || []);
+        const aItems = Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData?.items || []);
+
+        function personCard(p, isAlumni=false) {
+            const img = p?.image ? createEl('img', { src: Utils.sanitizeUrl(p.image), alt: Utils.escapeHTML(p?.name || (isAlumni ? 'Alumni' : 'Team')), className:'w-32 h-32 object-cover rounded-full mb-3 border border-primary-dark', loading:'lazy' }) : null;
+            const name = createEl('h3', { className: 'text-base font-semibold', text: p?.name || '' });
+            const role = createEl('p', { className: 'text-sm text-medium-text', text: p?.role || '' });
+            const since = p?.memberSince ? createEl('p', { className: 'text-xs text-medium-text', text: Utils.formatMemberSince(p.memberSince) }) : null;
+            return createEl('div', { className: 'card rounded-lg p-4 text-center flex flex-col items-center' }, [img, name, role, since].filter(Boolean));
+        }
+
+        if (teamGrid) {
+            const nodes = tItems.map(p => personCard(p, false));
+            if (nodes.length) teamGrid.append(...nodes);
+            else teamGrid.textContent = 'No team members available at the moment.';
+        }
+
+        if (alumniGrid) {
+            const nodes = aItems.map(p => personCard(p, true));
+            if (nodes.length) alumniGrid.append(...nodes);
+            else alumniGrid.textContent = 'No alumni available at the moment.';
+        }
+    }
+
+    function renderGamesAndFilters() {
+        const grid = DOMElements.gamesGrid;
+        const filtersWrap = DOMElements.gameFiltersContainer;
+        if (grid) grid.replaceChildren();
+        if (filtersWrap) filtersWrap.replaceChildren();
+
+        const items = Array.isArray(window.gamesData) ? window.gamesData : (window.gamesData?.items || []);
+        if (!items || items.length === 0) {
+            if (grid) grid.textContent = 'No games available at the moment.';
+            return;
+        }
+
+        const genres = Array.from(new Set(items.flatMap(g => Array.isArray(g?.genres) ? g.genres : (g?.genre ? [g.genre] : [])))).filter(Boolean);
+        let activeGenre = null;
+
+        function renderFilters() {
+            if (!filtersWrap) return;
+            filtersWrap.replaceChildren();
+            const allBtn = createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: 'All' });
+            allBtn.addEventListener('click', () => { activeGenre = null; renderGrid(); });
+            filtersWrap.appendChild(allBtn);
+            genres.forEach(ge => {
+                const b = createEl('button', { className: 'px-3 py-1 rounded border border-primary-dark', text: ge });
+                b.addEventListener('click', () => { activeGenre = ge; renderGrid(); });
+                filtersWrap.appendChild(b);
             });
-        } else if (DOMElements.teamGrid) {
-            /* innerHTML removed in DOM-safe pass */
         }
 
-        if (DOMElements.alumniGrid && alumniData && alumniData.length > 0) {
-            const alumniDataSorted = alumniData.slice().sort((a,b) => Utils.getMemberSinceDate(a.memberSince) - Utils.getMemberSinceDate(b.memberSince));
-            /* innerHTML removed in DOM-safe pass */
-            alumniDataSorted.forEach(alumnus => {
-                DOMElements.modalContainer.insertAdjacentHTML('beforeend', createPersonModalHtml(alumnus, 'border-slate-400'));
-            });
-        } else if (DOMElements.alumniGrid) {
-            /* innerHTML removed in DOM-safe pass */
+        function gameCard(gm) {
+            const img = gm?.image ? createEl('img', { src: Utils.sanitizeUrl(gm.image), alt: Utils.escapeHTML(gm?.title || 'Game image'), className:'w-full h-40 object-cover rounded-md mb-3 border border-primary-dark', loading:'lazy' }) : null;
+            const title = createEl('h3', { className: 'text-lg font-semibold', text: gm?.title || '' });
+            const desc = createEl('p', { className: 'text-sm text-medium-text', text: gm?.description || '' });
+            const link = gm?.link ? createEl('a', { href: Utils.sanitizeUrl(gm.link, '#'), className:'text-primary underline mt-2 inline-block', text:'Play / Learn more' }) : null;
+            return createEl('div', { className: 'card rounded-lg p-4' }, [img, title, desc, link].filter(Boolean));
         }
+
+        function renderGrid() {
+            if (!grid) return;
+            grid.replaceChildren();
+            const filtered = activeGenre ? items.filter(x => (Array.isArray(x?.genres) ? x.genres.includes(activeGenre) : x?.genre === activeGenre)) : items;
+            const nodes = filtered.map(gameCard);
+            if (nodes.length) grid.append(...nodes);
+            else grid.textContent = 'No games match the selected filter.';
+        }
+
+        renderFilters();
+        renderGrid();
     }
 
-    /**
-     * Creates an HTML string for a game card.
-     * @param {object} game - The game data.
-     * @returns {string} HTML string for    function renderGamesAndFilters() {
-        if (DOMElements.gamesGrid && gamesData && gamesData.length > 0) {
-            const allGameThemes = [...new Set(gamesData.flatMap(game => game.themes))];
-
-            if (DOMElements.gameFiltersContainer) {
-                /* innerHTML removed in DOM-safe pass */
-                allGameThemes.forEach(theme => {
-                    const button = document.createElement('button');
-                    button.className = 'filter-btn bg-slate-700 hover:bg-primary-dark text-light-text font-bold py-2 px-4 rounded-full text-sm transition duration-300';
-                    button.dataset.filter = theme;
-                    button.textContent = theme;
-                    button.setAttribute('aria-pressed', 'false');
-                    DOMElements.gameFiltersContainer.appendChild(button);
-                });
-            }
-
-            renderGames('all'); // Initial render of all games
-        } else if (DOMElements.gamesGrid) {
-            /* innerHTML removed in DOM-safe pass */
-            if (DOMElements.gameFiltersContainer) /* innerHTML removed in DOM-safe pass */ // Clear filters if no games
-        }
-    }
-
-    function renderGames(filter) {
-        if (DOMElements.gamesGrid) /* innerHTML removed in DOM-safe pass */
-        if (!gamesData) return; // Exit if gamesData is not loaded
-
-        const filteredGames = gamesData.filter(game => filter === 'all' || game.themes.includes(filter));
-
-        if (filteredGames.length > 0) {
-            /* innerHTML removed in DOM-safe pass */
-        }
-    }
-
-    return {
-        renderAllContent,
-        renderResearchItems,
-        renderOutreachTalks,
-        renderAcademicPresentations,
-        renderOutreachNews,
-        renderNewsCarouselAndList,
-        renderTeamAndAlumni,
-        renderGamesAndFilters,
-        renderGames // Expose for filter functionality
-    };
-})();
+    return { renderAllContent };
+})();;
 
 /**
  * Manages modal opening, closing, and focus trapping.
