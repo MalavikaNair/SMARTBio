@@ -83,7 +83,17 @@ const DOMElements = {
 // Utils
 // =========================
 const Utils = (() => {
-  function escapeHTML(str){ const s = String(str ?? ''); return s.replace(/[&<>\"'`]/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',\"'\":'&#39;','`':'&#96;'}[c])); }
+  function escapeHTML(str){
+  const s = String(str ?? '');
+  return s.replace(/[&<>"'`]/g, (c) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '`': '&#96;'
+  })[c]);
+}[c])); }
   function isSafeUrl(url){ try{ const u=new URL(String(url),window.location.origin); return ['http:','https:'].includes(u.protocol); }catch{ return false; } }
   function sanitizeUrl(url,fallback='#'){ return isSafeUrl(url)?String(url):fallback; }
   function createEl(tag, attrs = {}, children = []) {
@@ -385,7 +395,16 @@ const ModalManager = (() => {
     if (closeBtn) { const ov = closeBtn.closest('.modal-overlay'); if (ov) closeModal(ov); return; }
 
     // OPEN variants
-    const t = target.closest('[data-modal-target]'); if (!t) return;
+    const rawBtn = target.closest('.open-modal-btn');
+if (rawBtn) {
+  const personId = rawBtn.getAttribute('data-modal-target');
+  const ds = (Array.isArray(window.teamData) ? window.teamData : (window.teamData?.items || []))
+    .concat(Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData?.items || []));
+  const person = ds.find(p => String(p.id) === String(personId));
+  if (person) { openPersonBioModal(person, rawBtn); return; }
+}
+const t = target.closest('[data-modal-target]'); if (!t) return;
+
     const type = t.getAttribute('data-modal-target'); const id = t.getAttribute('data-id');
 
     if (type === 'open-person-bio' && id != null) {
@@ -393,7 +412,7 @@ const ModalManager = (() => {
         .concat(Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData?.items || []));
       const person = ds.find(p => String(p.id) === String(id));
       if (person) openPersonBioModal(person, t);
-    } else if (type === 'open-research-modal' && id != null) {
+     else if (type === 'open-research-modal' && id != null) {
       const items = Array.isArray(window.researchData) ? window.researchData : (window.researchData?.items || []);
       const item = items.find(x => String(x.id) === String(id) || String(x.title) === String(id));
       if (item) openResearchDescriptionModal(item, t);
