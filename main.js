@@ -91,7 +91,8 @@ const Utils = (() => {
       if (!['http:', 'https:'].includes(u.protocol)) return false;
       // Block javascript:, data:, vbscript:, file:, etc via protocol check above.
       return true;
-    } catch (e) { return false; }
+    } catch { return false; }
+  }
   function sanitizeUrl(url, fallback = '#') {
     return isSafeUrl(url) ? String(url) : fallback;
   }
@@ -105,7 +106,8 @@ const Utils = (() => {
         for (const [dk, dv] of Object.entries(v)) { el.dataset[dk] = String(dv); }
         continue;
       }
-      if (k in el) { try { el[k] = v; } catch (e) { el.setAttribute(k, String(v)); } }
+      if (k in el) { try { el[k] = v; } catch { el.setAttribute(k, String(v)); } }
+    }
     for (const c of [].concat(children)) {
       if (c == null) continue;
       el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
@@ -228,7 +230,7 @@ const Utils = (() => {
         for (const [dk, dv] of Object.entries(v)) el.dataset[dk] = String(dv);
         continue;
       }
-      if (k in el) { try { el[k] = v; } catch (e) { el.setAttribute(k, String(v)); } }
+      if (k in el) { try { el[k] = v; } catch { el.setAttribute(k, String(v)); } }
       else { el.setAttribute(k, String(v)); }
     }
     for (const c of [].concat(children || [])) {
@@ -252,7 +254,7 @@ const Utils = (() => {
       iframe.setAttribute('allow','accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
       iframe.className = 'absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark';
       return iframe;
-    } catch (e) { return null; }
+    } catch { return null; }
   }
 
 
@@ -365,7 +367,7 @@ const Utils = (() => {
           label = raw;
         }
       }
-    } catch (e) { label = String(dateVal ?? ''); }
+    } catch { label = String(dateVal ?? ''); }
     const attrs = iso ? { dateTime: iso, className: 'date-badge', text: label } : { className: 'date-badge', text: label };
     return createEl('time', attrs);
   }
@@ -846,40 +848,32 @@ function renderOutreachNews() {
   }
 
   return { renderAllContent };
-})();;
+})();;;
 
 /**
  * Manages modal opening, closing, and focus trapping.
  */
 const ModalManager = (() => {
-
-  function getOverlays() {
-    return Array.from(document.querySelectorAll('.modal-overlay'));
-  }
-  function closeAllModals() {
-    getOverlays().forEach(ov => {
-      try { ov.remove(); } catch (e) {}
-    });
-    document.body.classList.remove('no-scroll');
-  }
-
   let lastFocusedElement = null;
 
-  function openModal(overlay, trigger) {
-    // Close existing overlays to avoid duplicates
-    closeAllModals();
-    if (!overlay) return;
-    // Constrain panel scrolling
-    const panel = overlay.querySelector('.modal-content');
-    if (panel) {
-      panel.style.maxHeight = '90vh';
-      panel.style.overflowY = 'auto';
-    }
-    document.body.classList.add('no-scroll');
-    overlay.classList.add('active');
-    // Focus trap basics
-    try { overlay.focus(); } catch (e) {}
-  }
+  function openModal(modal, triggerElement) {
+    lastFocusedElement = triggerElement || null;
+    if (!modal) return;
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    modal.focus();
+
+    const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    function trap(e) {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          last.focus();
+          e.preventDefault();
+        }
       } else {
         if (document.activeElement === last) {
           first.focus();
@@ -892,13 +886,12 @@ const ModalManager = (() => {
     modal._trapHandler = trap;
   }
 
-  function closeModal(overlay) {
-    if (!overlay) return;
-    try { overlay.remove(); } catch (e) {}
-    // Remove any stragglers
-    if (!document.querySelector('.modal-overlay')) {
-      document.body.classList.remove('no-scroll');
-    }
+  function closeModal(modal) {
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    if (modal._trapHandler) modal.removeEventListener('keydown', modal._trapHandler);
+    if (lastFocusedElement) lastFocusedElement.focus();
   }
 
   function clear(el) { if (el) { while (el.firstChild) el.removeChild(el.firstChild); } }
@@ -1193,9 +1186,9 @@ if (person && person.bio) rightCol.appendChild(Utils.createEl('p', { className:'
     if (!(target instanceof HTMLElement)) return;
 
     // Close via overlay click or [data-close-modal]
-    if (target.classList.contains('modal-overlay')) { closeAllModals(); return; }
+    if (target.classList.contains('modal-overlay')) { closeModal(target); return; }
     const closeBtn = target.closest('[data-close-modal]') || target.closest('.modal-close');
-    if (closeBtn) { closeAllModals(); return; }
+    if (closeBtn) { const m = closeBtn.closest('.modal-overlay'); if (m) closeModal(m); return; }
 
     const t = target.closest('[data-modal-target]');
     if (!t) return;
@@ -1222,7 +1215,7 @@ if (person && person.bio) rightCol.appendChild(Utils.createEl('p', { className:'
     }
   }
 return { openModal, closeModal, handleModalClicks, openResearchDescriptionModal, openNewsModal, openOutreachTalkModal, openAcademicPresentationModal, openPersonBioModal };
-})();
+})();;
 
 /**
  * Manages the news carousel functionality.
@@ -1534,10 +1527,7 @@ const App = (() => {
         });
     }
 
-    let __listenersBound = false;
-function setupEventListeners() {
-  if (__listenersBound) return;
-  __listenersBound = true;
+    function setupEventListeners() {
         // Global click delegation for modals
         document.addEventListener('click', ModalManager.handleModalClicks);
         document.addEventListener('click', (e) => {
