@@ -107,7 +107,6 @@ const Utils = (() => {
         continue;
       }
       if (k in el) { try { el[k] = v; } catch { el.setAttribute(k, String(v)); } }
-      else { el.setAttribute(k, String(v)); }
     }
     for (const c of [].concat(children)) {
       if (c == null) continue;
@@ -216,11 +215,6 @@ const Utils = (() => {
         fullElement.style.display = 'none';
         button.textContent = 'Read More →';
         button.setAttribute('aria-expanded', 'false');
-      } else {
-        truncatedElement.style.display = 'none';
-        fullElement.style.display = 'block';
-        button.textContent = 'Show Less ←';
-        button.setAttribute('aria-expanded', 'true');
       }
     }
   }
@@ -364,25 +358,7 @@ const Renderer = (() => {
     /**
      * Creates an HTML string for a research card.
      * @param {object} item - The research item data.
-     * @returns {string} HTML string for the research card.
-     */
-    function createResearchCardHtml(item) {
-        let teamMembersHtml = '';
-        if (item.teamMembers && item.teamMembers.length > 0) {
-            teamMembersHtml = '<div class="mt-4 text-sm text-medium-text"><strong>Associated Members:</strong><div class="flex flex-wrap justify-center gap-2 mt-2">';
-            item.teamMembers.forEach(memberId => {
-                const teamMember = teamData.find(member => member.id === memberId);
-                if (teamMember) {
-                    teamMembersHtml += `<button data-modal-target="${teamMember.id}" class="open-modal-btn text-primary hover:text-light-text font-semibold">${Utils.escapeHTML(teamMember.name)}</button>`;
-                } else {
-                    const alumnus = alumniData.find(alumni => alumni.id === memberId);
-                    if (alumnus) {
-                        teamMembersHtml += `<span class="text-slate-400">${Utils.escapeHTML(alumnus.name)} (Alumnus)</span>`;
-                    } else {
-                        teamMembersHtml += `<span class="text-red-400">Unknown Member (${memberId})</span>`;
-                    }
-                }
-            });
+     * @returns {string} HTML string for            });
             teamMembersHtml += '</div></div>';
         }
 
@@ -431,31 +407,13 @@ const Renderer = (() => {
             return card;
         });
         grid.append(...cards);
-    } else if (DOMElements.researchContentGrid) {
-            /* replaced by DOM rendering */
-        }
+    }
     }
 
     /**
      * Creates an HTML string for an outreach talk card.
      * @param {object} talk - The outreach talk data.
-     * @returns {string} HTML string for the talk card.
-     */
-    function createOutreachTalkCardHtml(talk) {
-        let mediaHtml = '';
-        if (talk.videoLink) {
-            if (talk.videoLink.includes('youtube.com/embed/')) {
-                mediaHtml = `<div class="relative w-full" style="padding-bottom: 56.25%;">
-                                <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark" src="${talk.videoLink}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-                            </div>`;
-            } else {
-                mediaHtml = `<video controls class="w-full h-auto rounded-md border border-primary-dark" loading="lazy">
-                                <source src="${talk.videoLink}" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>`;
-            }
-        } else {
-            mediaHtml = `<img src="https://placehold.co/400x225/047857/f3f4f6?" alt="${Utils.escapeHTML(talk.title)} Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
+     * @returns {string} HTML st Placeholder" class="w-full h-auto rounded-md mb-4 border border-primary-dark" loading="lazy">`;
         }
 
         let speakerHtml = '';
@@ -466,8 +424,6 @@ const Renderer = (() => {
                 return speaker ? `<button data-modal-target="${speaker.id}" class="open-modal-btn hover:underline">${Utils.escapeHTML(speaker.name)}</button>` : `Unknown (${speakerId})`;
             }).join(', ');
             speakerHtml = `<p class="text-primary font-semibold text-sm">Speaker(s): ${speakerNames}</p>`;
-        } else {
-            speakerHtml = `<p class="text-primary font-semibold text-sm">Speaker(s): N/A</p>`;
         }
 
         return `
@@ -512,25 +468,7 @@ const Renderer = (() => {
     /**
      * Creates an HTML string for a news list item.
      * @param {object} item - The news item data.
-     * @returns {string} HTML string for the news list item.
-     */
-    function createNewsListItemHtml(item) {
-        return `
-            <div class="card rounded-lg p-6 flex flex-col sm:flex-row items-start sm:space-x-6 cursor-pointer" data-news-id="${item.id}">
-                <div class="bg-primary text-white text-center rounded-lg p-3 w-full sm:w-auto mb-4 sm:mb-0 flex-shrink-0">
-                    <p class="text-sm font-bold">${item.date.month}</p>
-                    <p class="text-2xl font-bold">${item.date.day}</p>
-                    <p class="text-sm font-bold">${item.date.year}</p>
-                </div>
-                <div>
-                    <h3 class="text-xl font-bold text-light-text">${Utils.escapeHTML(item.title)}</h3>
-                    ${Utils.truncateText(item.description, 200, `news-${item.id}`)}
-                </div>
-            </div>
-        `;
-    }
-
-    function renderNewsCarouselAndList() {
+     * @returns {string} HTML string for     function renderNewsCarouselAndList() {
         const listEl = DOMElements.newsList;
         const trackEl = DOMElements.newsCarouselTrack;
         if (listEl) listEl.replaceChildren();
@@ -580,45 +518,16 @@ const Renderer = (() => {
             if (DOMElements.newsList) {
                 /* replaced by DOM rendering */
             }
-        } else {
-            if (DOMElements.newsCarouselTrack) /* replaced by DOM rendering */
-            if (DOMElements.newsList) /* replaced by DOM rendering */
         }
     }
 
     /**
      * Creates an HTML string for a team member card.
      * @param {object} member - The team member data.
-     * @returns {string} HTML string for the team card.
-     */
-    function createTeamCardHtml(member) {
-        return `
-            <div class="card rounded-lg p-6 text-center">
-                <img src="${member.image}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-primary" alt="${Utils.escapeHTML(member.name)}" loading="lazy">
-                <h3 class="text-xl font-bold text-light-text">${Utils.escapeHTML(member.name)}</h3>
-                <p class="text-primary font-semibold">${Utils.escapeHTML(member.role)}</p>
-                <button data-modal-target="${member.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
-            </div>
-        `;
-    }
-
-    /**
+     * @returns {string} HTML string for    /**
      * Creates an HTML string for an alumni member card.
      * @param {object} alumnus - The alumni member data.
-     * @returns {string} HTML string for the alumni card.
-     */
-    function createAlumniCardHtml(alumnus) {
-        return `
-            <div class="card rounded-lg p-6 text-center">
-                <img src="${alumnus.image}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-slate-400" alt="${Utils.escapeHTML(alumnus.name)}" loading="lazy">
-                <h3 class="text-xl font-bold text-light-text">${Utils.escapeHTML(alumnus.name)}</h3>
-                <p class="text-slate-400 font-semibold">${Utils.escapeHTML(alumnus.role)}</p>
-                <button data-modal-target="${alumnus.id}" class="open-modal-btn text-medium-text mt-2 text-sm hover:text-primary">View Bio →</button>
-            </div>
-        `;
-    }
-
-    /**
+     * @returns {string} HTML string for    /**
      * Creates an HTML string for a person modal.
      * @param {object} person - The person data (team or alumni).
      * @param {string} borderColorClass - Tailwind class for border color.
@@ -721,25 +630,7 @@ const Renderer = (() => {
     /**
      * Creates an HTML string for a game card.
      * @param {object} game - The game data.
-     * @returns {string} HTML string for the game card.
-     */
-    function createGameCardHtml(game) {
-        return `
-            <div class="game-card card rounded-lg p-6 text-center">
-                <img src="${game.thumbnail}" class="w-full h-40 object-cover rounded-md mb-4" alt="${Utils.escapeHTML(game.title)} Thumbnail" loading="lazy">
-                <h3 class="text-xl font-bold text-light-text mb-2">${Utils.escapeHTML(game.title)}</h3>
-                ${Utils.truncateText(game.description, 100, `game-${game.id}`)}
-                
-                ${game.ageRange ? `<p class=\"text-slate-400 text-sm mt-1\">Age range: ${game.ageRange}</p>` : ``}
-                <div class="flex flex-wrap justify-center gap-1 mb-4">
-                    ${game.themes.map(theme => `<span class="bg-primary-dark text-xs text-white px-2 py-1 rounded-full">${theme}</span>`).join(' ')}
-                </div>
-                <a href="${game.file}" target="_blank" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">Play Game</a>
-            </div>
-        `;
-    }
-
-    function renderGamesAndFilters() {
+     * @returns {string} HTML string for    function renderGamesAndFilters() {
         if (DOMElements.gamesGrid && gamesData && gamesData.length > 0) {
             const allGameThemes = [...new Set(gamesData.flatMap(game => game.themes))];
 
@@ -769,8 +660,6 @@ const Renderer = (() => {
         const filteredGames = gamesData.filter(game => filter === 'all' || game.themes.includes(filter));
 
         if (filteredGames.length > 0) {
-            /* innerHTML removed in DOM-safe pass */
-        } else {
             /* innerHTML removed in DOM-safe pass */
         }
     }
@@ -816,11 +705,7 @@ const ModalManager = (() => {
                         lastFocusableElement.focus();
                         e.preventDefault();
                     }
-                } else { // Tab
-                    if (document.activeElement === lastFocusableElement) {
-                        firstFocusableElement.focus();
-                        e.preventDefault();
-                    }
+                }
                 }
             } else if (e.key === 'Escape') {
                 closeModal(modal);
@@ -891,8 +776,7 @@ const ModalManager = (() => {
                         creditButton.setAttribute('data-modal-target', creditMember.id);
                         creditButton.textContent = `Photo Credit: ${Utils.escapeHTML(creditMember.name)}`;
                         DOMElements.researchModalCredit.appendChild(creditButton);
-                    } else {
-                        DOMElements.researchModalCredit.textContent = `Photo Credit: Unknown (${researchItem.modalMediaCreditId})`;
+                    })`;
                     }
                 }
             }
@@ -904,12 +788,8 @@ const ModalManager = (() => {
                     const teamMember = teamData.find(member => member.id === memberId);
                     if (teamMember) {
                         teamMembersHtml += `<button data-modal-target="${teamMember.id}" class="open-modal-btn text-primary hover:text-light-text font-semibold">${Utils.escapeHTML(teamMember.name)}</button>`;
-                    } else {
-                        const alumnus = alumniData.find(alumni => alumni.id === memberId);
-                        if (alumnus) {
-                            teamMembersHtml += `<button data-modal-target="${alumnus.id}" class="open-modal-btn text-slate-400 font-semibold">${Utils.escapeHTML(alumnus.name)} (Alumnus)</button>`;
-                        } else {
-                            teamMembersHtml += `<span class="text-red-400">Unknown Member (${memberId})</span>`;
+                    }" class="open-modal-btn text-slate-400 font-semibold">${Utils.escapeHTML(alumnus.name)} (Alumnus)</button>`;
+                        })</span>`;
                         }
                     }
                 });
@@ -959,11 +839,7 @@ const ModalManager = (() => {
                     /* innerHTML removed in DOM-safe pass */">
                                     <iframe class="absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark" src="${talkItem.videoLink}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
                                 </div>`;
-                } else {
-                    /* innerHTML removed in DOM-safe pass */
                 }
-            } else {
-                /* innerHTML removed in DOM-safe pass */
             }
 
             let speakerHtml = '';
@@ -1009,12 +885,7 @@ const ModalManager = (() => {
                     allowfullscreen
                     loading="lazy"></iframe>
           </div>`;
-      } else {
-        /* innerHTML removed in DOM-safe pass */
       }
-    } else {
-      const imgSrc = presItem.image || 'images/placeholder-400x225.png'; // fallback path you control
-      /* innerHTML removed in DOM-safe pass */
     }
 
             let speakerHtml = '';
@@ -1149,8 +1020,6 @@ const CarouselManager = (() => {
             slide.id = `news-carousel-slide-${index}`; // Assign ID for aria-controls
             if (index === currentIndex) {
                 slide.setAttribute('aria-current', 'true');
-            } else {
-                slide.removeAttribute('aria-current');
             }
         });
     }
@@ -1211,8 +1080,6 @@ const NavigationManager = (() => {
             link.classList.toggle('active', isActive);
             if (isActive) {
                 link.setAttribute('aria-current', 'page');
-            } else {
-                link.removeAttribute('aria-current');
             }
         });
         const activePageContent = document.querySelector('.page-section.active .fade-in-section');
@@ -1232,8 +1099,6 @@ const NavigationManager = (() => {
                         window.initResearchHub(window.researchData, window.newsData, window.teamData, window.gamesData);
                         window.researchHubInitialized = true;
                     }, 50);
-                } else {
-                    console.warn("Research Hub data not yet loaded. Skipping initialization.");
                 }
             } else if (researchCanvasContainer) {
                 console.warn('researchHub.js or initResearchHub function not found. Interactive Research Hub may not function.');
@@ -1261,9 +1126,6 @@ const NavigationManager = (() => {
                 })
                 .then(markdown => {
                     if (typeof marked !== 'undefined') {
-                        /* innerHTML removed in DOM-safe pass */
-                    } else {
-                        console.error('marked.js is not loaded.');
                         /* innerHTML removed in DOM-safe pass */
                     }
                 })
@@ -1320,8 +1182,6 @@ const ScrollManager = (() => {
         if (DOMElements.scrollToTopBtn) {
             if (window.scrollY > 300) { // Show button after scrolling down 300px
                 DOMElements.scrollToTopBtn.style.display = 'block';
-            } else {
-                DOMElements.scrollToTopBtn.style.display = 'none';
             }
         }
     }
@@ -1358,10 +1218,6 @@ const CollapsibleManager = (() => {
                         content.classList.remove('expanded');
                         header.classList.remove('expanded');
                         header.setAttribute('aria-expanded', 'false');
-                    } else {
-                        content.classList.add('expanded');
-                        header.classList.add('expanded');
-                        header.setAttribute('aria-expanded', 'true');
                     }
                 }
             });
