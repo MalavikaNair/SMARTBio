@@ -96,7 +96,7 @@ const Utils = (() => {
   function sanitizeUrl(url, fallback = '#') {
     return isSafeUrl(url) ? String(url) : fallback;
   }
-  function Utils.createEl(tag, attrs = {}, children = []) {
+  function createEl(tag, attrs = {}, children = []) {
     const el = document.createElement(tag);
     for (const [k, v] of Object.entries(attrs)) {
       if (v === undefined || v === null) continue;
@@ -1110,3 +1110,4 @@ const App = (() => {
 
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', App.init);
+
