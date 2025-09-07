@@ -1050,3 +1050,11 @@ const App = (() => {
 
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', App.init);
+
+// ---- Back-compat shims for legacy global calls ----
+try {
+  if (typeof window !== 'undefined') {
+    window.createYouTubeEmbed = window.createYouTubeEmbed || Utils.createYouTubeEmbed;
+    window.createSafeMedia = window.createSafeMedia || Utils.createSafeMedia;
+  }
+} catch (e) { /* no-op */ }
