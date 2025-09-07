@@ -854,26 +854,34 @@ function renderOutreachNews() {
  * Manages modal opening, closing, and focus trapping.
  */
 const ModalManager = (() => {
+
+  function getOverlays() {
+    return Array.from(document.querySelectorAll('.modal-overlay'));
+  }
+  function closeAllModals() {
+    getOverlays().forEach(ov => {
+      try { ov.remove(); } catch {}
+    });
+    document.body.classList.remove('no-scroll');
+  }
+
   let lastFocusedElement = null;
 
-  function openModal(modal, triggerElement) {
-    lastFocusedElement = triggerElement || null;
-    if (!modal) return;
-    modal.classList.add('active');
-    modal.setAttribute('aria-hidden', 'false');
-    modal.focus();
-
-    const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-
-    function trap(e) {
-      if (e.key !== 'Tab') return;
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          last.focus();
-          e.preventDefault();
-        }
+  function openModal(overlay, trigger) {
+    // Close existing overlays to avoid duplicates
+    closeAllModals();
+    if (!overlay) return;
+    // Constrain panel scrolling
+    const panel = overlay.querySelector('.modal-content');
+    if (panel) {
+      panel.style.maxHeight = '90vh';
+      panel.style.overflowY = 'auto';
+    }
+    document.body.classList.add('no-scroll');
+    overlay.classList.add('active');
+    // Focus trap basics
+    try { overlay.focus(); } catch {}
+  }
       } else {
         if (document.activeElement === last) {
           first.focus();
@@ -886,12 +894,13 @@ const ModalManager = (() => {
     modal._trapHandler = trap;
   }
 
-  function closeModal(modal) {
-    if (!modal) return;
-    modal.classList.remove('active');
-    modal.setAttribute('aria-hidden', 'true');
-    if (modal._trapHandler) modal.removeEventListener('keydown', modal._trapHandler);
-    if (lastFocusedElement) lastFocusedElement.focus();
+  function closeModal(overlay) {
+    if (!overlay) return;
+    try { overlay.remove(); } catch {}
+    // Remove any stragglers
+    if (!document.querySelector('.modal-overlay')) {
+      document.body.classList.remove('no-scroll');
+    }
   }
 
   function clear(el) { if (el) { while (el.firstChild) el.removeChild(el.firstChild); } }
@@ -1186,9 +1195,9 @@ if (person && person.bio) rightCol.appendChild(Utils.createEl('p', { className:'
     if (!(target instanceof HTMLElement)) return;
 
     // Close via overlay click or [data-close-modal]
-    if (target.classList.contains('modal-overlay')) { closeModal(target); return; }
+    if (target.classList.contains('modal-overlay')) { closeAllModals(); return; }
     const closeBtn = target.closest('[data-close-modal]') || target.closest('.modal-close');
-    if (closeBtn) { const m = closeBtn.closest('.modal-overlay'); if (m) closeModal(m); return; }
+    if (closeBtn) { closeAllModals(); return; }
 
     const t = target.closest('[data-modal-target]');
     if (!t) return;
@@ -1527,7 +1536,10 @@ const App = (() => {
         });
     }
 
-    function setupEventListeners() {
+    let __listenersBound = false;
+function setupEventListeners() {
+  if (__listenersBound) return;
+  __listenersBound = true;
         // Global click delegation for modals
         document.addEventListener('click', ModalManager.handleModalClicks);
         document.addEventListener('click', (e) => {
