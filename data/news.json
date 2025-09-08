@@ -4,7 +4,7 @@
         "title": "Malavika Nair becomes a Fellow of the Institute of Materials, Minerals and Mining",
         "description": "Malavika Nair awarded fellowship of the Institute of Materials, Minerals and Mining, the most prestigious IOM3 membership grade recognising those who have made a significant contribution or established a record of achievement in the materials, minerals or mining fields, or other disciplines within the technical outreach of IOM3.",
         "date": { "month": "JUL", "day": "8","year": "2025" },
-        "image": "./assets/img/FIMM.png",
+        "image": "./assets/img/FIMMM.png",
         "themes": []
     },
  {
@@ -12,7 +12,7 @@
         "title": "Zosia Wolny elected as an Ironmonger!",
         "description": "Zofia (Zosia) Wolny was selected as the 2025 Winner of the Worshipful Company of Ironmongers' Prize for Best Part II Presentation on Biodegradable Metallic-Collagen Composites for Implantable Electronic Systems. Zosia will be presenting her talk again at the Ironmongers hall where she will be elected to be an Ironmonger.",
         "date": { "month": "MAY", "day": "11","year": "2025" },
-        "image": "./assets/img/ironmonger.png",
+        "image": "./assets/img/ironmonger.jpg",
         "themes": ["Sensing"]
     },
  {
@@ -52,7 +52,7 @@
         "title": "Kae Nicolson wins Institution of Engineering and Technology (IET) Postgraduate Prize in the 2024 IET Postgraduate Research Awards.",
         "description": "Kae Nicolson has won the Institution of Engineering and Technology (IET) Postgraduate Prize in the 2024 IET Postgraduate Research Awards. This award will allow Kae to continue the exploration of their project on cell-free tissue engineering scaffolds for wound healing and to attend scientific conferences.",
         "date": { "month": "DEC", "day": "19","year": "2024" },
-        "image": "./assets/img/kae-nicolson.png",
+        "image": "./assets/img/kae-nicolson.jpg",
         "themes": ["Regenerative", "Therapeutic"]
     },
     {
@@ -60,7 +60,7 @@
         "title": "Veronica Lucian wins Best Poster Presentation Award at 2024 World Biomaterials Congress",
         "description": "Veronica Lucian was recognised for her outstanding research on ultrasound-enhanced cavitation for tissue engineering applications by the Society for Biomaterials, at the 2024 World Biomaterials Congress held in Daegu, Republic of Korea",
         "date": { "month": "JUN", "day": "5", "year": "2024" },
-        "image": "./assets/img/veronica-lucian-wbc.png",
+        "image": "./assets/img/veronica-lucian-wbc.jpg",
         "themes": ["Regenerative", "Therapeutic"]
     }
 ]
