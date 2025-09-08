@@ -19,6 +19,13 @@ jobs:
       - name: Install deps
         run: npm ci || npm i
 
+         # Fetch DOMPurify and copy the dist file into assets/js
+      - name: Add DOMPurify
+        run: |
+          npm install --no-save dompurify@3.0.6
+          mkdir -p assets/js
+          cp node_modules/dompurify/dist/purify.min.js assets/js/purify.min.js
+
       - name: Build Tailwind CSS
         run: npm run build:tailwind
 
