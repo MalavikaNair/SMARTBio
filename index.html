@@ -16,15 +16,14 @@
   default-src 'self';
   script-src 'self';
   style-src 'self';
-  img-src 'self' data: https:;
+  img-src 'self' data:;
   font-src 'self';
   connect-src 'self';
-  media-src 'self' https:;
-  frame-src https://www.youtube.com www.youtube.com;
+  media-src 'self';
+  frame-src https://*.youtube.com https://www.youtube-nocookie.com;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
-  frame-ancestors 'none';
   upgrade-insecure-requests;
 ">
 
