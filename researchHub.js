@@ -1,25 +1,32 @@
-/* SMARTBio Research Hub (resilient)
-   - Renders research cards from window.researchData when available
-   - Works with existing main.js modal delegation
-   - Optional live search via #research-hub-search
+/* SMARTBio Research Hub (robust mount + safe fallback)
+   - Mount order: [data-research-hub], #research-hub, #researchHub, #research-content-grid
+   - Waits for researchData; no duplicate render if target has children
+   - Buttons open the existing research modal in main.js
 */
 (function () {
-  const CONTAINER_SELECTOR = '[data-research-hub], #research-hub, #researchHub';
+  const MOUNT_SELECTORS = [
+    '[data-research-hub]',
+    '#research-hub',
+    '#researchHub',
+    '#research-content-grid' // graceful fallback
+  ];
 
-  function q(sel, root = document) { return root.querySelector(sel); }
-  function qa(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
-
-  function dataReady() {
+  const q = (s, r = document) => r.querySelector(s);
+  const asArray = (raw) => Array.isArray(raw) ? raw : (raw && Array.isArray(raw.items) ? raw.items : []);
+  const dataReady = () => {
     const d = window.researchData;
     return Array.isArray(d) || (d && Array.isArray(d.items));
-  }
-  function asArray(raw) {
-    if (Array.isArray(raw)) return raw;
-    if (raw && Array.isArray(raw.items)) return raw.items;
-    return [];
+  };
+
+  function getMount() {
+    for (const sel of MOUNT_SELECTORS) {
+      const el = q(sel);
+      if (el) return el;
+    }
+    return null;
   }
 
-  function card(item) {
+  function makeCard(item) {
     const el = document.createElement('div');
     el.className = 'card rounded-lg p-6 text-center flex flex-col items-center';
 
@@ -54,78 +61,44 @@
     return el;
   }
 
-  function render(list, root) {
+  function renderInto(root, items) {
+    // Avoid double-rendering if something is already there (e.g., main.js already filled it)
+    if (root.children.length > 0 && root.querySelector('.card')) return;
+
     root.replaceChildren();
-    if (!list.length) {
+    if (!items.length) {
       root.textContent = 'No research items available at the moment.';
       return;
     }
-
     const grid = document.createElement('div');
     grid.className = 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3';
-    list.forEach(item => grid.appendChild(card(item)));
+    items.forEach(item => grid.appendChild(makeCard(item)));
     root.appendChild(grid);
   }
 
-  function applySearch(items, term) {
-    const t = term.trim().toLowerCase();
-    if (!t) return items;
-    return items.filter(it => {
-      const hay = [
-        it?.title, it?.description, it?.tags?.join(' ')
-      ].filter(Boolean).join(' ').toLowerCase();
-      return hay.includes(t);
-    });
-  }
-
   function init() {
-    const container = q(CONTAINER_SELECTOR);
-    if (!container) return; // nothing to render into
+    const mount = getMount();
+    if (!mount) return; // nothing to render into
 
-    const doRender = () => {
-      const items = asArray(window.researchData);
-      const searchEl = q('#research-hub-search');
-      const filtered = searchEl ? applySearch(items, searchEl.value || '') : items;
-      render(filtered, container);
+    // If data is present now, render. Otherwise, wait briefly for DataManager to populate it.
+    const tryRender = () => {
+      if (!dataReady()) return false;
+      renderInto(mount, asArray(window.researchData));
+      return true;
     };
 
-    // Live search support (if present)
-    const searchEl = q('#research-hub-search');
-    if (searchEl) {
-      searchEl.addEventListener('input', doRender);
-    }
-
-    // Render now if data is ready, otherwise wait a bit for DataManager
-    if (dataReady()) {
-      doRender();
-      return;
-    }
+    if (tryRender()) return;
 
     let tries = 0, max = 100; // ~10s
-    const timer = setInterval(() => {
+    const t = setInterval(() => {
       tries++;
-      if (dataReady()) {
-        clearInterval(timer);
-        doRender();
-      } else if (tries >= max) {
-        clearInterval(timer);
-        container.textContent = 'Research data not available.';
-      }
+      if (tryRender() || tries >= max) clearInterval(t);
     }, 100);
   }
 
-  // Handle late-mounted container too
-  function waitForContainer() {
-    if (q(CONTAINER_SELECTOR)) { init(); return; }
-    const mo = new MutationObserver(() => {
-      if (q(CONTAINER_SELECTOR)) { mo.disconnect(); init(); }
-    });
-    mo.observe(document.documentElement, { childList: true, subtree: true });
-  }
-
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', waitForContainer);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    waitForContainer();
+    init();
   }
 })();
