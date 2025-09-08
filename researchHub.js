@@ -1,283 +1,334 @@
-/* researchHub.js — XSS-hardened build (no innerHTML with untrusted data) */
-(() => {
-  'use strict';
+// researchHub.js
 
-  // --- small local safe utils (don’t depend on main.js loading order) ---
-  function resolveCollection(raw) {
-    if (Array.isArray(raw)) return raw;
-    if (raw && Array.isArray(raw.items)) return raw.items;
-    return [];
-  }
-  function escapeText(s) { return String(s ?? ''); }
-  function isSafeUrl(url) {
-    try {
-      const u = new URL(String(url), window.location.href);
-      if (u.protocol === 'http:' || u.protocol === 'https:') return true;
-      // allow same-origin relative paths
-      if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(String(url))) return true;
-      return false;
-    } catch { return false; }
-  }
-  function sanitizeUrl(url, fallback = '#') {
-    return isSafeUrl(url) ? String(url) : fallback;
-  }
-  function el(tag, attrs = {}, children = []) {
-    const node = document.createElement(tag);
-    for (const [k, v] of Object.entries(attrs)) {
-      if (v == null) continue;
-      if (k === 'text') { node.textContent = escapeText(v); continue; }
-      if (k === 'dataset' && typeof v === 'object') {
-        for (const [dk, dv] of Object.entries(v)) node.dataset[dk] = String(dv);
-        continue;
-      }
-      if (k in node) {
-        try { node[k] = v; } catch { node.setAttribute(k, String(v)); }
-      } else {
-        node.setAttribute(k, String(v));
-      }
-    }
-    for (const c of [].concat(children)) {
-      if (c == null) continue;
-      node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
-    }
-    return node;
-  }
+// Global variables for Three.js scene, camera, etc., attached to window for global access
+window.scene = null;
+window.camera = null;
+window.renderer = null;
+window.group = null;
+window.raycaster = null;
+window.mouse = null;
+window.themeNodes = [];
+window.researchHubInitialized = false; // Flag to ensure initialization only runs once
 
-  // --- THREE.js hub ---
-  window.initResearchHub = function initResearchHub(
-    researchDataArg, newsDataArg, teamDataArg, gamesDataArg,
-    outreachTalksDataArg, academicPresentationsDataArg
-  ) {
-    try {
-      const researchData = resolveCollection(researchDataArg ?? window.researchData);
-      const newsData = resolveCollection(newsDataArg ?? window.newsData);
-      const teamData = resolveCollection(teamDataArg ?? window.teamData);
-      const gamesData = resolveCollection(gamesDataArg ?? window.gamesData);
-      const outreachTalksData = resolveCollection(outreachTalksDataArg ?? window.outreachTalksData);
-      const academicPresentationsData = resolveCollection(academicPresentationsDataArg ?? window.academicPresentationsData);
+// Function to initialize the Three.js research hub
+window.initResearchHub = function(researchData, newsData, teamData, gamesData) {
+    console.log("initResearchHub called.");
 
-      const researchContainer = document.getElementById('research-canvas-container');
-      const researchCanvas = document.getElementById('research-canvas');
-      if (!researchContainer || !researchCanvas) return;
-
-      const width = researchContainer.clientWidth;
-      const height = 600;
-      researchCanvas.width = width;
-      researchCanvas.height = height;
-
-      if (!window.THREE) {
-        console.warn('THREE not available; skipping 3D hub.');
-        window.researchHubInitialized = true;
+    if (window.researchHubInitialized) {
+        console.log("Research Hub already initialized. Skipping.");
         return;
-      }
-
-      // Scene
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-      camera.position.set(0, 0, 30);
-
-      const renderer = new THREE.WebGLRenderer({ canvas: researchCanvas, antialias: true, alpha: true });
-      renderer.setSize(width, height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-
-      const light = new THREE.AmbientLight(0xffffff, 1.0);
-      scene.add(light);
-
-      const group = new THREE.Group();
-      scene.add(group);
-
-      // Build nodes from unique themes present in your data
-      const themeSet = new Set();
-      [researchData, newsData, teamData, gamesData, outreachTalksData, academicPresentationsData]
-        .forEach(list => resolveCollection(list).forEach(it => {
-          (Array.isArray(it?.themes) ? it.themes : []).forEach(t => themeSet.add(String(t)));
-        }));
-      const themes = Array.from(themeSet);
-      const radius = 10;
-      const sphereGeo = new THREE.SphereGeometry(0.8, 24, 24);
-      const colors = [0x10b981, 0x22d3ee, 0xa78bfa, 0xf59e0b, 0xf472b6, 0x38bdf8, 0x34d399];
-
-      window.themeNodes = [];
-      themes.forEach((name, i) => {
-        const theta = (i / Math.max(1, themes.length)) * Math.PI * 2;
-        const phi = (i % 2 ? 0.6 : 0.4) * Math.PI;
-        const mat = new THREE.MeshStandardMaterial({ color: colors[i % colors.length] });
-        const mesh = new THREE.Mesh(sphereGeo, mat);
-        mesh.position.set(
-          radius * Math.cos(theta) * Math.sin(phi),
-          radius * Math.cos(phi) * (i % 3 ? 1 : -1),
-          radius * Math.sin(theta) * Math.sin(phi)
-        );
-        mesh.name = name; // used by raycaster
-        group.add(mesh);
-        window.themeNodes.push(mesh);
-      });
-
-      // Save handles globally (existing code expects these)
-      window.scene = scene;
-      window.camera = camera;
-      window.renderer = renderer;
-      window.group = group;
-      window.raycaster = new THREE.Raycaster();
-      window.mouse = new THREE.Vector2();
-
-      // Click to select theme
-      researchCanvas.removeEventListener('click', window.onCanvasClick);
-      researchCanvas.addEventListener('click', window.onCanvasClick);
-
-      // Drag to rotate
-      let isMouseDown = false;
-      let previousMousePosition = { x: 0, y: 0 };
-      const onMouseDown = (e) => { isMouseDown = true; previousMousePosition = { x: e.clientX, y: e.clientY }; };
-      const onMouseUp = () => { isMouseDown = false; };
-      const onMouseMove = (e) => {
-        if (!isMouseDown) return;
-        const dx = e.clientX - previousMousePosition.x;
-        const dy = e.clientY - previousMousePosition.y;
-        group.rotation.y += dx * 0.005;
-        group.rotation.x += dy * 0.005;
-        previousMousePosition = { x: e.clientX, y: e.clientY };
-      };
-      const onMouseLeave = () => { isMouseDown = false; };
-
-      ['mousedown','mouseup','mousemove','mouseleave'].forEach(ev => researchCanvas.removeEventListener(ev, {mousedown:onMouseDown,mouseup:onMouseUp,mousemove:onMouseMove,mouseleave:onMouseLeave}[ev]));
-      researchCanvas.addEventListener('mousedown', onMouseDown);
-      researchCanvas.addEventListener('mouseup', onMouseUp);
-      researchCanvas.addEventListener('mousemove', onMouseMove);
-      researchCanvas.addEventListener('mouseleave', onMouseLeave);
-
-      // Animate
-      window.animateResearchHub = function animate() {
-        requestAnimationFrame(window.animateResearchHub);
-        if (!isMouseDown) group.rotation.y += 0.0005;
-        renderer.render(scene, camera);
-      };
-      if (!window.researchHubInitialized) window.animateResearchHub();
-
-      // Resize
-      window.onResearchCanvasResize = function onResearchCanvasResize() {
-        if (researchCanvas.offsetParent === null) return;
-        const w = researchContainer.clientWidth;
-        const h = 600;
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
-        renderer.render(scene, camera);
-      };
-      window.removeEventListener('resize', window.onResearchCanvasResize);
-      window.addEventListener('resize', window.onResearchCanvasResize);
-
-      window.researchHubInitialized = true;
-      renderer.render(scene, camera);
-    } catch (e) {
-      console.error('Error during initResearchHub:', e);
     }
-  };
 
-  // --- Raycast click handler (global) ---
-  window.onCanvasClick = function onCanvasClick(event) {
+    // Ensure THREE is defined
+    if (typeof THREE === 'undefined') {
+        console.error("THREE.js library not loaded. Aborting initResearchHub.");
+        return;
+    }
+    console.log("THREE.js library detected.");
+
+    const researchContainer = document.getElementById('research-canvas-container');
     const researchCanvas = document.getElementById('research-canvas');
-    if (!researchCanvas || !window.raycaster || !window.mouse || !window.camera || !window.themeNodes) return;
+
+    if (!researchCanvas || !researchContainer) {
+        console.error("Research canvas or container not found. Cannot initialize hub.");
+        return;
+    }
+    console.log("Research canvas and container found.");
+    console.log("Canvas dimensions: ", researchContainer.clientWidth, "x", 600);
+
+    try {
+
+        // Initialize Three.js components
+        window.scene = new THREE.Scene();
+        window.camera = new THREE.PerspectiveCamera(75, researchContainer.clientWidth / 600, 0.1, 1000);
+        window.renderer = new THREE.WebGLRenderer({ canvas: researchCanvas, alpha: true, antialias: true });
+        window.renderer.setSize(researchContainer.clientWidth, 600);
+        window.renderer.setPixelRatio(window.devicePixelRatio); // Improve rendering quality
+        console.log("Three.js Scene, Camera, Renderer initialized.");
+
+        window.group = new THREE.Group();
+        window.scene.add(window.group);
+        console.log("Group added to scene.");
+
+        // Create random background points and lines (network effect)
+        const points = [];
+        const numPoints = 50;
+        for (let i = 0; i < numPoints; i++) {
+            const x = (Math.random() - 0.5) * 4;
+            const y = (Math.random() - 0.5) * 4;
+            const z = (Math.random() - 0.5) * 4;
+            points.push(new THREE.Vector3(x, y, z));
+        }
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x9ca3af, transparent: true, opacity: 0.3 });
+        for (let i = 0; i < numPoints; i++) {
+            for (let j = i + 1; j < numPoints; j++) {
+                if (points[i].distanceTo(points[j]) < 1.5) {
+                    const geometry = new THREE.BufferGeometry().setFromPoints([points[i], points[j]]);
+                    const line = new THREE.Line(geometry, lineMaterial);
+                    window.group.add(line);
+                }
+            }
+        }
+        const nodeGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+        const nodeMaterial = new THREE.MeshBasicMaterial({ color: 0x9ca3af });
+        points.forEach(p => {
+            const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
+            node.position.copy(p);
+            window.group.add(node);
+        });
+        console.log("Background network generated.");
+        // Define research themes and create interactive nodes
+        const themes = [
+            { name: 'Sensing', color: 0x66D9EF, position: new THREE.Vector3(3, 2, 0) },
+            { name: 'Modulating', color: 0xA6E22E, position: new THREE.Vector3(-3, 2, 0) },
+            { name: 'Adaptive', color: 0xF92672, position: new THREE.Vector3(0, -2, 3) },
+            { name: 'Regenerative', color: 0xFD971F, position: new THREE.Vector3(2, -2, -3) },
+            { name: 'Therapeutic', color: 0xAE81FF, position: new THREE.Vector3(-2, -2, -3) }
+        ];
+        window.themeNodes = [];
+        themes.forEach(theme => {
+            const themeNodeGeo = new THREE.SphereGeometry(0.3, 16, 16);
+            const themeNodeMat = new THREE.MeshStandardMaterial({ color: theme.color, metalness: 0.3, roughness: 0.5 });
+            const themeNode = new THREE.Mesh(themeNodeGeo, themeNodeMat);
+            themeNode.position.copy(theme.position);
+            themeNode.name = theme.name; // For raycasting
+            window.group.add(themeNode);
+
+            const closestPoint = points.reduce((prev, curr) => prev.distanceTo(theme.position) < curr.distanceTo(theme.position) ? prev : curr);
+            const connectorGeo = new THREE.BufferGeometry().setFromPoints([theme.position, closestPoint]);
+            const connectorLine = new THREE.Line(connectorGeo, new THREE.LineBasicMaterial({ color: theme.color, transparent: true, opacity: 0.5 }));
+            window.group.add(connectorLine);
+            window.themeNodes.push(themeNode);
+        });
+        console.log("Theme nodes created and connected.");
+
+        // Add lighting to the scene
+        const light = new THREE.DirectionalLight(0xffffff, 1.5);
+        light.position.set(5, 5, 5);
+        window.scene.add(light);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        window.scene.add(ambientLight);
+        console.log("Lighting added to scene.");
+
+        window.camera.position.z = 8;
+
+        // Setup Raycaster for interaction
+        window.raycaster = new THREE.Raycaster();
+        window.mouse = new THREE.Vector2();
+        console.log("Raycaster and Mouse vector initialized.");
+
+        // Event listeners for interactivity (click and drag)
+        // Ensure listeners are removed before adding to prevent duplicates
+        researchCanvas.removeEventListener('click', window.onCanvasClick);
+        researchCanvas.addEventListener('click', window.onCanvasClick);
+        console.log("Click listener for onCanvasClick added.");
+
+        let isMouseDown = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        // Named functions for event listeners to ensure proper removal/addition
+        const onMouseDown = (e) => { isMouseDown = true; previousMousePosition = { x: e.clientX, y: e.clientY }; };
+        const onMouseUp = () => { isMouseDown = false; };
+        const onMouseMove = (e) => {
+            if (!isMouseDown) return;
+            const deltaX = e.clientX - previousMousePosition.x;
+            const deltaY = e.clientY - previousMousePosition.y;
+            window.group.rotation.y += deltaX * 0.005;
+            window.group.rotation.x += deltaY * 0.005;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        };
+        const onMouseLeave = () => { isMouseDown = false; };
+
+        // Remove and re-add drag listeners
+        researchCanvas.removeEventListener('mousedown', onMouseDown);
+        researchCanvas.removeEventListener('mouseup', onMouseUp);
+        researchCanvas.removeEventListener('mousemove', onMouseMove);
+        researchCanvas.removeEventListener('mouseleave', onMouseLeave);
+
+        researchCanvas.addEventListener('mousedown', onMouseDown);
+        researchCanvas.addEventListener('mouseup', onMouseUp);
+        researchCanvas.addEventListener('mousemove', onMouseMove);
+        researchCanvas.addEventListener('mouseleave', onMouseLeave);
+        console.log("Drag listeners added.");
+
+        // Define animateResearchHub and assign to window
+        window.animateResearchHub = function() {
+            requestAnimationFrame(window.animateResearchHub);
+            if (!isMouseDown) {
+                window.group.rotation.y += 0.0005; // Continuous subtle rotation when not dragging
+            }
+            if (window.renderer && window.scene && window.camera) {
+                window.renderer.render(window.scene, window.camera);
+            } else {
+                console.warn("Renderer, scene or camera not ready for rendering in animateResearchHub.");
+            }
+        }
+
+        // Start animation loop only once
+        if (!window.researchHubInitialized) {
+            window.animateResearchHub();
+            console.log("animateResearchHub started.");
+        }
+
+        // Handle window resize for responsiveness
+        window.removeEventListener('resize', window.onResearchCanvasResize);
+        window.onResearchCanvasResize = function() {
+            if (researchCanvas.offsetParent !== null && window.camera && window.renderer) {
+                window.camera.aspect = researchContainer.clientWidth / 600;
+                window.camera.updateProjectionMatrix();
+                window.renderer.setSize(researchContainer.clientWidth, 600);
+                window.renderer.render(window.scene, window.camera); // Force a render on resize
+                console.log("Canvas resized and re-rendered.");
+            } else {
+                console.log("Skipping resize: canvas not visible or Three.js components not ready.");
+            }
+        }
+        window.addEventListener('resize', window.onResearchCanvasResize);
+        console.log("Resize listener added.");
+
+        window.researchHubInitialized = true; // Set flag to true after successful initialization
+        console.log("Research Hub initialization complete.");
+
+        // Perform an initial render immediately after setup
+        if (window.renderer && window.scene && window.camera) {
+            window.renderer.render(window.scene, window.camera);
+            console.log("Initial render performed.");
+        }
+
+    } catch (e) {
+        console.error("Error during initResearchHub execution:", e);
+    }
+}
+
+// Function to handle clicks on theme nodes (made global)
+window.onCanvasClick = function(event) {
+    console.log("onCanvasClick triggered.");
+    const researchCanvas = document.getElementById('research-canvas');
+    if (!researchCanvas) {
+        console.warn("onCanvasClick: research-canvas not found.");
+        return;
+    }
+
+    if (!window.raycaster || !window.mouse || !window.camera || !window.themeNodes) {
+        console.error("Raycaster, mouse, camera, or themeNodes not initialized for onCanvasClick.");
+        return;
+    }
 
     const rect = researchCanvas.getBoundingClientRect();
     window.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     window.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     window.raycaster.setFromCamera(window.mouse, window.camera);
-    const hits = window.raycaster.intersectObjects(window.themeNodes);
-    if (hits.length) {
-      const themeName = hits[0].object.name;
-      const d = (x) => resolveCollection(x);
-      window.updateDynamicContent(themeName, d(window.researchData), d(window.newsData), d(window.teamData), d(window.gamesData), d(window.outreachTalksData), d(window.academicPresentationsData));
-    }
-  };
+    const intersects = window.raycaster.intersectObjects(window.themeNodes);
 
-  // --- Safe dynamic panel (global) ---
-  window.updateDynamicContent = function updateDynamicContent(themeName, researchData, newsData, teamData, gamesData, outreachTalksData, academicPresentationsData) {
+    if (intersects.length > 0) {
+        const themeName = intersects[0].object.name;
+        console.log("Theme node clicked:", themeName);
+        // Data objects are now expected to be globally available or passed
+        // Ensure data is available before calling updateDynamicContent
+        if (window.researchData && window.newsData && window.teamData && window.gamesData && window.outreachTalksData && window.academicPresentationsData) {
+            window.updateDynamicContent(themeName, window.researchData, window.newsData, window.teamData, window.gamesData, window.outreachTalksData, window.academicPresentationsData);
+        } else {
+            console.error("Data (researchData, newsData, etc.) not available for updateDynamicContent.");
+        }
+    } else {
+        console.log("No theme node clicked.");
+    }
+}
+
+// Function to update the content panel based on selected theme (made global)
+window.updateDynamicContent = function(themeName, researchData, newsData, teamData, gamesData, outreachTalksData, academicPresentationsData) {
+    console.log("updateDynamicContent called for theme:", themeName);
     const contentGrid = document.getElementById('dynamic-content-grid');
     const contentTitle = document.getElementById('dynamic-content-title');
-    if (!contentGrid || !contentTitle) return;
-
-    contentTitle.textContent = `${escapeText(themeName)} Theme`;
-    contentGrid.replaceChildren();
-
-    const hasTheme = (x) => Array.isArray(x?.themes) && x.themes.map(String).includes(String(themeName));
-
-    const relatedResearch = resolveCollection(researchData).filter(hasTheme);
-    const relatedNews = resolveCollection(newsData).filter(hasTheme);
-    const relatedTeam = resolveCollection(teamData).filter(hasTheme);
-    const relatedGames = resolveCollection(gamesData).filter(hasTheme);
-    const relatedOutreach = resolveCollection(outreachTalksData).filter(hasTheme);
-    const relatedAcademic = resolveCollection(academicPresentationsData).filter(hasTheme);
-
-    function addSection(title, items, renderItem) {
-      if (!items.length) return;
-      const h4 = el('h4', { className: 'font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-4', text: title });
-      contentGrid.appendChild(h4);
-      items.forEach((item) => {
-        const node = renderItem(item);
-        if (node) contentGrid.appendChild(node);
-      });
+    if (!contentGrid || !contentTitle) {
+        console.warn("Dynamic content grid or title not found.");
+        return;
     }
 
-    addSection('Projects', relatedResearch, (item) =>
-      el('div', { className: 'text-sm p-2 rounded-md bg-slate-800/50' }, [escapeText(item?.title || '')])
-    );
+    contentTitle.textContent = `${themeName} Theme`;
+    contentGrid.innerHTML = ''; // Clear previous content
 
-    addSection('News', relatedNews, (item) =>
-      el('div', { className: 'text-sm p-2 rounded-md bg-slate-800/50' }, [escapeText(item?.title || '')])
-    );
+    const relatedResearch = researchData.filter(r => r.themes.includes(themeName));
+    const relatedNews = newsData.filter(n => n.themes.includes(themeName));
+    const relatedTeam = teamData.filter(t => t.themes.includes(themeName));
+    const relatedGames = gamesData.filter(g => g.themes.includes(themeName)); // Filter related games
+    // Filter related outreach talks and academic presentations
+    const relatedOutreachTalks = outreachTalksData.filter(talk => talk.themes.includes(themeName));
+    const relatedAcademicPresentations = academicPresentationsData.filter(pres => pres.themes.includes(themeName));
 
-    addSection('Team', relatedTeam, (m) => {
-      const row = el('div', { className: 'flex items-center gap-2 p-2 rounded-md bg-slate-800/50' });
-      if (m?.image) {
-        const img = el('img', { src: sanitizeUrl(m.image), alt: '', className: 'w-8 h-8 rounded-full', loading: 'lazy' });
-        row.appendChild(img);
-      }
-      row.appendChild(el('span', { className: 'flex-grow text-sm', text: m?.name || '' }));
-      // Correct modal attributes for ModalManager
-      row.appendChild(el('button', {
-        className: 'text-xs text-primary hover:underline',
-        dataset: { modalTarget: 'open-person-bio', id: m?.id },
-        text: 'Bio'
-      }));
-      return row;
+
+    if(relatedResearch.length > 0) contentGrid.innerHTML += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1">Projects</h4>`;
+    relatedResearch.forEach(item => {
+        contentGrid.innerHTML += `<div class="text-sm p-2 rounded-md bg-slate-800/50">${item.title}</div>`;
     });
 
-    addSection('Games', relatedGames, (g) => {
-      const row = el('div', { className: 'flex items-center gap-2 p-2 rounded-md bg-slate-800/50' });
-      if (g?.thumbnail) {
-        row.appendChild(el('img', { src: sanitizeUrl(g.thumbnail), alt: '', className: 'w-8 h-8 rounded-full', loading: 'lazy' }));
-      }
-      row.appendChild(el('span', { className: 'flex-grow text-sm', text: g?.title || '' }));
-      if (g?.file) {
-        const a = el('a', { href: sanitizeUrl(g.file), target: '_blank', rel: 'noopener', className: 'text-xs text-primary hover:underline', text: 'Play' });
-        row.appendChild(a);
-      }
-      return row;
+    if(relatedNews.length > 0) contentGrid.innerHTML += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-4">News</h4>`;
+    relatedNews.forEach(item => {
+        contentGrid.innerHTML += `<div class="text-sm p-2 rounded-md bg-slate-800/50">${item.title}</div>`;
     });
 
-    addSection('Outreach Talks', relatedOutreach, (t) => {
-      const names = Array.isArray(t?.speakerIds) ? t.speakerIds : [];
-      const speakerNames = names
-        .map(id => (resolveCollection(window.teamData).find(p => String(p.id) === String(id)) ||
-                    resolveCollection(window.alumniData).find(a => String(a.id) === String(id)))?.name)
-        .filter(Boolean);
-      const box = el('div', { className: 'text-sm p-2 rounded-md bg-slate-800/50' });
-      box.appendChild(el('p', { className: 'font-semibold', text: t?.title || '' }));
-      box.appendChild(el('p', { className: 'text-xs text-light-text/70', text: `Speaker(s): ${speakerNames.length ? speakerNames.join(', ') : 'N/A'}` }));
-      return box;
+    if(relatedTeam.length > 0) contentGrid.innerHTML += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-4">Team</h4>`;
+    relatedTeam.forEach(item => {
+        contentGrid.innerHTML += `
+        <div class="flex items-center gap-2 p-2 rounded-md bg-slate-800/50">
+            <img src="${item.image}" class="w-8 h-8 rounded-full">
+            <span class="flex-grow text-sm">${item.name}</span>
+            <button data-modal-target="${item.id}" class="open-modal-btn text-xs text-primary hover:underline">Bio</button>
+        </div>`;
     });
 
-    addSection('Academic Presentations', relatedAcademic, (p) => {
-      const names = Array.isArray(p?.speakerIds) ? p.speakerIds : [];
-      const speakerNames = names
-        .map(id => (resolveCollection(window.teamData).find(x => String(x.id) === String(id)) ||
-                    resolveCollection(window.alumniData).find(a => String(a.id) === String(id)))?.name)
-        .filter(Boolean);
-      const box = el('div', { className: 'text-sm p-2 rounded-md bg-slate-800/50' });
-      box.appendChild(el('p', { className: 'font-semibold', text: p?.title || '' }));
-      box.appendChild(el('p', { className: 'text-xs text-light-text/70', text: `Speaker(s): ${speakerNames.length ? speakerNames.join(', ') : 'N/A'}` }));
-      return box;
+    // Add games to dynamic content
+    if(relatedGames.length > 0) contentGrid.innerHTML += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-4">Games</h4>`;
+    relatedGames.forEach(item => {
+        contentGrid.innerHTML += `
+        <div class="flex items-center gap-2 p-2 rounded-md bg-slate-800/50">
+            <img src="${item.thumbnail}" class="w-8 h-8 rounded-full">
+            <span class="flex-grow text-sm">${item.title}</span>
+            <a href="${item.file}" target="_blank" class="text-xs text-primary hover:underline">Play</a>
+        </div>`;
     });
-  };
-})();
+
+    // MODIFIED: Add Outreach Talks to dynamic content
+    if(relatedOutreachTalks.length > 0) contentGrid.innerHTML += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-4">Outreach Talks</h4>`;
+    relatedOutreachTalks.forEach(item => {
+        let speakerNames = [];
+        if (item.speakerIds && Array.isArray(item.speakerIds)) {
+            item.speakerIds.forEach(speakerId => {
+                const speaker = teamData.find(member => member.id === speakerId) ||
+                               alumniData.find(alumni => alumni.id === speakerId); // Check alumni too
+                if (speaker) {
+                    speakerNames.push(speaker.name);
+                }
+            });
+        }
+        const speakersText = speakerNames.length > 0 ? speakerNames.join(', ') : 'N/A';
+        contentGrid.innerHTML += `
+        <div class="text-sm p-2 rounded-md bg-slate-800/50">
+            <p class="font-semibold">${item.title}</p>
+            <p class="text-xs text-light-text/70">Speaker(s): ${speakersText}</p>
+        </div>`;
+    });
+
+    // MODIFIED: Add Academic Presentations to dynamic content
+    if(relatedAcademicPresentations.length > 0) contentGrid.innerHTML += `<h4 class="font-bold text-lg text-light-text border-b border-primary/20 pb-1 mt-4">Academic Presentations</h4>`;
+    relatedAcademicPresentations.forEach(item => {
+        let speakerNames = [];
+        if (item.speakerIds && Array.isArray(item.speakerIds)) {
+            item.speakerIds.forEach(speakerId => {
+                const speaker = teamData.find(member => member.id === speakerId) ||
+                               alumniData.find(alumni => alumni.id === speakerId); // Check alumni too
+                if (speaker) {
+                    speakerNames.push(speaker.name);
+                }
+            });
+        }
+        const speakersText = speakerNames.length > 0 ? speakerNames.join(', ') : 'N/A';
+        contentGrid.innerHTML += `
+        <div class="text-sm p-2 rounded-md bg-slate-800/50">
+            <p class="font-semibold">${item.title}</p>
+            <p class="text-xs text-light-text/70">Speaker(s): ${speakersText}</p>
+        </div>`;
+    });
+
+    console.log("Dynamic content updated.");
+}
