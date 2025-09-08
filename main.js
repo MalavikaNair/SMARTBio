@@ -1065,13 +1065,30 @@ const NavigationManager = (() => {
     if (visible) setTimeout(() => visible.classList.add('is-visible'), 100);
 
     // Privacy page markdown (if present)
-    if (pageId === 'privacy' && DOMElements.privacyNoticeContent) {
-      fetch('privacyNotice.md')
-        .then(r => r.ok ? r.text() : Promise.reject(r.status))
-        .then(md => { if (typeof marked !== 'undefined') DOMElements.privacyNoticeContent.innerHTML = marked.parse(md); })
-        .catch(() => { DOMElements.privacyNoticeContent.textContent = 'Privacy notice could not be loaded.'; });
-    }
-  }
+   // Load privacy notice content
+   if (pageId === 'privacy' && DOMElements.privacyNoticeContent) {
+     fetch('privacyNotice.md')
+       .then(response => {
+         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+         return response.text();
+       })
+       .then(markdown => {
+         if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+           const html = marked.parse(markdown, { mangle: false, headerIds: false });
+           DOMElements.privacyNoticeContent.innerHTML = DOMPurify.sanitize(html, {
+             USE_PROFILES: { html: true }
+           });
+         } else {
+           DOMElements.privacyNoticeContent.textContent = markdown;
+         }
+       })
+       .catch(error => {
+         console.error('Error loading privacy notice:', error);
+         DOMElements.privacyNoticeContent.textContent =
+           'Unable to load the privacy notice at the moment.';
+       });
+   }
+
 
   function handleNavClick(e) {
     e.preventDefault();
