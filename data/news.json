@@ -4,7 +4,7 @@
         "title": "Malavika Nair becomes a Fellow of the Institute of Materials, Minerals and Mining",
         "description": "Malavika Nair awarded fellowship of the Institute of Materials, Minerals and Mining, the most prestigious IOM3 membership grade recognising those who have made a significant contribution or established a record of achievement in the materials, minerals or mining fields, or other disciplines within the technical outreach of IOM3.",
         "date": { "month": "JUL", "day": "8","year": "2025" },
-        "image": "https://www.iom3.org/static/1192dd3d-67ba-47be-90ff51252c6f58b5/e2857fa9-e4b8-4a80-936d48064576f6fb/cutout_widget_image_465ca67a93875dccf9d9704c47dd21e3/CCO-FIMMM-badge.png",
+        "image": "./assets/img/FIMM.png",
         "themes": []
     },
  {
@@ -12,7 +12,7 @@
         "title": "Zosia Wolny elected as an Ironmonger!",
         "description": "Zofia (Zosia) Wolny was selected as the 2025 Winner of the Worshipful Company of Ironmongers' Prize for Best Part II Presentation on Biodegradable Metallic-Collagen Composites for Implantable Electronic Systems. Zosia will be presenting her talk again at the Ironmongers hall where she will be elected to be an Ironmonger.",
         "date": { "month": "MAY", "day": "11","year": "2025" },
-        "image": "https://static.wixstatic.com/media/984d6a_734518ea313d4a598148d79808adab45~mv2.png/v1/fill/w_160,h_155,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/coat_of_arms%2520MINT_edited.png",
+        "image": "./assets/img/ironmonger.png",
         "themes": ["Sensing"]
     },
  {
@@ -20,7 +20,7 @@
         "title": "Cover Feature in Materials World",
         "description": "A recent feature article on electroactive polymers written by Matthew Burgess, Ryan Murray and Malavika Nair for Materials World, the professional magazine for the Institute for Materials Minerals and Mining makes the cover.",
         "date": { "month": "MAY", "day": "19","year": "2025" },
-        "image": "https://www.iom3.org/static/b1388c2f-b32c-491e-999665ab904cea99/800x800_highestperformance__4a7c7e45a350/muscle-CMYK.jpg",
+        "image": "./assets/img/muscle.jpg",
         "themes": ["Regenerative", "Modulating", "Adaptive", "Sensing", "Therapeutic"]
     },
    {
@@ -44,7 +44,7 @@
         "title": "Veronica Lucian wins Student Registration Award for ISTU 2025",
         "description": "Veronica Lucian wins a Student Registration Award for ISTU 2025 to be held in Banff, Canada and will be presenting a talk on her work on \"Assessing the Safety and Feasibility of Cavitation-Mediated Transport on Cell-Bearing Tissue Scaffolds\".",
         "date": { "month": "MAR", "day": "18","year": "2025" },
-        "image": "https://istu.org/wp-content/uploads/2024/12/New-Final-Header-2048x840.png",
+        "image": "./assets/img/istu.png",
         "themes": ["Regenerative", "Therapeutic"]
     },
     {
@@ -52,7 +52,7 @@
         "title": "Kae Nicolson wins Institution of Engineering and Technology (IET) Postgraduate Prize in the 2024 IET Postgraduate Research Awards.",
         "description": "Kae Nicolson has won the Institution of Engineering and Technology (IET) Postgraduate Prize in the 2024 IET Postgraduate Research Awards. This award will allow Kae to continue the exploration of their project on cell-free tissue engineering scaffolds for wound healing and to attend scientific conferences.",
         "date": { "month": "DEC", "day": "19","year": "2024" },
-        "image": "https://www.theiet.org/media/z2cmgs3g/kae-nicolson.jpg?format=webp&quality=80&v=1dae9627ed1dac0",
+        "image": "./assets/img/kae-nicolson.png",
         "themes": ["Regenerative", "Therapeutic"]
     },
     {
@@ -60,7 +60,7 @@
         "title": "Veronica Lucian wins Best Poster Presentation Award at 2024 World Biomaterials Congress",
         "description": "Veronica Lucian was recognised for her outstanding research on ultrasound-enhanced cavitation for tissue engineering applications by the Society for Biomaterials, at the 2024 World Biomaterials Congress held in Daegu, Republic of Korea",
         "date": { "month": "JUN", "day": "5", "year": "2024" },
-        "image": "https://ibme.ox.ac.uk/wp-content/uploads/Veronica-Lucian-WBC-2024-award-768x1024.jpg",
+        "image": "./assets/img/veronica-lucian-wbc.png",
         "themes": ["Regenerative", "Therapeutic"]
     }
 ]
