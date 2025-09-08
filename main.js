@@ -1175,6 +1175,16 @@ const App = (() => {
     ScrollManager.setupScrollToTop();
     CollapsibleManager.setupCollapsibleSections();
     GDPRManager.setupGDPRBanner();
+     // Hamburger toggle
+   if (DOMElements.mobileMenuButton && DOMElements.mobileMenu) {
+     DOMElements.mobileMenuButton.addEventListener('click', () => {
+       const expanded = DOMElements.mobileMenuButton.getAttribute('aria-expanded') === 'true';
+       DOMElements.mobileMenuButton.setAttribute('aria-expanded', String(!expanded));
+       DOMElements.mobileMenu.classList.toggle('hidden', expanded === false ? false : !DOMElements.mobileMenu.classList.contains('hidden'));
+       // simpler: just toggle
+       DOMElements.mobileMenu.classList.toggle('hidden');
+  });
+}
   }
 
   function init() {
