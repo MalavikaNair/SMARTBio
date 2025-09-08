@@ -522,8 +522,8 @@ function createNewsCarouselSlideHtml(item) {
 /* Ensure avatar boxes are identical everywhere */
 .team img, .alumni img,
 .modal-content img.rounded-full {
-  width: 32rem;           /* 48 (Tailwind) for modal, but CSS ensures consistency */
-  height: 32rem;
+  width: 30rem;           /* 48 (Tailwind) for modal, but CSS ensures consistency */
+  height: 30rem;
   object-fit: cover;
   display: block;
 }
