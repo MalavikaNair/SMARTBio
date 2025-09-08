@@ -12,7 +12,7 @@ const Utils = (() => {
     if (str === undefined || str === null) return '';
     return String(str)
       .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
+      .replace(/<//g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
@@ -750,7 +750,7 @@ const ModalManager = (() => {
 
   function clear(el){ if (el) while (el.firstChild) el.removeChild(el.firstChild); }
 
-  // Team Bio (custom overlay) — LEFT image, RIGHT bio + bold green links + related links list
+  // Team Bio (custom overlay) — LEFT image (square, round, no border), RIGHT bio + links
   function openPersonBioModal(personId, trigger) {
     const people = resolvePeople();
     const person = people.find(p => String(p.id) === String(personId));
@@ -763,12 +763,13 @@ const ModalManager = (() => {
     const closeBtn = Utils.createEl('button', { className: 'modal-close', text: '×' });
     panel.appendChild(closeBtn);
 
-    const left = Utils.createEl('div', { className: 'w-full md:w-1/2 flex-shrink-0' });
+    const left = Utils.createEl('div', { className: 'w-full md:w-1/2 flex-shrink-0 flex justify-center md:justify-start' });
     if (person?.image) {
+      // ⬇️ Square aspect (w/h equal), fully round, NO border
       left.appendChild(Utils.createEl('img', {
         src: Utils.sanitizeUrl(person.image),
         alt: Utils.escapeHTML(person?.name || 'Person'),
-        className: 'w-full h-auto rounded-md object-cover border border-primary-dark' // keep as-is per your earlier preference
+        className: 'w-48 h-48 object-cover rounded-full' // no border classes
       }));
     }
 
@@ -1091,30 +1092,30 @@ const NavigationManager = (() => {
     if (visible) setTimeout(() => visible.classList.add('is-visible'), 100);
 
     // Privacy page markdown (if present)
-   // Load privacy notice content
-   if (pageId === 'privacy' && DOMElements.privacyNoticeContent) {
-     fetch('privacyNotice.md')
-       .then(response => {
-         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-         return response.text();
-       })
-       .then(markdown => {
-         if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
-           const html = marked.parse(markdown, { mangle: false, headerIds: false });
-           DOMElements.privacyNoticeContent.innerHTML = DOMPurify.sanitize(html, {
-             USE_PROFILES: { html: true }
-           });
-         } else {
-           DOMElements.privacyNoticeContent.textContent = markdown;
-         }
-       })
-       .catch(error => {
-         console.error('Error loading privacy notice:', error);
-         DOMElements.privacyNoticeContent.textContent =
-           'Unable to load the privacy notice at the moment.';
-       });
-   }
-
+    // Load privacy notice content
+    if (pageId === 'privacy' && DOMElements.privacyNoticeContent) {
+      fetch('privacyNotice.md')
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          return response.text();
+        })
+        .then(markdown => {
+          if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+            const html = marked.parse(markdown, { mangle: false, headerIds: false });
+            DOMElements.privacyNoticeContent.innerHTML = DOMPurify.sanitize(html, {
+              USE_PROFILES: { html: true }
+            });
+          } else {
+            DOMElements.privacyNoticeContent.textContent = markdown;
+          }
+        })
+        .catch(error => {
+          console.error('Error loading privacy notice:', error);
+          DOMElements.privacyNoticeContent.textContent =
+            'Unable to load the privacy notice at the moment.';
+        });
+    }
+  } // ←← FIX: close showPage properly
 
   function handleNavClick(e) {
     e.preventDefault();
