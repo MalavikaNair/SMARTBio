@@ -10,7 +10,7 @@
         "id": "aishani-gupta",
         "name": "Aishani Gupta",
         "role": "Engineering Science 4th Year Project Student 2024-25",
-        "image": "../assets/img/aishani-gupta.jpeg",
+        "image": "./assets/img/aishani-gupta.jpeg",
         "themes": ["Modulating"]
 
     },
@@ -18,7 +18,7 @@
         "id": "ragini-shet",
         "name": "Ragini Shet",
         "role": "Engineering Science 4th Year Project Student 2024-25",
-        "image": "../assets/img/ragini-shet.jpeg",
+        "image": "./assets/img/ragini-shet.jpeg",
         "themes": ["Therapeutic"]
 
     },
@@ -33,28 +33,28 @@
         "id": "ellen-marsh",
         "name": "Ellen Marsh",
         "role": "Engineering Science 4th Year Project Student 2023-24",
-        "image": "../assets/img/ellen-marsh.jpeg",
+        "image": "./assets/img/ellen-marsh.jpeg",
         "themes": ["Regenerative","Modulating"]
     },
 {
         "id": "lauren-gargan",
         "name": "Lauren Gargan",
         "role": "Engineering Science 4th Year Project Student 2023-24",
-        "image": "../assets/img/lauren-gargan.jpeg",
+        "image": "./assets/img/lauren-gargan.jpeg",
         "themes": ["Therapeutic"]
 },
 {
         "id": "veronica-gurung",
         "name": "Veronica Gurung",
         "role": "Engineering Science 4th Year Project Student 2023-24, on Exchange from NUS",
-        "image": "../assets/img/veronica-gurung.jpeg",
+        "image": "./assets/img/veronica-gurung.jpeg",
         "themes": ["Sensing"]
     },
 {
         "id": "antonin-berger",
         "name": "Antonin Berger",
         "role": "Visiting Masters Student from ETH Zurich",
-        "image": "../assets/img/antonin-berger.jpeg",
+        "image": "./assets/img/antonin-berger.jpeg",
         "themes": ["Modulating","Regenerative"]
     },
 
@@ -62,7 +62,7 @@
         "id": "yannan-zhou",
         "name": "Yannan Zhou",
         "role": "MPhil in Micro and Nanotechnology Enterprise 2022",
-        "image": "../assets/img/yannan-zhou.jpeg",
+        "image": "./assets/img/yannan-zhou.jpeg",
         "themes": ["Sensing"]
 },
 
@@ -70,7 +70,7 @@
         "id": "callum-beeston",
         "name": "Callum Beeston",
         "role": "Part III Cambridge Materials Science Student 2021-22",
-        "image": "../assets/img/callum-beeston.jpeg",
+        "image": "./assets/img/callum-beeston.jpeg",
         "themes": ["Modulating"]
 }
 ]
