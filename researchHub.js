@@ -1,108 +1,131 @@
-/* SMARTBio Research Hub — resilient render + modal wiring
-   - No global function calls; uses delegated .open-modal-btn from main.js
-   - Tolerates different container ids/attrs
+/* SMARTBio Research Hub (resilient)
+   - Renders research cards from window.researchData when available
+   - Works with existing main.js modal delegation
+   - Optional live search via #research-hub-search
 */
-
 (function () {
-  const SELECTOR = '[data-research-hub], #research-hub, #researchHub';
+  const CONTAINER_SELECTOR = '[data-research-hub], #research-hub, #researchHub';
 
-  function getContainer() {
-    return document.querySelector(SELECTOR);
-  }
+  function q(sel, root = document) { return root.querySelector(sel); }
+  function qa(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
 
   function dataReady() {
-    const has = (x) => Array.isArray(x) || (x && Array.isArray(x.items));
-    return has(window.teamData) || has(window.alumniData);
+    const d = window.researchData;
+    return Array.isArray(d) || (d && Array.isArray(d.items));
   }
-
   function asArray(raw) {
     if (Array.isArray(raw)) return raw;
     if (raw && Array.isArray(raw.items)) return raw.items;
     return [];
   }
 
-  function personCard(p) {
-    const card = document.createElement('div');
-    card.className = 'card rounded-lg p-6 text-center flex flex-col items-center';
+  function card(item) {
+    const el = document.createElement('div');
+    el.className = 'card rounded-lg p-6 text-center flex flex-col items-center';
 
-    if (p?.image) {
+    if (item?.image) {
       const img = document.createElement('img');
-      img.src = p.image;
-      img.alt = (p?.name || 'Member') + ' photo';
+      img.src = item.image;
+      img.alt = (item?.title || 'Research image');
       img.loading = 'lazy';
-      img.className = 'w-24 h-24 object-cover rounded-full mb-3';
-      card.appendChild(img);
+      img.className = 'research-card-img rounded-md mb-4 border border-primary-dark';
+      el.appendChild(img);
     }
 
-    const name = document.createElement('h3');
-    name.className = 'text-lg font-semibold';
-    name.textContent = p?.name || '';
-    card.appendChild(name);
+    const h3 = document.createElement('h3');
+    h3.className = 'text-lg font-semibold';
+    h3.textContent = item?.title || '';
+    el.appendChild(h3);
 
-    if (p?.role) {
-      const role = document.createElement('p');
-      role.className = 'text-sm text-medium-text';
-      role.textContent = p.role;
-      card.appendChild(role);
-    }
+    const desc = String(item?.description || '');
+    const short = desc.length > 180 ? desc.slice(0, 180) + '…' : desc;
+    const p = document.createElement('p');
+    p.className = 'text-medium-text mt-2';
+    p.textContent = short;
+    el.appendChild(p);
 
-    const bioBtn = document.createElement('a');
-    bioBtn.href = '#';
-    bioBtn.className = 'open-modal-btn inline-block font-bold text-gray-900 hover:underline mt-2';
-    // 🔑 main.js listens for .open-modal-btn and reads dataset.modalTarget as the personId
-    bioBtn.dataset.modalTarget = String(p?.id ?? '');
-    bioBtn.textContent = 'Bio →';
-    card.appendChild(bioBtn);
+    const btn = document.createElement('button');
+    btn.className = 'mt-3 text-primary font-semibold hover:underline';
+    btn.dataset.modalTarget = 'open-research-modal';
+    btn.dataset.id = String(item?.id ?? item?.title ?? '');
+    btn.textContent = 'Read More →';
+    el.appendChild(btn);
 
-    return card;
+    return el;
   }
 
-  function render() {
-    const root = getContainer();
-    if (!root) return;
-
+  function render(list, root) {
     root.replaceChildren();
-
-    const team = asArray(window.teamData);
-    const alumni = asArray(window.alumniData);
-
-    if (!team.length && !alumni.length) {
-      root.textContent = 'No people to show right now.';
+    if (!list.length) {
+      root.textContent = 'No research items available at the moment.';
       return;
     }
 
     const grid = document.createElement('div');
     grid.className = 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3';
-
-    // Render team first, then alumni
-    team.forEach(p => grid.appendChild(personCard(p)));
-    alumni.forEach(p => grid.appendChild(personCard(p)));
-
+    list.forEach(item => grid.appendChild(card(item)));
     root.appendChild(grid);
   }
 
+  function applySearch(items, term) {
+    const t = term.trim().toLowerCase();
+    if (!t) return items;
+    return items.filter(it => {
+      const hay = [
+        it?.title, it?.description, it?.tags?.join(' ')
+      ].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(t);
+    });
+  }
+
   function init() {
-    // Try immediately after DOM is ready
-    const tryRender = () => {
-      if (!getContainer()) return false;
-      if (dataReady()) { render(); return true; }
-      return false;
+    const container = q(CONTAINER_SELECTOR);
+    if (!container) return; // nothing to render into
+
+    const doRender = () => {
+      const items = asArray(window.researchData);
+      const searchEl = q('#research-hub-search');
+      const filtered = searchEl ? applySearch(items, searchEl.value || '') : items;
+      render(filtered, container);
     };
 
-    if (tryRender()) return;
+    // Live search support (if present)
+    const searchEl = q('#research-hub-search');
+    if (searchEl) {
+      searchEl.addEventListener('input', doRender);
+    }
 
-    // Poll briefly until data arrives (DataManager in main.js populates window.*)
-    let attempts = 0;
-    const max = 50; // ~5s at 100ms
+    // Render now if data is ready, otherwise wait a bit for DataManager
+    if (dataReady()) {
+      doRender();
+      return;
+    }
+
+    let tries = 0, max = 100; // ~10s
     const timer = setInterval(() => {
-      attempts++;
-      if (tryRender() || attempts >= max) clearInterval(timer);
+      tries++;
+      if (dataReady()) {
+        clearInterval(timer);
+        doRender();
+      } else if (tries >= max) {
+        clearInterval(timer);
+        container.textContent = 'Research data not available.';
+      }
     }, 100);
   }
 
+  // Handle late-mounted container too
+  function waitForContainer() {
+    if (q(CONTAINER_SELECTOR)) { init(); return; }
+    const mo = new MutationObserver(() => {
+      if (q(CONTAINER_SELECTOR)) { mo.disconnect(); init(); }
+    });
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', waitForContainer);
   } else {
-    init();
+    waitForContainer();
   }
 })();
