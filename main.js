@@ -4,6 +4,17 @@
    - Privacy page uses DOMPurify; YouTube URLs normalized to /embed/
 */
 
+// ---- Debug switches ----
+const APP_DEBUG = true;
+const alog = (...args) => { if (APP_DEBUG) console.log('[App]', ...args); };
+const warn = (...args) => console.warn('[App]', ...args);
+const err  = (...args) => console.error('[App]', ...args);
+
+// Catch uncaught errors/rejections
+window.addEventListener('error', (e) => err('Uncaught error', e.error || e.message, e));
+window.addEventListener('unhandledrejection', (e) => err('Unhandled promise rejection', e.reason || e));
+
+
 /* ======================= Utils ======================= */
 const Utils = (() => {
   const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
@@ -621,6 +632,7 @@ const Renderer = (() => {
     renderOutreachTalks();
     renderAcademicPresentations();
     renderOutreachNews();
+    alog('Renderers invoked for all sections.');
   }
 
   return { renderAllContent };
@@ -685,6 +697,7 @@ const CarouselManager = (() => {
   }
 
   function setupCarousel() {
+    alog('Carousel setup start');
     if (!DOMElements.newsCarouselTrack) return;
     ensureLayout();
     updateCarousel();
@@ -700,6 +713,7 @@ const CarouselManager = (() => {
     });
     window.addEventListener('resize', updateCarousel);
   }
+    alog('Carousel setup done, slides:', slides?.length || 0);
 
   return { setupCarousel, updateCarousel };
 })();
@@ -827,10 +841,13 @@ const ModalManager = (() => {
     if (DOMElements.researchModalDescription) DOMElements.researchModalDescription.textContent = item?.description || '';
 
     if (DOMElements.researchModalTeamMembers) {
-      DOMElements.researchModalTeamMembers.replaceChildren();
-      (Array.isArray(item?.teamMembers) ? item.teamMembers : []).forEach(id => {
+      const wrap = DOMElements.researchModalTeamMembers;
+      wrap.replaceChildren();
+      const members = Array.isArray(item?.teamMembers) ? item.teamMembers : [];
+      members.forEach((id, idx) => {
         const p = resolvePeople().find(pp => String(pp.id) === String(id));
-        DOMElements.researchModalTeamMembers.appendChild(Utils.createEl('a', {
+        if (idx > 0) wrap.appendChild(document.createTextNode(' · ')); // ← space/separator
+        wrap.appendChild(Utils.createEl('a', {
           href: '#',
           className: 'inline-block font-bold text-gray-900 hover:underline',
           dataset: { modalTarget: 'open-person-bio', id },
@@ -1023,43 +1040,138 @@ const ModalManager = (() => {
 /* ======================= Navigation ======================= */
 const NavigationManager = (() => {
   function showPage(pageId) {
-    DOMElements.pageSections.forEach(section => {
-      const isActive = section.id === pageId + '-page';
-      section.classList.toggle('active', isActive);
-      if (!isActive) section.querySelector('.fade-in-section')?.classList.remove('is-visible');
-    });
-    DOMElements.navLinks.forEach(link => {
-      const isActive = link.hash === '#' + pageId;
-      link.classList.toggle('active', isActive);
-      if (isActive) link.setAttribute('aria-current', 'page');
-      else link.removeAttribute('aria-current');
-    });
-    const visible = document.querySelector('.page-section.active .fade-in-section');
-    if (visible) setTimeout(() => visible.classList.add('is-visible'), 100);
+  // --- visibility & nav state (unchanged, just with logs) ---
+  alog('showPage()', { pageId, hash: window.location.hash });
 
-    if (pageId === 'privacy' && DOMElements.privacyNoticeContent) {
-      fetch('privacyNotice.md')
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          return response.text();
-        })
-        .then(markdown => {
-          if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
-            const html = marked.parse(markdown, { mangle: false, headerIds: false });
-            DOMElements.privacyNoticeContent.innerHTML = DOMPurify.sanitize(html, {
-              USE_PROFILES: { html: true }
-            });
-          } else {
-            DOMElements.privacyNoticeContent.textContent = markdown;
-          }
-        })
-        .catch(error => {
-          console.error('Error loading privacy notice:', error);
-          DOMElements.privacyNoticeContent.textContent =
-            'Unable to load the privacy notice at the moment.';
+  DOMElements.pageSections.forEach(section => {
+    const isActive = section.id === pageId + '-page';
+    section.classList.toggle('active', isActive);
+    if (!isActive) {
+      const fadeInContent = section.querySelector('.fade-in-section');
+      if (fadeInContent) fadeInContent.classList.remove('is-visible');
+    }
+  });
+
+  DOMElements.navLinks.forEach(link => {
+    const isActive = link.hash === '#' + pageId;
+    link.classList.toggle('active', isActive);
+    if (isActive) {
+      link.setAttribute('aria-current', 'page');
+    } else {
+      link.removeAttribute('aria-current');
+    }
+  });
+
+  const activePageContent = document.querySelector('.page-section.active .fade-in-section');
+  if (activePageContent) setTimeout(() => activePageContent.classList.add('is-visible'), 100);
+
+  // --- HOME BRANCH: init/resize the 3D Research Hub ---
+  const homeResearchHubSection = document.getElementById('home-research-hub-section');
+  const researchCanvasContainer = document.getElementById('research-canvas-container');
+  const researchCanvas = document.getElementById('research-canvas');
+
+  if (pageId === 'home') {
+    alog('Home branch entry', {
+      hasSection: !!homeResearchHubSection,
+      hasContainer: !!researchCanvasContainer,
+      hasCanvas: !!researchCanvas,
+      hasTHREE: typeof window.THREE,
+      hasInitFn: typeof window.initResearchHub,
+      alreadyInitialized: !!window.researchHubInitialized
+    });
+
+    // Helpful sizing info (common cause of "nothing renders")
+    if (researchCanvas) {
+      const rect = researchCanvas.getBoundingClientRect();
+      alog('Canvas rect', {
+        width: rect.width, height: rect.height,
+        display: getComputedStyle(researchCanvas).display
+      });
+      if (rect.width === 0 || rect.height === 0) {
+        warn('Canvas has zero size — likely hidden or container width=0 at this moment.');
+      }
+    }
+
+    if (!window.researchHubInitialized) {
+      const dataReady = {
+        research: Array.isArray(window.researchData),
+        news:     Array.isArray(window.newsData),
+        team:     Array.isArray(window.teamData),
+        games:    Array.isArray(window.gamesData)
+      };
+      alog('Data readiness for hub init', dataReady);
+
+      if (homeResearchHubSection && researchCanvasContainer && typeof window.initResearchHub === 'function') {
+        if (dataReady.research && dataReady.news && dataReady.team && dataReady.games) {
+          // Defer slightly so layout settles (avoids 0-width canvas)
+          setTimeout(() => {
+            try {
+              alog('Calling initResearchHub (4-arg legacy)');
+              window.initResearchHub(window.researchData, window.newsData, window.teamData, window.gamesData);
+              alog('initResearchHub returned');
+              // researchHub.js sets its own flag too; keep ours in sync
+              window.researchHubInitialized = true;
+            } catch (e) {
+              err('initResearchHub threw', e);
+            }
+          }, 50);
+        } else {
+          warn('Skipping init: data not ready yet', dataReady);
+        }
+      } else {
+        warn('Skipping init: missing section/container or init fn', {
+          hasSection: !!homeResearchHubSection,
+          hasContainer: !!researchCanvasContainer,
+          hasInitFn: typeof window.initResearchHub
         });
+      }
+    } else {
+      // Already initialized: just make sure it fits current container width
+      alog('Hub already initialized; attempting resize');
+      if (researchCanvas && researchCanvasContainer && window.camera && window.renderer) {
+        try {
+          window.camera.aspect = researchCanvasContainer.clientWidth / 600;
+          window.camera.updateProjectionMatrix();
+          window.renderer.setSize(researchCanvasContainer.clientWidth, 600);
+          window.renderer.render(window.scene, window.camera);
+          alog('Resize complete', { width: researchCanvasContainer.clientWidth });
+        } catch (e) {
+          err('Resize failed', e);
+        }
+      } else {
+        warn('Resize skipped: missing camera/renderer or DOM elements', {
+          hasCamera: !!window.camera,
+          hasRenderer: !!window.renderer
+        });
+      }
     }
   }
+
+  // --- PRIVACY PAGE: same behavior, just a log wrapper ---
+  if (pageId === 'privacy' && DOMElements.privacyNoticeContent) {
+    alog('Loading privacyNotice.md');
+    fetch('privacyNotice.md')
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.text();
+      })
+      .then(markdown => {
+        if (typeof marked !== 'undefined') {
+          DOMElements.privacyNoticeContent.innerHTML = marked.parse(markdown);
+          alog('Privacy markdown rendered with marked');
+        } else {
+          err('marked.js is not loaded; showing fallback');
+          DOMElements.privacyNoticeContent.innerHTML = '<p class="text-red-500">Markdown parser not loaded.</p>';
+        }
+      })
+      .catch(error => {
+        err('Error loading privacy notice', error);
+        DOMElements.privacyNoticeContent.innerHTML =
+          '<p class="text-red-500">Failed to load privacy notice.</p>';
+      });
+  }
+}
+
 
   function handleNavClick(e) {
     e.preventDefault();
@@ -1175,25 +1287,28 @@ const App = (() => {
     ScrollManager.setupScrollToTop();
     CollapsibleManager.setupCollapsibleSections();
     GDPRManager.setupGDPRBanner();
-     // Hamburger toggle
-   if (DOMElements.mobileMenuButton && DOMElements.mobileMenu) {
-     DOMElements.mobileMenuButton.addEventListener('click', () => {
-       const expanded = DOMElements.mobileMenuButton.getAttribute('aria-expanded') === 'true';
-       DOMElements.mobileMenuButton.setAttribute('aria-expanded', String(!expanded));
-       DOMElements.mobileMenu.classList.toggle('hidden', expanded === false ? false : !DOMElements.mobileMenu.classList.contains('hidden'));
-       // simpler: just toggle
-       DOMElements.mobileMenu.classList.toggle('hidden');
-  });
+    // Hamburger toggle
+    if (DOMElements.mobileMenuButton && DOMElements.mobileMenu) {
+      DOMElements.mobileMenuButton.addEventListener('click', () => {
+        const expanded = DOMElements.mobileMenuButton.getAttribute('aria-expanded') === 'true';
+        DOMElements.mobileMenuButton.setAttribute('aria-expanded', String(!expanded));
+        DOMElements.mobileMenu.classList.toggle('hidden', expanded === false ? false : !DOMElements.mobileMenu.classList.contains('hidden'));
+        // simpler: just toggle
+        DOMElements.mobileMenu.classList.toggle('hidden');
+      });
 }
   }
 
   function init() {
+    alog('App.init start');
+    console.time('App.bootstrap');
     if (DOMElements.yearSpan) DOMElements.yearSpan.textContent = new Date().getFullYear();
     DataManager.fetchAllData().then(() => {
       const initial = window.location.hash ? window.location.hash.substring(1) : 'home';
       NavigationManager.showPage(initial);
       CarouselManager.setupCarousel();
       setupEventListeners();
+      console.timeEnd('App.bootstrap');
     });
   }
 
