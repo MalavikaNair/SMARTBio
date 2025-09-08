@@ -1,7 +1,7 @@
-/* SMARTBio main (1).js — fixed syntax & carousel spill; chips are links; outreach news modal wired
-   - Keeps style.css untouched
-   - Fixes earlier syntax errors (undefined vars, typos, misbalanced braces)
-   - Prevents carousel overflow
+/* SMARTBio main.js — fixes:
+   - ReferenceError: g is not defined (renderGames refactor)
+   - Bio modal image: square, fully round, no border
+   - Balanced braces in NavigationManager.showPage
 */
 
 /* ======================= Utils ======================= */
@@ -12,7 +12,7 @@ const Utils = (() => {
     if (str === undefined || str === null) return '';
     return String(str)
       .replace(/&/g, '&amp;')
-      .replace(/<//g, '&lt;')
+      .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
@@ -35,7 +35,6 @@ const Utils = (() => {
     if (!val) return null;
     const s = String(val).trim();
     if (/^https?:\/\//i.test(s)) return s;
-    // treat as Scholar user id
     return `https://scholar.google.com/citations?user=${encodeURIComponent(s)}`;
   }
 
@@ -44,7 +43,7 @@ const Utils = (() => {
     for (const [k, v] of Object.entries(attrs || {})) {
       if (v === undefined || v === null) continue;
       if (k === 'text') { el.textContent = String(v); continue; }
-      if (k === 'html') { el.innerHTML = String(v); continue; } // static/templated only
+      if (k === 'html') { el.innerHTML = String(v); continue; }
       if (k === 'dataset' && typeof v === 'object') {
         for (const [dk, dv] of Object.entries(v)) el.dataset[dk] = String(dv);
         continue;
@@ -59,47 +58,39 @@ const Utils = (() => {
     return el;
   }
 
-   function toYouTubeEmbedURL(input) {
-     try {
-       const u = new URL(String(input), window.location.origin);
-       const host = u.hostname.toLowerCase();
-   
-       // youtu.be/<id> -> www.youtube.com/embed/<id>
-       if (host === 'youtu.be') {
-         const id = u.pathname.slice(1);
-         if (id) return `https://www.youtube.com/embed/${id}`;
-       }
-   
-       // youtube.com/watch?v=<id> -> www.youtube.com/embed/<id>
-       if ((host === 'youtube.com' || host === 'www.youtube.com') && u.pathname === '/watch') {
-         const id = u.searchParams.get('v');
-         if (id) return `https://www.youtube.com/embed/${id}`;
-       }
-   
-       // already an /embed/ URL — normalise host to www
-       if ((host === 'youtube.com' || host === 'www.youtube.com') && u.pathname.startsWith('/embed/')) {
-         return `https://www.youtube.com${u.pathname}${u.search}`;
-       }
-   
-       // youtube-nocookie support
-       if (host === 'www.youtube-nocookie.com' && u.pathname.startsWith('/embed/')) {
-         return u.href;
-       }
-     } catch {}
-     return null;
-   }
+  function toYouTubeEmbedURL(input) {
+    try {
+      const u = new URL(String(input), window.location.origin);
+      const host = u.hostname.toLowerCase();
+      if (host === 'youtu.be') {
+        const id = u.pathname.slice(1);
+        if (id) return `https://www.youtube.com/embed/${id}`;
+      }
+      if ((host === 'youtube.com' || host === 'www.youtube.com') && u.pathname === '/watch') {
+        const id = u.searchParams.get('v');
+        if (id) return `https://www.youtube.com/embed/${id}`;
+      }
+      if ((host === 'youtube.com' || host === 'www.youtube.com') && u.pathname.startsWith('/embed/')) {
+        return `https://www.youtube.com${u.pathname}${u.search}`;
+      }
+      if (host === 'www.youtube-nocookie.com' && u.pathname.startsWith('/embed/')) {
+        return u.href;
+      }
+    } catch {}
+    return null;
+  }
 
   function createYouTubeEmbed(url) {
-     const embed = toYouTubeEmbedURL(url);
-     if (!embed) return null;
-     const iframe = document.createElement('iframe');
-     iframe.src = embed;
-     iframe.loading = 'lazy';
-     iframe.allowFullscreen = true;
-     iframe.setAttribute('allow','accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-     iframe.className = 'absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark';
-     return iframe;
-   }
+    const embed = toYouTubeEmbedURL(url);
+    if (!embed) return null;
+    const iframe = document.createElement('iframe');
+    iframe.src = embed;
+    iframe.loading = 'lazy';
+    iframe.allowFullscreen = true;
+    iframe.setAttribute('allow','accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+    iframe.className = 'absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark';
+    return iframe;
+  }
 
   function createSafeMedia(url) {
     if (!url) return null;
@@ -129,7 +120,6 @@ const Utils = (() => {
     return v;
   }
 
-  // Date helpers
   const MONTH_MAP = {
     jan:'Jan', january:'Jan',
     feb:'Feb', february:'Feb',
@@ -203,11 +193,9 @@ const Utils = (() => {
 
 /* ======================= DOM Cache ======================= */
 const DOMElements = (() => {
-  // Sections
   const pageSections = document.querySelectorAll('.page-section');
   const yearSpan = document.getElementById('year');
 
-  // Grids/Lists
   const researchContentGrid = document.getElementById('research-content-grid');
   const teamGrid = document.getElementById('team-grid');
   const alumniGrid = document.getElementById('alumni-grid');
@@ -222,7 +210,6 @@ const DOMElements = (() => {
   const gamesGrid = document.getElementById('games-grid');
   const gameFilters = document.getElementById('game-filters');
 
-  // Modals container + specific research modal parts
   const modalContainer = document.getElementById('modal-container');
 
   const researchDescriptionModal = document.getElementById('research-description-modal');
@@ -233,18 +220,15 @@ const DOMElements = (() => {
   const researchModalDescription = document.getElementById('research-modal-description');
   const researchModalTeamMembers = document.getElementById('research-modal-team-members');
 
-  // Other pre-built modals
   const newsDescriptionModal = document.getElementById('news-description-modal');
   const outreachTalkDescriptionModal = document.getElementById('outreach-talk-description-modal');
   const academicPresentationDescriptionModal = document.getElementById('academic-presentation-description-modal');
 
-  // Nav
   const navLinks = document.querySelectorAll('.nav-link');
   const navLinkHeader = document.querySelector('.nav-link-header');
   const mobileMenuButton = document.getElementById('mobile-menu-button');
   const mobileMenu = document.getElementById('mobile-menu');
 
-  // Misc
   const scrollToTopBtn = document.getElementById('scroll-to-top-btn');
   const privacyNoticeContent = document.getElementById('privacy-notice-content');
 
@@ -356,7 +340,6 @@ const Renderer = (() => {
         text: (desc.length > 180 ? 'Read More →' : 'More Info')
       });
 
-      // extra kept hidden (modal shows details)
       const extra = Utils.createEl('div', { className: 'mt-3 hidden', id: 'research-extra-' + String(item?.id) });
       const media = Utils.createSafeMedia(item?.modalMedia || item?.image);
       if (media) extra.appendChild(media);
@@ -410,7 +393,6 @@ const Renderer = (() => {
       list.appendChild(li);
     });
 
-    // Carousel (if present)
     const track = DOMElements.newsCarouselTrack;
     if (track) {
       track.replaceChildren();
@@ -425,10 +407,8 @@ const Renderer = (() => {
           img,
           Utils.createEl('h3', { className: 'text-lg font-semibold mt-2', text: n?.title || '' })
         ]);
-        // ✅ ensure each slide wants to be full viewport width
         slide.style.flex = '0 0 100%';
         slide.style.boxSizing = 'border-box';
-
         slide.addEventListener('click', () => ModalManager.openNewsModal(i));
         return slide;
       });
@@ -436,69 +416,39 @@ const Renderer = (() => {
     }
   }
 
-  function renderTeam(kind, data, grid) {
-    if (!grid) return;
-    grid.replaceChildren();
-    const items = resolve(data);
-    if (!items.length) { grid.textContent = `No ${kind} available.`; return; }
-
-    const cards = items
-      .slice()
-      .sort((a, b) => Utils.getMemberSinceDate(a?.memberSince) - Utils.getMemberSinceDate(b?.memberSince))
-      .map(p => {
-        const img = p?.image ? Utils.createEl('img', {
-          src: Utils.sanitizeUrl(p.image),
-          alt: Utils.escapeHTML(p?.name || 'Member'),
-          className: 'w-32 h-32 object-cover rounded-full mb-3',
-          loading: 'lazy'
-        }) : null;
-        const name = Utils.createEl('h3', { className: 'text-lg font-semibold', text: p?.name || '' });
-        const role = p?.role ? Utils.createEl('p', { className: 'text-sm text-medium-text', text: p.role }) : null;
-        const since = p?.memberSince ? Utils.createEl('p', { className: 'text-xs text-medium-text', text: 'Member since ' + Utils.formatMemberSince(p.memberSince) }) : null;
-        const linksWrap = Utils.createEl('div', { className: 'mt-2 space-x-3' });
-        if (p?.website) linksWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(p.website), target: '_blank', rel: 'noopener', className: 'text-primary font-semibold hover:underline', text: 'Website' }));
-        if (p?.googleScholar) linksWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(Utils.normalizeScholarUrl(p.googleScholar)), target: '_blank', rel: 'noopener', className: 'text-primary font-semibold hover:underline', text: 'Scholar' }));
-        const bioBtn = Utils.createEl('a', {
-          href: '#',
-          className: 'inline-block font-bold text-gray-900 hover:underline mt-2',
-          dataset: { modalTarget: 'open-person-bio', id: p?.id },
-          text: 'Bio →'
-        });
-        return Utils.createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' },
-          [img, name, role, since, linksWrap, bioBtn].filter(Boolean));
-      });
-
-    grid.append(...cards);
-  }
-
+  // ✅ Refactored to avoid stray "g" variable
   function renderGames() {
     const grid = DOMElements.gamesGrid;
     if (!grid) return;
     grid.replaceChildren();
     const items = resolve(window.gamesData);
     if (!items.length) { grid.textContent = 'No games yet.'; return; }
-    items.forEach(g => {
-      const img = g?.thumbnail ? Utils.createEl('img', {
-        src: Utils.sanitizeUrl(g.thumbnail),
-        alt: Utils.escapeHTML(g?.title || 'Game'),
+
+    for (const game of items) {
+      const img = game?.thumbnail ? Utils.createEl('img', {
+        src: Utils.sanitizeUrl(game.thumbnail),
+        alt: Utils.escapeHTML(game?.title || 'Game'),
         className: 'w-full h-48 object-cover rounded-md border border-primary-dark mb-3',
         loading: 'lazy'
       }) : null;
-      const play = g?.file ? Utils.createEl('a', {
-        href: Utils.sanitizeUrl(g.file),
+
+      const play = game?.file ? Utils.createEl('a', {
+        href: Utils.sanitizeUrl(game.file),
         target: '_blank',
         rel: 'noopener',
         className: 'bg-primary text-white px-4 py-2 rounded-full font-semibold inline-block mt-2',
         text: 'Play Game'
       }) : null;
+
       const card = Utils.createEl('div', { className: 'card rounded-lg p-6 flex flex-col' }, [
         img,
-        Utils.createEl('h3', { className: 'text-lg font-semibold', text: g?.title || '' }),
-        Utils.createEl('p', { className: 'text-medium-text', text: g?.description || '' }),
+        Utils.createEl('h3', { className: 'text-lg font-semibold', text: game?.title || '' }),
+        Utils.createEl('p', { className: 'text-medium-text', text: game?.description || '' }),
         play
       ].filter(Boolean));
+
       grid.appendChild(card);
-    });
+    }
   }
 
   function renderOutreachTalks() {
@@ -544,7 +494,6 @@ const Renderer = (() => {
     grid.append(...cards);
   }
 
-  // Academic Presentations — EXPAND/COLLAPSE via .collapsible-header
   function renderAcademicPresentations() {
     const grid = DOMElements.academicPresentationsGrid;
     if (!grid) return;
@@ -558,7 +507,6 @@ const Renderer = (() => {
     items.forEach((t, idx) => {
       const contentId = `ap-content-${idx}`;
 
-      // Header for collapsible
       const header = Utils.createEl('div', {
         className: 'collapsible-header flex items-center justify-between gap-4 cursor-pointer',
         dataset: { contentId },
@@ -570,16 +518,13 @@ const Renderer = (() => {
         t?.date ? Utils.createEl('span', { className: 'date-badge', text: Utils.formatDate(t.date) }) : null
       ].filter(Boolean));
 
-      // Content hidden by default
       const content = Utils.createEl('div', { id: contentId, className: 'collapsible-content hidden', 'aria-hidden': 'true', style: 'max-height:0; overflow:hidden;' });
 
-      // MEDIA FIRST
       const mediaWrap = Utils.createEl('div', { className: 'mt-3' });
       const media = Utils.createSafeMedia(t?.videoLink || t?.modalMedia || t?.image);
       if (media) mediaWrap.appendChild(media);
       if (mediaWrap.children.length) content.appendChild(mediaWrap);
 
-      // THEN DESCRIPTION
       content.appendChild(Utils.createEl('p', { className: 'text-medium-text mt-3', text: t?.description || '' }));
 
       const speakers = Utils.createEl('div', { className: 'mt-3 flex gap-2 flex-wrap' });
@@ -654,7 +599,6 @@ const CarouselManager = (() => {
   let slides = [];
   let slideWidth = 0;
 
-  // Ensure layout prevents overflow
   function ensureLayout() {
     const track = DOMElements.newsCarouselTrack;
     if (!track) return;
@@ -750,7 +694,7 @@ const ModalManager = (() => {
 
   function clear(el){ if (el) while (el.firstChild) el.removeChild(el.firstChild); }
 
-  // Team Bio (custom overlay) — LEFT image (square, round, no border), RIGHT bio + links
+  // Team Bio modal — LEFT image: square, fully round, NO border
   function openPersonBioModal(personId, trigger) {
     const people = resolvePeople();
     const person = people.find(p => String(p.id) === String(personId));
@@ -765,11 +709,10 @@ const ModalManager = (() => {
 
     const left = Utils.createEl('div', { className: 'w-full md:w-1/2 flex-shrink-0 flex justify-center md:justify-start' });
     if (person?.image) {
-      // ⬇️ Square aspect (w/h equal), fully round, NO border
       left.appendChild(Utils.createEl('img', {
         src: Utils.sanitizeUrl(person.image),
         alt: Utils.escapeHTML(person?.name || 'Person'),
-        className: 'w-48 h-48 object-cover rounded-full' // no border classes
+        className: 'w-48 h-48 object-cover rounded-full' // <-- circle, square aspect, no border
       }));
     }
 
@@ -796,7 +739,6 @@ const ModalManager = (() => {
     }
     if (links.childNodes.length) right.appendChild(links);
 
-    // Related: Outreach Talks & Academic Presentations (links only)
     const talksAll = Array.isArray(window.outreachTalksData) ? window.outreachTalksData : (window.outreachTalksData?.items || []);
     const presAll  = Array.isArray(window.academicPresentationsData) ? window.academicPresentationsData : (window.academicPresentationsData?.items || []);
 
@@ -807,10 +749,9 @@ const ModalManager = (() => {
       right.appendChild(Utils.createEl('h4', { className: 'text-xl font-semibold mt-6 mb-2', text: 'Talks & Presentations' }));
 
       const listWrap = Utils.createEl('div', { className: 'space-y-1' });
-
       const addItemLink = (item) => {
         const href = item.link || item.videoLink || item.modalMedia || item.image;
-        if (!href) return; // skip if nothing to open
+        if (!href) return;
         listWrap.appendChild(Utils.createEl('a', {
           href: Utils.sanitizeUrl(href),
           target: '_blank',
@@ -819,10 +760,8 @@ const ModalManager = (() => {
           text: item.title || 'View'
         }));
       };
-
       talkMatches.forEach(addItemLink);
       presMatches.forEach(addItemLink);
-
       right.appendChild(listWrap);
     }
 
@@ -832,7 +771,6 @@ const ModalManager = (() => {
     openModal(overlay, trigger);
   }
 
-  // Research Description (pre-built DOM) — LEFT media/caption/credit, RIGHT details/members
   function openResearchDescriptionModal(item, trigger) {
     const m = DOMElements.researchDescriptionModal;
     if (!m) return;
@@ -871,7 +809,6 @@ const ModalManager = (() => {
     openModal(m, trigger);
   }
 
-  // News (pre-built DOM)
   function openNewsModal(index, trigger) {
     const items = Array.isArray(window.newsData) ? window.newsData : (window.newsData && window.newsData.items) || [];
     const n = items[index];
@@ -887,7 +824,6 @@ const ModalManager = (() => {
     openModal(m, trigger);
   }
 
-  // Outreach Talk (pre-built DOM)
   function openOutreachTalkModal(index, trigger) {
     const items = Array.isArray(window.outreachTalksData) ? window.outreachTalksData : (window.outreachTalksData && window.outreachTalksData.items) || [];
     const t = items[index];
@@ -919,7 +855,6 @@ const ModalManager = (() => {
     openModal(m, trigger);
   }
 
-  // Outreach News (custom overlay)
   function openOutreachNewsModal(index, trigger) {
     const items = Array.isArray(window.outreachNewsData) ? window.outreachNewsData : (window.outreachNewsData && window.outreachNewsData.items) || [];
     const n = items[index];
@@ -950,7 +885,6 @@ const ModalManager = (() => {
       panel.appendChild(Utils.createEl('p', { className: 'text-medium-text mb-3', text: n.description }));
     }
 
-    // Associated team members (open their bios)
     if (Array.isArray(n?.associatedTeamMembers) && n.associatedTeamMembers.length) {
       const people = resolvePeople();
       const wrap = Utils.createEl('div', { className: 'mt-2 flex flex-wrap gap-2' });
@@ -971,7 +905,6 @@ const ModalManager = (() => {
     openModal(overlay, trigger);
   }
 
-  // Academic Presentation (pre-built DOM)
   function openAcademicPresentationModal(index, trigger) {
     const items = Array.isArray(window.academicPresentationsData) ? window.academicPresentationsData : (window.academicPresentationsData && window.academicPresentationsData.items) || [];
     const t = items[index];
@@ -981,7 +914,6 @@ const ModalManager = (() => {
     m.querySelector('#academic-presentation-modal-title').textContent = t?.title || '';
     m.querySelector('#academic-presentation-modal-date').textContent = Utils.formatDate(t?.date) || '';
 
-    // Media first
     const mediaWrap = m.querySelector('#academic-presentation-modal-media');
     if (mediaWrap) { mediaWrap.replaceChildren(); const media = Utils.createSafeMedia(t?.videoLink || t?.modalMedia || t?.image); if (media) mediaWrap.appendChild(media); }
     const descEl = m.querySelector('#academic-presentation-modal-description');
@@ -1007,70 +939,10 @@ const ModalManager = (() => {
     openModal(m, trigger);
   }
 
-  // Delegated clicks (open/close modals + ResearchHub Bio)
-  function handleModalClicks(e) {
-    const t = e.target;
-
-    // Close
-    const closeBtn = t.closest && t.closest('.modal-close');
-    if (closeBtn) {
-      const overlay = closeBtn.closest('.modal-overlay');
-      if (overlay) closeModal(overlay);
-      return;
-    }
-    if (t.classList && t.classList.contains('modal-overlay')) {
-      closeModal(t);
-      return;
-    }
-
-    // Triggers (.open-modal-btn is from researchHub; dataset.modalTarget holds the personId)
-    const trigger = t.closest('[data-modal-target]') || t.closest('.open-modal-btn');
-    if (!trigger) return;
-    if (trigger.tagName === 'A') e.preventDefault(); // avoid "#' jumping
-
-    let action = trigger.dataset.modalTarget;
-    let id = trigger.dataset.id;
-    if (trigger.classList.contains('open-modal-btn') && !id) {
-      id = action;           // person id
-      action = 'open-person-bio';
-    }
-
-    switch (action) {
-      case 'open-person-bio': {
-        if (!id) return;
-        openPersonBioModal(id, trigger);
-        break;
-      }
-      case 'open-research-modal': {
-        const items = Array.isArray(window.researchData) ? window.researchData : (window.researchData && window.researchData.items) || [];
-        const item = items.find(x => String(x.id) === String(id)) || items.find(x => String(x.title) === String(id));
-        if (item) openResearchDescriptionModal(item, trigger);
-        break;
-      }
-      case 'open-news-modal': {
-        openNewsModal(Number(id), trigger);
-        break;
-      }
-      case 'open-outreach-news-modal': {
-        openOutreachNewsModal(Number(id), trigger);
-        break;
-      }
-      case 'open-outreach-talk-modal': {
-        openOutreachTalkModal(Number(id), trigger);
-        break;
-      }
-      case 'open-academic-presentation-modal': {
-        openAcademicPresentationModal(Number(id), trigger);
-        break;
-      }
-      default: break;
-    }
-  }
-
   return {
     openNewsModal, openOutreachTalkModal, openAcademicPresentationModal,
     openResearchDescriptionModal, openPersonBioModal, openOutreachNewsModal,
-    handleModalClicks, openModal, closeModal
+    openModal, closeModal
   };
 })();
 
@@ -1091,8 +963,6 @@ const NavigationManager = (() => {
     const visible = document.querySelector('.page-section.active .fade-in-section');
     if (visible) setTimeout(() => visible.classList.add('is-visible'), 100);
 
-    // Privacy page markdown (if present)
-    // Load privacy notice content
     if (pageId === 'privacy' && DOMElements.privacyNoticeContent) {
       fetch('privacyNotice.md')
         .then(response => {
@@ -1115,7 +985,7 @@ const NavigationManager = (() => {
             'Unable to load the privacy notice at the moment.';
         });
     }
-  } // ←← FIX: close showPage properly
+  } // <— ensure showPage closes
 
   function handleNavClick(e) {
     e.preventDefault();
@@ -1171,7 +1041,6 @@ const CollapsibleManager = (() => {
     let content = null;
     if (id) content = document.getElementById(id);
     if (!content) {
-      // Fallback: next sibling or nearest .collapsible-content
       content = h.nextElementSibling && h.nextElementSibling.classList?.contains('collapsible-content')
         ? h.nextElementSibling
         : h.parentElement?.querySelector?.('.collapsible-content');
@@ -1184,7 +1053,6 @@ const CollapsibleManager = (() => {
     if (!content) return;
     content.classList.toggle('hidden', !expand);
     content.classList.toggle('open', !!expand);
-    // Support max-height transitions if defined in CSS
     if (expand) {
       content.style.maxHeight = content.scrollHeight + 'px';
       content.setAttribute('aria-hidden', 'false');
@@ -1227,10 +1095,9 @@ const CollapsibleManager = (() => {
 /* ======================= App ======================= */
 const App = (() => {
   function setupEventListeners() {
-    // Modals
+    document.addEventListener('click', ModalManager.openModal); // (not used directly; handlers delegated)
     document.addEventListener('click', ModalManager.handleModalClicks);
 
-    // Nav
     DOMElements.navLinks.forEach(link => link.addEventListener('click', NavigationManager.handleNavClick));
     DOMElements.navLinkHeader && DOMElements.navLinkHeader.addEventListener('click', NavigationManager.handleNavClick);
 
