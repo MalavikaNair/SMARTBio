@@ -18,7 +18,7 @@
         "speakerIds": ["matthew-burgess","ryan-murray","jason-liu"],
         "link": "",
 		"videoLink": "",
-        "image": "https://sophion.com/app/uploads/2025/01/Bioelectricity-cluster-2025.png",
+        "image": "./assets/img/bioelectricity.png",
         "type": "academic-presentation",
         "themes": ["Modulating", "Adaptive", "Regenerative"]
     },
@@ -30,7 +30,7 @@
         "speakerIds": ["sam-baker-jones"],
         "link": "",
 		"videoLink": "",
-        "image": "https://www.mrs.org/images/default-source/meetings---events/annual-meetings/cities/seattle/seattle-washington.jpg?sfvrsn=de7c0141_1",
+        "image": "./assets/img/seattle-mrs.jpg",
         "type": "academic-presentation",
         "themes": ["Regenerative"]
     },
@@ -42,7 +42,7 @@
         "speakerIds": ["malavika-nair","matthew-burgess"],
         "link": "",
 		"videoLink": "",
-        "image": "https://www.european-mrs.com/sites/default/files/meetings/gallery-photo/bandeaux_site_2025.jpg",
+        "image": "./assets/img/e-mrs.jpg",
         "type": "academic-presentation",
         "themes": ["Modulating", "Regenerative"]
     },
@@ -54,7 +54,7 @@
         "speakerIds": ["veronica-lucian"],
         "link": "",
 		"videoLink": "",
-        "image": "https://istu.org/wp-content/uploads/2024/12/New-Final-Header-1024x420.png",
+        "image": "./assets/img/istu.png",
         "type": "academic-presentation",
         "themes": ["Therapeutic", "Regenerative"]
     },
@@ -66,7 +66,7 @@
         "speakerIds": ["veronica-lucian"],
         "link": "",
 		"videoLink": "",
-        "image": "https://humaneresearch.org.uk/wp-content/uploads/2024/07/THRT-UoM-Symposium-banner-1024x512.png",
+        "image": "./assets/img/thrt.png",
         "type": "academic-presentation",
         "themes": ["Therapeutic", "Regenerative"]
 
@@ -79,7 +79,7 @@
         "speakerIds": ["veronica-lucian"],
         "link": "",
 		"videoLink": "",
-        "image": "https://pbs.twimg.com/profile_banners/1473944624062681089/1651107860/1080x360",
+        "image": "./assets/img/veronica-lucian-wbc.jpg",
         "type": "academic-presentation",
       	"themes": ["Therapeutic", "Regenerative"]
 
@@ -92,7 +92,7 @@
         "speakerIds": ["veronica-lucian"],
         "link": "",
 		"videoLink": "",
-        "image": "https://www.houches-school-physics.com/medias/photo/entree-ecole_1697729379192-jpg",
+        "image": "./assets/img/leshouches.jpg",
         "type": "academic-presentation",
         "themes": ["Therapeutic", "Regenerative"]
 
@@ -105,7 +105,7 @@
         "speakerIds": ["veronica-lucian"],
         "link": "",
         "videoLink": "",
-		"image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Acoustical_Society_of_America_logo_%282018%29.svg/1920px-Acoustical_Society_of_America_logo_%282018%29.svg.png",
+		"image": "./assets/img/ASA.png",
         "type": "academic-presentation",
         "themes": ["Therapeutic", "Regenerative"]
 
