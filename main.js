@@ -1,8 +1,7 @@
 /* SMARTBio main.js — fixes:
-   - ReferenceError: renderTeam is not defined (restored inside Renderer IIFE)
-   - Bio modal image: square, fully round, no border
-   - Privacy page uses DOMPurify
-   - YouTube URLs normalized to /embed/
+   - Global ReferenceError for openAcademicPresentationModal (exposed on window)
+   - Keeps modal handlers delegated; bio images round in the person modal
+   - Privacy page uses DOMPurify; YouTube URLs normalized to /embed/
 */
 
 /* ======================= Utils ======================= */
@@ -63,7 +62,6 @@ const Utils = (() => {
     try {
       const u = new URL(String(input), window.location.origin);
       const host = u.hostname.toLowerCase();
-
       if (host === 'youtu.be') {
         const id = u.pathname.slice(1);
         if (id) return `https://www.youtube.com/embed/${id}`;
@@ -418,7 +416,6 @@ const Renderer = (() => {
     }
   }
 
-  // ✅ Restored here so renderAllContent() can call it
   function renderTeam(kind, data, grid) {
     if (!grid) return;
     grid.replaceChildren();
@@ -467,6 +464,7 @@ const Renderer = (() => {
         className: 'w-full h-48 object-cover rounded-md border border-primary-dark mb-3',
         loading: 'lazy'
       }) : null;
+
       const play = game?.file ? Utils.createEl('a', {
         href: Utils.sanitizeUrl(game.file),
         target: '_blank',
@@ -474,12 +472,14 @@ const Renderer = (() => {
         className: 'bg-primary text-white px-4 py-2 rounded-full font-semibold inline-block mt-2',
         text: 'Play Game'
       }) : null;
+
       const card = Utils.createEl('div', { className: 'card rounded-lg p-6 flex flex-col' }, [
         img,
         Utils.createEl('h3', { className: 'text-lg font-semibold', text: game?.title || '' }),
         Utils.createEl('p', { className: 'text-medium-text', text: game?.description || '' }),
         play
       ].filter(Boolean));
+
       grid.appendChild(card);
     });
   }
@@ -745,7 +745,7 @@ const ModalManager = (() => {
       left.appendChild(Utils.createEl('img', {
         src: Utils.sanitizeUrl(person.image),
         alt: Utils.escapeHTML(person?.name || 'Person'),
-        className: 'w-48 h-48 object-cover rounded-full'
+        className: 'w-48 h-48 object-cover rounded-full' // circle image
       }));
     }
 
@@ -780,6 +780,7 @@ const ModalManager = (() => {
 
     if (talkMatches.length || presMatches.length) {
       right.appendChild(Utils.createEl('h4', { className: 'text-xl font-semibold mt-6 mb-2', text: 'Talks & Presentations' }));
+
       const listWrap = Utils.createEl('div', { className: 'space-y-1' });
       const addItemLink = (item) => {
         const href = item.link || item.videoLink || item.modalMedia || item.image;
@@ -937,10 +938,85 @@ const ModalManager = (() => {
     openModal(overlay, trigger);
   }
 
+  function openAcademicPresentationModal(index, trigger) {
+    const items = Array.isArray(window.academicPresentationsData) ? window.academicPresentationsData : (window.academicPresentationsData && window.academicPresentationsData.items) || [];
+    const t = items[index];
+    const m = DOMElements.academicPresentationDescriptionModal;
+    if (!m || !t) return;
+
+    m.querySelector('#academic-presentation-modal-title').textContent = t?.title || '';
+    m.querySelector('#academic-presentation-modal-date').textContent = Utils.formatDate(t?.date) || '';
+
+    const mediaWrap = m.querySelector('#academic-presentation-modal-media');
+    if (mediaWrap) { mediaWrap.replaceChildren(); const media = Utils.createSafeMedia(t?.videoLink || t?.modalMedia || t?.image); if (media) mediaWrap.appendChild(media); }
+    const descEl = m.querySelector('#academic-presentation-modal-description');
+    if (mediaWrap && descEl && descEl.parentNode) descEl.parentNode.insertBefore(mediaWrap, descEl);
+    if (descEl) descEl.textContent = t?.description || '';
+
+    const speakers = m.querySelector('#academic-presentation-modal-speakers');
+    if (speakers) {
+      speakers.replaceChildren();
+      (Array.isArray(t?.speakerIds) ? t.speakerIds : []).forEach(id => {
+        const p = resolvePeople().find(pp => String(pp.id) === String(id));
+        speakers.appendChild(Utils.createEl('a', {
+          href: '#',
+          className: 'inline-block font-bold text-gray-900 hover:underline',
+          dataset: { modalTarget: 'open-person-bio', id },
+          text: p ? p.name : String(id)
+        }));
+      });
+    }
+    const linkWrap = m.querySelector('#academic-presentation-modal-link');
+    if (linkWrap) { linkWrap.replaceChildren(); if (t?.link) linkWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(t.link), target: '_blank', rel: 'noopener', className: 'text-primary font-bold hover:underline', text: 'View Link' })); }
+
+    openModal(m, trigger);
+  }
+
+  function handleModalClicks(e) {
+    const t = e.target;
+
+    const closeBtn = t.closest && t.closest('.modal-close');
+    if (closeBtn) {
+      const overlay = closeBtn.closest('.modal-overlay');
+      if (overlay) closeModal(overlay);
+      return;
+    }
+    if (t.classList && t.classList.contains('modal-overlay')) {
+      closeModal(t);
+      return;
+    }
+
+    const trigger = t.closest('[data-modal-target]') || t.closest('.open-modal-btn');
+    if (!trigger) return;
+    if (trigger.tagName === 'A') e.preventDefault();
+
+    let action = trigger.dataset.modalTarget;
+    let id = trigger.dataset.id;
+    if (trigger.classList.contains('open-modal-btn') && !id) {
+      id = action;
+      action = 'open-person-bio';
+    }
+
+    switch (action) {
+      case 'open-person-bio': return openPersonBioModal(id, trigger);
+      case 'open-research-modal': {
+        const items = Array.isArray(window.researchData) ? window.researchData : (window.researchData && window.researchData.items) || [];
+        const item = items.find(x => String(x.id) === String(id)) || items.find(x => String(x.title) === String(id));
+        if (item) openResearchDescriptionModal(item, trigger);
+        return;
+      }
+      case 'open-news-modal': return openNewsModal(Number(id), trigger);
+      case 'open-outreach-news-modal': return openOutreachNewsModal(Number(id), trigger);
+      case 'open-outreach-talk-modal': return openOutreachTalkModal(Number(id), trigger);
+      case 'open-academic-presentation-modal': return openAcademicPresentationModal(Number(id), trigger);
+      default: return;
+    }
+  }
+
   return {
     openNewsModal, openOutreachTalkModal, openAcademicPresentationModal,
     openResearchDescriptionModal, openPersonBioModal, openOutreachNewsModal,
-    openModal, closeModal
+    handleModalClicks, openModal, closeModal
   };
 })();
 
@@ -1115,3 +1191,14 @@ const App = (() => {
 })();
 
 document.addEventListener('DOMContentLoaded', App.init);
+
+/* ======================= Expose globals (for inline handlers) ======================= */
+Object.assign(window, {
+  ModalManager,
+  openAcademicPresentationModal: ModalManager.openAcademicPresentationModal,
+  openOutreachTalkModal: ModalManager.openOutreachTalkModal,
+  openOutreachNewsModal: ModalManager.openOutreachNewsModal,
+  openNewsModal: ModalManager.openNewsModal,
+  openPersonBioModal: ModalManager.openPersonBioModal,
+  openResearchDescriptionModal: ModalManager.openResearchDescriptionModal
+});
