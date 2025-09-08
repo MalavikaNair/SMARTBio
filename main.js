@@ -59,21 +59,47 @@ const Utils = (() => {
     return el;
   }
 
+   function toYouTubeEmbedURL(input) {
+     try {
+       const u = new URL(String(input), window.location.origin);
+       const host = u.hostname.toLowerCase();
+   
+       // youtu.be/<id> -> www.youtube.com/embed/<id>
+       if (host === 'youtu.be') {
+         const id = u.pathname.slice(1);
+         if (id) return `https://www.youtube.com/embed/${id}`;
+       }
+   
+       // youtube.com/watch?v=<id> -> www.youtube.com/embed/<id>
+       if ((host === 'youtube.com' || host === 'www.youtube.com') && u.pathname === '/watch') {
+         const id = u.searchParams.get('v');
+         if (id) return `https://www.youtube.com/embed/${id}`;
+       }
+   
+       // already an /embed/ URL — normalise host to www
+       if ((host === 'youtube.com' || host === 'www.youtube.com') && u.pathname.startsWith('/embed/')) {
+         return `https://www.youtube.com${u.pathname}${u.search}`;
+       }
+   
+       // youtube-nocookie support
+       if (host === 'www.youtube-nocookie.com' && u.pathname.startsWith('/embed/')) {
+         return u.href;
+       }
+     } catch {}
+     return null;
+   }
+
   function createYouTubeEmbed(url) {
-    try {
-      const u = new URL(String(url), window.location.origin);
-      const host = u.hostname.toLowerCase();
-      if (!['www.youtube.com','youtube.com'].includes(host)) return null;
-      if (!u.pathname.startsWith('/embed/')) return null;
-      const iframe = document.createElement('iframe');
-      iframe.src = u.href;
-      iframe.loading = 'lazy';
-      iframe.allowFullscreen = true;
-      iframe.setAttribute('allow','accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-      iframe.className = 'absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark';
-      return iframe;
-    } catch { return null; }
-  }
+     const embed = toYouTubeEmbedURL(url);
+     if (!embed) return null;
+     const iframe = document.createElement('iframe');
+     iframe.src = embed;
+     iframe.loading = 'lazy';
+     iframe.allowFullscreen = true;
+     iframe.setAttribute('allow','accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+     iframe.className = 'absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark';
+     return iframe;
+   }
 
   function createSafeMedia(url) {
     if (!url) return null;
@@ -392,7 +418,7 @@ const Renderer = (() => {
         const img = n?.image ? Utils.createEl('img', {
           src: Utils.sanitizeUrl(n.image),
           alt: Utils.escapeHTML(n.title || 'News'),
-          className: 'w-full h-64 object-cover rounded-md border border-primary-dark',
+          className: 'w-full h-64 object-cover rounded-md items-center',
           loading: 'lazy'
         }) : null;
         const slide = Utils.createEl('div', { className: 'carousel-slide', tabindex: '0' }, [
