@@ -1,7 +1,8 @@
 /* SMARTBio main.js — fixes:
-   - ReferenceError: g is not defined (renderGames refactor)
+   - ReferenceError: renderTeam is not defined (restored inside Renderer IIFE)
    - Bio modal image: square, fully round, no border
-   - Balanced braces in NavigationManager.showPage
+   - Privacy page uses DOMPurify
+   - YouTube URLs normalized to /embed/
 */
 
 /* ======================= Utils ======================= */
@@ -43,7 +44,7 @@ const Utils = (() => {
     for (const [k, v] of Object.entries(attrs || {})) {
       if (v === undefined || v === null) continue;
       if (k === 'text') { el.textContent = String(v); continue; }
-      if (k === 'html') { el.innerHTML = String(v); continue; }
+      if (k === 'html') { el.innerHTML = String(v); continue; } // only for static templates
       if (k === 'dataset' && typeof v === 'object') {
         for (const [dk, dv] of Object.entries(v)) el.dataset[dk] = String(dv);
         continue;
@@ -62,6 +63,7 @@ const Utils = (() => {
     try {
       const u = new URL(String(input), window.location.origin);
       const host = u.hostname.toLowerCase();
+
       if (host === 'youtu.be') {
         const id = u.pathname.slice(1);
         if (id) return `https://www.youtube.com/embed/${id}`;
@@ -416,22 +418,55 @@ const Renderer = (() => {
     }
   }
 
-  // ✅ Refactored to avoid stray "g" variable
+  // ✅ Restored here so renderAllContent() can call it
+  function renderTeam(kind, data, grid) {
+    if (!grid) return;
+    grid.replaceChildren();
+    const items = resolve(data);
+    if (!items.length) { grid.textContent = `No ${kind} available.`; return; }
+
+    const cards = items
+      .slice()
+      .sort((a, b) => Utils.getMemberSinceDate(a?.memberSince) - Utils.getMemberSinceDate(b?.memberSince))
+      .map(p => {
+        const img = p?.image ? Utils.createEl('img', {
+          src: Utils.sanitizeUrl(p.image),
+          alt: Utils.escapeHTML(p?.name || 'Member'),
+          className: 'w-32 h-32 object-cover rounded-full mb-3',
+          loading: 'lazy'
+        }) : null;
+        const name = Utils.createEl('h3', { className: 'text-lg font-semibold', text: p?.name || '' });
+        const role = p?.role ? Utils.createEl('p', { className: 'text-sm text-medium-text', text: p.role }) : null;
+        const since = p?.memberSince ? Utils.createEl('p', { className: 'text-xs text-medium-text', text: 'Member since ' + Utils.formatMemberSince(p.memberSince) }) : null;
+        const linksWrap = Utils.createEl('div', { className: 'mt-2 space-x-3' });
+        if (p?.website) linksWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(p.website), target: '_blank', rel: 'noopener', className: 'text-primary font-semibold hover:underline', text: 'Website' }));
+        if (p?.googleScholar) linksWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(Utils.normalizeScholarUrl(p.googleScholar)), target: '_blank', rel: 'noopener', className: 'text-primary font-semibold hover:underline', text: 'Scholar' }));
+        const bioBtn = Utils.createEl('a', {
+          href: '#',
+          className: 'inline-block font-bold text-gray-900 hover:underline mt-2',
+          dataset: { modalTarget: 'open-person-bio', id: p?.id },
+          text: 'Bio →'
+        });
+        return Utils.createEl('div', { className: 'card rounded-lg p-6 text-center flex flex-col items-center' },
+          [img, name, role, since, linksWrap, bioBtn].filter(Boolean));
+      });
+
+    grid.append(...cards);
+  }
+
   function renderGames() {
     const grid = DOMElements.gamesGrid;
     if (!grid) return;
     grid.replaceChildren();
     const items = resolve(window.gamesData);
     if (!items.length) { grid.textContent = 'No games yet.'; return; }
-
-    for (const game of items) {
+    items.forEach(game => {
       const img = game?.thumbnail ? Utils.createEl('img', {
         src: Utils.sanitizeUrl(game.thumbnail),
         alt: Utils.escapeHTML(game?.title || 'Game'),
         className: 'w-full h-48 object-cover rounded-md border border-primary-dark mb-3',
         loading: 'lazy'
       }) : null;
-
       const play = game?.file ? Utils.createEl('a', {
         href: Utils.sanitizeUrl(game.file),
         target: '_blank',
@@ -439,16 +474,14 @@ const Renderer = (() => {
         className: 'bg-primary text-white px-4 py-2 rounded-full font-semibold inline-block mt-2',
         text: 'Play Game'
       }) : null;
-
       const card = Utils.createEl('div', { className: 'card rounded-lg p-6 flex flex-col' }, [
         img,
         Utils.createEl('h3', { className: 'text-lg font-semibold', text: game?.title || '' }),
         Utils.createEl('p', { className: 'text-medium-text', text: game?.description || '' }),
         play
       ].filter(Boolean));
-
       grid.appendChild(card);
-    }
+    });
   }
 
   function renderOutreachTalks() {
@@ -712,7 +745,7 @@ const ModalManager = (() => {
       left.appendChild(Utils.createEl('img', {
         src: Utils.sanitizeUrl(person.image),
         alt: Utils.escapeHTML(person?.name || 'Person'),
-        className: 'w-48 h-48 object-cover rounded-full' // <-- circle, square aspect, no border
+        className: 'w-48 h-48 object-cover rounded-full'
       }));
     }
 
@@ -747,7 +780,6 @@ const ModalManager = (() => {
 
     if (talkMatches.length || presMatches.length) {
       right.appendChild(Utils.createEl('h4', { className: 'text-xl font-semibold mt-6 mb-2', text: 'Talks & Presentations' }));
-
       const listWrap = Utils.createEl('div', { className: 'space-y-1' });
       const addItemLink = (item) => {
         const href = item.link || item.videoLink || item.modalMedia || item.image;
@@ -905,40 +937,6 @@ const ModalManager = (() => {
     openModal(overlay, trigger);
   }
 
-  function openAcademicPresentationModal(index, trigger) {
-    const items = Array.isArray(window.academicPresentationsData) ? window.academicPresentationsData : (window.academicPresentationsData && window.academicPresentationsData.items) || [];
-    const t = items[index];
-    const m = DOMElements.academicPresentationDescriptionModal;
-    if (!m || !t) return;
-
-    m.querySelector('#academic-presentation-modal-title').textContent = t?.title || '';
-    m.querySelector('#academic-presentation-modal-date').textContent = Utils.formatDate(t?.date) || '';
-
-    const mediaWrap = m.querySelector('#academic-presentation-modal-media');
-    if (mediaWrap) { mediaWrap.replaceChildren(); const media = Utils.createSafeMedia(t?.videoLink || t?.modalMedia || t?.image); if (media) mediaWrap.appendChild(media); }
-    const descEl = m.querySelector('#academic-presentation-modal-description');
-    if (mediaWrap && descEl && descEl.parentNode) descEl.parentNode.insertBefore(mediaWrap, descEl);
-    if (descEl) descEl.textContent = t?.description || '';
-
-    const speakers = m.querySelector('#academic-presentation-modal-speakers');
-    if (speakers) {
-      speakers.replaceChildren();
-      (Array.isArray(t?.speakerIds) ? t.speakerIds : []).forEach(id => {
-        const p = resolvePeople().find(pp => String(pp.id) === String(id));
-        speakers.appendChild(Utils.createEl('a', {
-          href: '#',
-          className: 'inline-block font-bold text-gray-900 hover:underline',
-          dataset: { modalTarget: 'open-person-bio', id },
-          text: p ? p.name : String(id)
-        }));
-      });
-    }
-    const linkWrap = m.querySelector('#academic-presentation-modal-link');
-    if (linkWrap) { linkWrap.replaceChildren(); if (t?.link) linkWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(t.link), target: '_blank', rel: 'noopener', className: 'text-primary font-bold hover:underline', text: 'View Link' })); }
-
-    openModal(m, trigger);
-  }
-
   return {
     openNewsModal, openOutreachTalkModal, openAcademicPresentationModal,
     openResearchDescriptionModal, openPersonBioModal, openOutreachNewsModal,
@@ -985,7 +983,7 @@ const NavigationManager = (() => {
             'Unable to load the privacy notice at the moment.';
         });
     }
-  } // <— ensure showPage closes
+  }
 
   function handleNavClick(e) {
     e.preventDefault();
@@ -1095,12 +1093,9 @@ const CollapsibleManager = (() => {
 /* ======================= App ======================= */
 const App = (() => {
   function setupEventListeners() {
-    document.addEventListener('click', ModalManager.openModal); // (not used directly; handlers delegated)
     document.addEventListener('click', ModalManager.handleModalClicks);
-
     DOMElements.navLinks.forEach(link => link.addEventListener('click', NavigationManager.handleNavClick));
     DOMElements.navLinkHeader && DOMElements.navLinkHeader.addEventListener('click', NavigationManager.handleNavClick);
-
     ScrollManager.setupScrollToTop();
     CollapsibleManager.setupCollapsibleSections();
     GDPRManager.setupGDPRBanner();
