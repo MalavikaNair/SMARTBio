@@ -139,29 +139,32 @@ function addBadgeToThemeNode(themeMesh, letter, nodeRadius = 0.3) {
 
 // Function to initialize the Three.js research hub
 window.initResearchHub = function(researchData, newsData, teamData, gamesData, outreachTalksData, academicPresentationsData, alumniData) {
-  console.log('initResearchHub called.');
-
-  if (window.researchHubInitialized) {
-    console.log('Research Hub already initialized. Skipping.');
-    return;
-  }
-
-  // Ensure THREE is defined
-  if (typeof THREE === 'undefined') {
-    console.error('THREE.js library not loaded. Aborting initResearchHub.');
-    return;
-  }
-  console.log('THREE.js library detected.');
-
   const researchContainer = document.getElementById('research-canvas-container');
   const researchCanvas = document.getElementById('research-canvas');
+    if (!researchCanvas.dataset.rhClickBound) {
+      researchCanvas.addEventListener('click', (event) => {
+        const rect = researchCanvas.getBoundingClientRect();
+        window.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        window.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        window.raycaster.setFromCamera(window.mouse, window.camera);
+        const hits = window.raycaster.intersectObjects(window.themeNodes);
+        if (hits.length > 0) {
+          const themeName = hits[0].object.name;
+          window.updateDynamicContent(
+            themeName,
+            window.researchData,
+            window.newsData,
+            window.teamData,
+            window.gamesData,
+            window.outreachTalksData,
+            window.academicPresentationsData,
+            window.alumniData || []
+          );
+        }
+      }, { passive: true });
+      researchCanvas.dataset.rhClickBound = '1';
+    }
 
-  if (!researchCanvas || !researchContainer) {
-    console.error('Research canvas or container not found. Cannot initialize hub.');
-    return;
-  }
-  console.log('Research canvas and container found.');
-  console.log('Canvas dimensions: ', researchContainer.clientWidth, 'x', 600);
 
   try {
     // Stash data safely on window for click handler usage (read-only copies)
@@ -179,11 +182,9 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
     window.renderer = new THREE.WebGLRenderer({ canvas: researchCanvas, alpha: true, antialias: true });
     window.renderer.setSize(researchContainer.clientWidth, 600);
     window.renderer.setPixelRatio(window.devicePixelRatio);
-    console.log('Three.js Scene, Camera, Renderer initialized.');
 
     window.group = new THREE.Group();
     window.scene.add(window.group);
-    console.log('Group added to scene.');
 
     // Create random background points and lines (network effect)
     const points = [];
@@ -211,15 +212,14 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
       node.position.copy(p);
       window.group.add(node);
     });
-    console.log('Background network generated.');
 
     // Define research themes and create interactive nodes
     const themes = [
-      { name: 'Sensing', color: 0x66D9EF, position: new THREE.Vector3(3, 2, 0) },
-      { name: 'Modulating', color: 0xA6E22E, position: new THREE.Vector3(-3, 2, 0) },
-      { name: 'Adaptive', color: 0xF92672, position: new THREE.Vector3(0, -2, 3) },
-      { name: 'Regenerative', color: 0xFD971F, position: new THREE.Vector3(2, -2, -3) },
-      { name: 'Therapeutic', color: 0xAE81FF, position: new THREE.Vector3(-2, -2, -3) }
+      { name: 'Sensing', color: 0xfacc15, position: new THREE.Vector3(3, 2, 0) },
+      { name: 'Modulating', color: 0xef4444, position: new THREE.Vector3(-3, 2, 0) },
+      { name: 'Adaptive', color: 0x3b82f6, position: new THREE.Vector3(0, -2, 3) },
+      { name: 'Regenerative', color: 0x34d399 , position: new THREE.Vector3(2, -2, -3) },
+      { name: 'Therapeutic', color: 0x8b5cf6, position: new THREE.Vector3(-2, -2, -3) }
     ];
     window.themeNodes = [];
     themes.forEach(theme => {
@@ -243,7 +243,6 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
 
       window.themeNodes.push(themeNode);
     });
-    console.log('Theme nodes created, connected, and labeled.');
 
     // Add lighting to the scene
     const light = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -251,14 +250,12 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
     window.scene.add(light);
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     window.scene.add(ambientLight);
-    console.log('Lighting added to scene.');
 
     window.camera.position.z = 8;
 
     // Setup Raycaster for interaction
     window.raycaster = new THREE.Raycaster();
     window.mouse = new THREE.Vector2();
-    console.log('Raycaster and Mouse vector initialized.');
 
     // Event listeners for interactivity (click and drag)
     // Attach click handler in a CSP-safe, late-bound way so it works even if window.onCanvasClick is defined later
@@ -269,7 +266,6 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
         }
       }, { passive: true });
       researchCanvas.dataset.rhClickBound = '1';
-      console.log('Click listener for onCanvasClick (late-bound) added.');
     }
 
     let isMouseDown = false;
@@ -298,7 +294,6 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
     researchCanvas.addEventListener('mouseup', onMouseUp);
     researchCanvas.addEventListener('mousemove', onMouseMove);
     researchCanvas.addEventListener('mouseleave', onMouseLeave);
-    console.log('Drag listeners added.');
 
     // Define animateResearchHub and assign to window
     window.animateResearchHub = function() {
@@ -316,7 +311,6 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
     // Start animation loop only once
     if (!window.researchHubInitialized) {
       window.animateResearchHub();
-      console.log('animateResearchHub started.');
     }
 
     // Handle window resize for responsiveness
@@ -327,24 +321,20 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
         window.camera.updateProjectionMatrix();
         window.renderer.setSize(researchContainer.clientWidth, 600);
         window.renderer.render(window.scene, window.camera); // Force a render on resize
-        console.log('Canvas resized and re-rendered.');
       } else {
         console.log('Skipping resize: canvas not visible or Three.js components not ready.');
       }
     };
     window.addEventListener('resize', window.onResearchCanvasResize);
-    console.log('Resize listener added.');
 
     // Expose a legacy init for older main.js signatures (4-arg call)
     window.initResearchHubLegacy = function(r,n,t,g){ return window.initResearchHub(r,n,t,g, [], [], []); };
 
     window.researchHubInitialized = true; // Set flag to true after successful initialization
-    console.log('Research Hub initialization complete.');
 
     // Perform an initial render immediately after setup
     if (window.renderer && window.scene && window.camera) {
       window.renderer.render(window.scene, window.camera);
-      console.log('Initial render performed.');
     }
 
   } catch (e) {
@@ -354,7 +344,6 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
 
 // Function to handle clicks on theme nodes (made global)
 window.onCanvasClick = function(event) {
-  console.log('onCanvasClick triggered.');
   const researchCanvas = document.getElementById('research-canvas');
   if (!researchCanvas) {
     console.warn('onCanvasClick: research-canvas not found.');
@@ -374,7 +363,6 @@ window.onCanvasClick = function(event) {
 
   if (intersects.length > 0) {
     const themeName = intersects[0].object.name;
-    dlog('Theme node clicked:', themeName);
     // Data objects are expected to be globally available after initResearchHub
     if (window.researchData && window.newsData && window.teamData && window.gamesData && window.outreachTalksData && window.academicPresentationsData) {
       window.updateDynamicContent(
@@ -397,7 +385,6 @@ window.onCanvasClick = function(event) {
 
 // Function to update the content panel based on selected theme (made global)
 window.updateDynamicContent = function(themeName, researchData, newsData, teamData, gamesData, outreachTalksData, academicPresentationsData, alumniData = []) {
-  console.log('updateDynamicContent called for theme:', themeName);
   const contentGrid = document.getElementById('dynamic-content-grid');
   const contentTitle = document.getElementById('dynamic-content-title');
   if (!contentGrid || !contentTitle) {
@@ -557,6 +544,148 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
       contentGrid.appendChild(d);
     });
   }
-
-  console.log('Dynamic content updated.');
 };
+
+/* SMARTBio Research Hubs
+   - Topic Hub mount left intact
+   - Anatomy Hub reads research.json and opens a modal per "application"
+*/
+
+window.SMARTBio = window.SMARTBio || {};
+const { modal } = window.SMARTBio;
+
+/* --------------------------
+   Topic Hub bootstrap (safe)
+-------------------------- */
+(function initTopicHub() {
+  const mount = document.getElementById('topicHubMount');
+  if (!mount) return;
+  // Your existing Topic Hub code can continue to render here.
+})();
+
+/* --------------------------
+   Load research.json (once)
+-------------------------- */
+let researchJSON = null;
+async function loadResearchJSON() {
+  if (researchJSON) return researchJSON;
+  try {
+    const res = await fetch('research.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(res.statusText || 'HTTP error');
+    researchJSON = await res.json();
+  } catch (e) {
+    researchJSON = { error: true, message: e.message };
+  }
+  return researchJSON;
+}
+
+/* ---------------------------------
+   Anatomy Research Hub: Controller
+---------------------------------- */
+(function initAnatomyHub() {
+  const container = document.getElementById('anatomy-hub');
+  if (!container) return;
+
+  const applicationsWrap = document.getElementById('applicationsWrap');
+  const emptyEl = document.getElementById('anatomyEmpty');
+  const jsonErrEl = document.getElementById('jsonError');
+  const labelEl = document.getElementById('selectedRegionLabel');
+  const appCountChip = document.getElementById('appCountChip');
+  const regions = Array.from(document.querySelectorAll('.body-svg .region'));
+
+  let currentRegion = null;
+
+  regions.forEach(el => {
+    el.setAttribute('tabindex', '0');
+    const key = el.dataset.region;
+
+    const handleActivate = async (e) => {
+      e.preventDefault();
+      await setRegion(key);
+    };
+    el.addEventListener('click', handleActivate);
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') handleActivate(e);
+    });
+  });
+
+  async function setRegion(regionKey) {
+    currentRegion = regionKey;
+    const pretty = regionKey.charAt(0).toUpperCase() + regionKey.slice(1);
+    labelEl.textContent = pretty;
+
+    regions.forEach(r => r.classList.remove('active-stroke'));
+    regions.filter(r => r.dataset.region === regionKey).forEach(r => r.classList.add('active-stroke'));
+
+    // Load JSON
+    const data = await loadResearchJSON();
+    if (data?.error) {
+      applicationsWrap.innerHTML = '';
+      emptyEl.style.display = 'none';
+      jsonErrEl.style.display = 'block';
+      appCountChip.style.display = 'none';
+      return;
+    }
+    jsonErrEl.style.display = 'none';
+
+    // Expected structure:
+    // research.json -> { "anatomy": { "<region>": [ { application, title, authors, year, link, summary, tags[] }, ... ] } }
+    const items = data?.anatomy?.[regionKey] || [];
+    // Group by application
+    const appMap = items.reduce((acc, it) => {
+      const app = it.application || 'General';
+      (acc[app] = acc[app] || []).push(it);
+      return acc;
+    }, {});
+
+    renderApplications(appMap, pretty);
+  }
+
+  function renderApplications(appMap, prettyRegion) {
+    applicationsWrap.innerHTML = '';
+    const apps = Object.keys(appMap).sort((a, b) => a.localeCompare(b));
+    if (!apps.length) {
+      emptyEl.style.display = 'block';
+      appCountChip.style.display = 'none';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    appCountChip.textContent = `${apps.length} application${apps.length>1?'s':''}`;
+    appCountChip.style.display = 'inline-flex';
+
+    apps.forEach(appName => {
+      const chip = document.createElement('button');
+      chip.className = 'chip';
+      chip.type = 'button';
+      chip.textContent = appName;
+      chip.addEventListener('click', () => openApplicationModal(prettyRegion, appName, appMap[appName]));
+      applicationsWrap.appendChild(chip);
+    });
+  }
+
+  function openApplicationModal(regionPretty, appName, list) {
+    const html = list.map(item => {
+      const tags = (item.tags || []).map(t => `<span class="chip" style="cursor:default">#${t}</span>`).join(' ');
+      const link = item.link ? `<a href="${item.link}" target="_blank" rel="noopener">View</a>` : '';
+      return `
+        <div class="result-card">
+          <div class="result-title"><strong>${item.title || ''}</strong></div>
+          <div class="result-meta">${item.authors || ''}${item.year ? ' · ' + item.year : ''}</div>
+          <p class="result-summary">${item.summary || ''}</p>
+          <div class="result-tags">${tags}</div>
+          <div style="margin-top:6px">${link}</div>
+        </div>
+      `;
+    }).join('');
+
+    modal.open({
+      title: `${regionPretty} · ${appName}`,
+      html: html || '<div class="empty-state">No entries yet for this application.</div>'
+    });
+  }
+
+  // Default state
+  applicationsWrap.innerHTML = '';
+  emptyEl.style.display = 'block';
+})();
+

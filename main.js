@@ -1,8 +1,7 @@
-/* SMARTBio main.js — fixes:
-   - Global ReferenceError for openAcademicPresentationModal (exposed on window)
-   - Keeps modal handlers delegated; bio images round in the person modal
-   - Privacy page uses DOMPurify; YouTube URLs normalized to /embed/
-*/
+(function () {
+  const yearEl = document.getElementById('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+})();
 
 // ---- Debug switches ----
 const APP_DEBUG = true;
@@ -294,8 +293,10 @@ const DataManager = (() => {
       assign('outreachTalksData', outreachTalks);
       assign('academicPresentationsData', academicPresentations);
       assign('outreachNewsData', outreachNews);
-
       Renderer.renderAllContent();
+      window.smartbioDataReady = true;
+      document.dispatchEvent(new CustomEvent('smartbio:data-ready'));
+
     } catch (err) {
       console.error('Error loading data:', err);
       const msg = 'An error occurred while loading content.';
@@ -340,10 +341,10 @@ const Renderer = (() => {
       const title = Utils.createEl('h3', { className: 'text-lg font-semibold', text: item?.title || '' });
 
       const desc = String(item?.description || '');
-      const truncated = desc.length > 180 ? desc.slice(0, 180) + '…' : desc;
+      const truncated = '';
       const pTrunc = Utils.createEl('p', { id: 'truncated-text-research-' + String(item?.id), text: truncated });
       const pFull  = Utils.createEl('p', { id: 'full-text-research-' + String(item?.id), text: desc });
-      if (desc.length > 180) pFull.style.display = 'none';
+      if (desc.length > 0) pFull.style.display = 'none';
 
       const moreBtn = Utils.createEl('button', {
         className: 'read-more-btn text-primary hover:underline text-sm mt-2',
@@ -447,11 +448,11 @@ const Renderer = (() => {
         const role = p?.role ? Utils.createEl('p', { className: 'text-sm text-medium-text', text: p.role }) : null;
         const since = p?.memberSince ? Utils.createEl('p', { className: 'text-xs text-medium-text', text: 'Member since ' + Utils.formatMemberSince(p.memberSince) }) : null;
         const linksWrap = Utils.createEl('div', { className: 'mt-2 space-x-3' });
-        if (p?.website) linksWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(p.website), target: '_blank', rel: 'noopener', className: 'text-primary font-semibold hover:underline', text: 'Website' }));
-        if (p?.googleScholar) linksWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(Utils.normalizeScholarUrl(p.googleScholar)), target: '_blank', rel: 'noopener', className: 'text-primary font-semibold hover:underline', text: 'Scholar' }));
+        if (p?.website) linksWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(p.website), target: '_blank', rel: 'noopener', className: 'text-gray-900 font-semibold hover:underline', text: 'Website' }));
+        if (p?.googleScholar) linksWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(Utils.normalizeScholarUrl(p.googleScholar)), target: '_blank', rel: 'noopener', className: 'text-gray-900 font-semibold hover:underline', text: 'Link to Scholar' }));
         const bioBtn = Utils.createEl('a', {
           href: '#',
-          className: 'inline-block font-bold text-gray-900 hover:underline mt-2',
+          className: 'inline-block font-bold text-primary hover:underline mt-2',
           dataset: { modalTarget: 'open-person-bio', id: p?.id },
           text: 'Bio →'
         });
@@ -463,37 +464,54 @@ const Renderer = (() => {
   }
 
   function renderGames() {
-    const grid = DOMElements.gamesGrid;
-    if (!grid) return;
-    grid.replaceChildren();
-    const items = resolve(window.gamesData);
-    if (!items.length) { grid.textContent = 'No games yet.'; return; }
-    items.forEach(game => {
-      const img = game?.thumbnail ? Utils.createEl('img', {
-        src: Utils.sanitizeUrl(game.thumbnail),
-        alt: Utils.escapeHTML(game?.title || 'Game'),
-        className: 'w-full h-48 object-cover rounded-md border border-primary-dark mb-3',
-        loading: 'lazy'
-      }) : null;
+  const grid = DOMElements.gamesGrid;
+  if (!grid) return;
+  grid.replaceChildren();
 
-      const play = game?.file ? Utils.createEl('a', {
-        href: Utils.sanitizeUrl(game.file),
-        target: '_blank',
-        rel: 'noopener',
-        className: 'bg-primary text-white px-4 py-2 rounded-full font-semibold inline-block mt-2',
-        text: 'Play Game'
-      }) : null;
+  const items = resolve(window.gamesData);
+  if (!items.length) { grid.textContent = 'No games yet.'; return; }
 
-      const card = Utils.createEl('div', { className: 'card rounded-lg p-6 flex flex-col' }, [
-        img,
-        Utils.createEl('h3', { className: 'text-lg font-semibold', text: game?.title || '' }),
-        Utils.createEl('p', { className: 'text-medium-text', text: game?.description || '' }),
-        play
-      ].filter(Boolean));
+  // read active themes (from GameFilter or existing chips with .active)
+  const active = (window.GameFilter && GameFilter.getActiveThemes)
+    ? GameFilter.getActiveThemes()
+    : new Set(Array.from((DOMElements.gameFilters || document).querySelectorAll('[data-theme].active')).map(b => b.dataset.theme));
 
-      grid.appendChild(card);
-    });
-  }
+  const matchesTheme = (game) => {
+    if (!active || active.size === 0) return true;
+    const raw = game?.themes ?? game?.theme;
+    const themes = Array.isArray(raw) ? raw.map(String) : raw ? [String(raw)] : [];
+    return themes.some(t => active.has(t));
+  };
+
+  const filtered = items.filter(matchesTheme);
+
+  filtered.forEach(game => {
+    const img = game?.thumbnail ? Utils.createEl('img', {
+      src: Utils.sanitizeUrl(game.thumbnail),
+      alt: Utils.escapeHTML(game?.title || 'Game'),
+      className: 'w-full h-48 object-cover rounded-md border border-primary-dark mb-3',
+      loading: 'lazy'
+    }) : null;
+
+    const play = game?.file ? Utils.createEl('a', {
+      href: Utils.sanitizeUrl(game.file),
+      target: '_blank',
+      rel: 'noopener',
+      className: 'bg-primary text-white px-4 py-2 rounded-full font-semibold inline-block mt-2',
+      text: 'Play Game'
+    }) : null;
+
+    const card = Utils.createEl('div', { className: 'card rounded-lg p-6 flex flex-col' }, [
+      img,
+      Utils.createEl('h3', { className: 'text-lg font-semibold', text: game?.title || '' }),
+      Utils.createEl('p', { className: 'text-medium-text', text: game?.description || '' }),
+      play
+    ].filter(Boolean));
+
+    grid.appendChild(card);
+  });
+}
+
 
   function renderOutreachTalks() {
     const grid = DOMElements.outreachTalksGrid;
@@ -635,7 +653,7 @@ const Renderer = (() => {
     alog('Renderers invoked for all sections.');
   }
 
-  return { renderAllContent };
+  return { renderAllContent, renderGames };
 })();
 
 /* ======================= Carousel ======================= */
@@ -713,7 +731,6 @@ const CarouselManager = (() => {
     });
     window.addEventListener('resize', updateCarousel);
   }
-    alog('Carousel setup done, slides:', slides?.length || 0);
 
   return { setupCarousel, updateCarousel };
 })();
@@ -739,10 +756,17 @@ const ModalManager = (() => {
   const resolvePeople = () => (Array.isArray(window.teamData) ? window.teamData : (window.teamData?.items || []))
     .concat(Array.isArray(window.alumniData) ? window.alumniData : (window.alumniData?.items || []));
 
+  function findPersonById(id){
+    const people = resolvePeople();
+    return people.find(p => String(p.id) === String(id)) || null;
+  }
+
+
   function clear(el){ if (el) while (el.firstChild) el.removeChild(el.firstChild); }
 
   // Team Bio modal — LEFT image: square, fully round, NO border
   function openPersonBioModal(personId, trigger) {
+    try { console.debug('[SMARTBio] openPersonBioModal()', { personId: String(personId) }); } catch {}
     const people = resolvePeople();
     const person = people.find(p => String(p.id) === String(personId));
     if (!person) return;
@@ -778,39 +802,178 @@ const ModalManager = (() => {
     };
     addLink('Website', person?.website);
     addLink('Scholar', Utils.normalizeScholarUrl(person?.googleScholar));
-    if (Array.isArray(person?.presentations)) {
-      person.presentations.forEach(pr => {
-        if (typeof pr === 'string') addLink('Presentation', pr);
-        else if (pr?.link) addLink(pr?.title || 'Presentation', pr.link);
-      });
-    }
-    if (links.childNodes.length) right.appendChild(links);
 
-    const talksAll = Array.isArray(window.outreachTalksData) ? window.outreachTalksData : (window.outreachTalksData?.items || []);
-    const presAll  = Array.isArray(window.academicPresentationsData) ? window.academicPresentationsData : (window.academicPresentationsData?.items || []);
+        // ---- robust field extractors (IDs & names) ----
+    const norm = v => String(v).trim().toLowerCase();
+    const extractIds = (item) => {
+      const pools = [
+        item && item.speakerIds,
+        item && item.presenterIds,
+        item && item.presenters,              // sometimes IDs
+        item && item.speakers,                // sometimes IDs
+        item && item.associatedTeamMembers,
+        item && item.teamMembers
+      ];
+      return pools
+        .flatMap(arr => Array.isArray(arr) ? arr : [])
+        .map(x => String(x))
+        .filter(Boolean);
+    };
+    const extractNames = (item) => {
+      const pools = [
+        item && item.speakerNames,
+        item && item.presenterNames,
+        item && item.speakers,                // sometimes names
+        item && item.presenters,              // sometimes names
+      ];
+      return pools
+        .flatMap(arr => Array.isArray(arr) ? arr : (typeof arr === 'string' ? [arr] : []))
+        .map(norm)
+        .filter(Boolean);
+    };
 
-    const talkMatches = talksAll.filter(t => Array.isArray(t.speakerIds) && t.speakerIds.some(id => String(id) === String(personId)));
-    const presMatches = presAll.filter(t => Array.isArray(t.speakerIds) && t.speakerIds.some(id => String(id) === String(personId)));
+          /* === Talks & Presentations — strict + instrumented === */
+    (function buildTalksAndPresentations(){
+        const pid = String(personId);
+        const asArr = v => (Array.isArray(v) ? v : ((v && v.items) || []));
+        const talksAll = asArr(window.outreachTalksData);
+        const presAll  = asArr(window.academicPresentationsData);
 
-    if (talkMatches.length || presMatches.length) {
-      right.appendChild(Utils.createEl('h4', { className: 'text-xl font-semibold mt-6 mb-2', text: 'Talks & Presentations' }));
+      // TRACE: see what we have
+      try {
+        console.debug('[SMARTBio] T&P seed', {
+          pid,
+          talksLen: talksAll.length,
+          presLen:  presAll.length,
+          sampleTalk: talksAll[0],
+          samplePres: presAll[0]
+        });
+      } catch {}
 
-      const listWrap = Utils.createEl('div', { className: 'space-y-1' });
-      const addItemLink = (item) => {
-        const href = item.link || item.videoLink || item.modalMedia || item.image;
-        if (!href) return;
-        listWrap.appendChild(Utils.createEl('a', {
-          href: Utils.sanitizeUrl(href),
-          target: '_blank',
-          rel: 'noopener',
-          className: 'block text-primary font-bold hover:underline',
-          text: item.title || 'View'
+      // If init hasn’t finished yet, wait until the hub flips the flag and retry. :contentReference[oaicite:1]{index=1}
+      if (!talksAll.length && !presAll.length && !window.researchHubInitialized) {
+        const ph = Utils.createEl('p', { className:'text-sm text-medium-text', text:'Loading talks & presentations…' });
+        right.appendChild(ph);
+        (function wait(){
+          if (window.researchHubInitialized) { ph.remove(); buildTalksAndPresentations(); }
+          else setTimeout(wait, 150);
+        })();
+        return;
+      }
+
+      const ids = (v) => (Array.isArray(v) ? v : []).map(x => String(x)).filter(Boolean);
+
+      const talkMatches = talksAll.filter(it => ids(it.speakerIds).includes(pid));
+      const presMatches = presAll.filter(it => ids(it.speakerIds).includes(pid));
+
+      try { console.debug('[SMARTBio] matches', { talks: talkMatches.length, pres: presMatches.length }); } catch {}
+
+      if (!talkMatches.length && !presMatches.length) return;
+
+      right.appendChild(Utils.createEl('h4', {
+        className:'text-xl font-semibold mt-6 mb-2',
+        text:'Talks & Presentations'
+      }));
+      const listWrap = Utils.createEl('div', { className:'space-y-1' });
+
+      // Outreach talks → open-outreach-talk-modal(index)
+      talkMatches.forEach(item => {
+        const idx = talksAll.indexOf(item);
+        if (idx > -1) listWrap.appendChild(Utils.createEl('a', {
+          href:'#',
+          className:'block text-primary font-bold hover:underline',
+          dataset:{ modalTarget:'open-outreach-talk-modal', id:String(idx) },
+          text: item.title || 'View Outreach Talk'
         }));
-      };
-      talkMatches.forEach(addItemLink);
-      presMatches.forEach(addItemLink);
+      });
+
+      // Academic presentations → open-academic-presentation-modal(index)
+      presMatches.forEach(item => {
+        const idx = presAll.indexOf(item);
+        if (idx > -1) listWrap.appendChild(Utils.createEl('a', {
+          href:'#',
+          className:'block text-primary font-bold hover:underline',
+          dataset:{ modalTarget:'open-academic-presentation-modal', id:String(idx) },
+          text: item.title || 'View Presentation'
+        }));
+      });
+
       right.appendChild(listWrap);
-    }
+    })();
+
+
+
+        /* === News (site + outreach) — robust + “data ready” handling === */
+    (function buildPersonNews(){
+      const norm = v => String(v).trim().toLowerCase();
+      const pid  = String(personId);
+      const pname = norm(person?.name || '');
+
+      const extractIds = (item) => {
+        const pools = [item?.associatedTeamMembers, item?.teamMembers, item?.authors, item?.contributors];
+        return pools.flatMap(a => Array.isArray(a) ? a : []).map(String).filter(Boolean);
+      };
+      const extractNames = (item) => {
+        const pools = [item?.authorNames, item?.contributorNames, item?.authors, item?.contributors];
+        return pools.flatMap(a => Array.isArray(a) ? a : (typeof a === 'string' ? [a] : [])).map(norm).filter(Boolean);
+      };
+
+      const newsAll = Array.isArray(window.newsData) ? window.newsData : (window.newsData?.items || []);
+      const outreachNewsAll = Array.isArray(window.outreachNewsData) ? window.outreachNewsData : (window.outreachNewsData?.items || []);
+
+      if (!newsAll.length && !outreachNewsAll.length && !window.smartbioDataReady) {
+        const ph = Utils.createEl('p', { className:'text-sm text-medium-text', text:'Loading news…' });
+        right.appendChild(ph);
+        const handler = () => { document.removeEventListener('smartbio:data-ready', handler); ph.remove(); buildPersonNews(); };
+        document.addEventListener('smartbio:data-ready', handler, { once:true });
+        return;
+      }
+      if (!newsAll.length && !outreachNewsAll.length) return;
+
+      const matches = (it) => {
+        const ids = extractIds(it), names = extractNames(it);
+        return ids.some(id => String(id) === pid) || names.some(n => n === pname);
+      };
+
+      const personNews = newsAll.filter(matches);
+      const personOutreachNews = outreachNewsAll.filter(matches);
+
+      if (!personNews.length && !personOutreachNews.length) return;
+
+      right.appendChild(Utils.createEl('h4', { className:'text-xl font-semibold mt-6 mb-2', text:'News' }));
+      const nWrap = Utils.createEl('div', { className:'space-y-1' });
+
+      // Site news → openNewsModal(index)
+      personNews.forEach(item => {
+        let idx = newsAll.indexOf(item);
+        if (idx === -1) idx = newsAll.findIndex(x => String(x.id)===String(item.id) || x.title===item.title);
+        if (idx > -1) nWrap.appendChild(
+          Utils.createEl('a', {
+            href:'#', className:'block text-primary font-bold hover:underline',
+            dataset:{ modalTarget:'open-news-modal', id:String(idx) },
+            text: item.title || 'View News'
+          })
+        );
+      });
+
+      // Outreach news → openOutreachNewsModal(index)
+      personOutreachNews.forEach(item => {
+        let idx = outreachNewsAll.indexOf(item);
+        if (idx === -1) idx = outreachNewsAll.findIndex(x => String(x.id)===String(item.id) || x.title===item.title);
+        if (idx > -1) nWrap.appendChild(
+          Utils.createEl('a', {
+            href:'#', className:'block text-primary font-bold hover:underline',
+            dataset:{ modalTarget:'open-outreach-news-modal', id:String(idx) },
+            text: item.title || 'View Outreach News'
+          })
+        );
+      });
+
+      right.appendChild(nWrap);
+    })();
+
+// expose for the patch hook
+window.SMARTBioPersonModalReady = () => { try { buildTalksAndPresentations(); } catch {} };
 
     panel.append(left, right);
     overlay.appendChild(panel);
@@ -859,51 +1022,136 @@ const ModalManager = (() => {
     openModal(m, trigger);
   }
 
-  function openNewsModal(index, trigger) {
-    const items = Array.isArray(window.newsData) ? window.newsData : (window.newsData && window.newsData.items) || [];
-    const n = items[index];
-    const m = DOMElements.newsDescriptionModal;
-    if (!m || !n) return;
+  function openNewsModal(index, trigger){
+      var items = Array.isArray(window.newsData) ? window.newsData : (window.newsData && window.newsData.items) || [];
+      var n = items[index]; if (!n) return;
 
-    m.querySelector('#news-modal-title').textContent = n?.title || '';
-    m.querySelector('#news-modal-date').textContent = Utils.formatDate(n?.date) || '';
-    m.querySelector('#news-modal-description').textContent = n?.description || '';
-    const img = m.querySelector('#news-modal-image');
-    if (img && n?.image) { img.src = Utils.sanitizeUrl(n.image); img.alt = Utils.escapeHTML(n?.title || 'News Image'); }
+      // Prefer existing template if present
+      var m = DOMElements.newsDescriptionModal;
+      if (m){
+        var tEl = m.querySelector('#news-modal-title'),
+            dEl = m.querySelector('#news-modal-date'),
+            pEl = m.querySelector('#news-modal-description'),
+            img = m.querySelector('#news-modal-image');
 
-    openModal(m, trigger);
-  }
+        if (tEl) tEl.textContent = n.title || '';
+        if (dEl) dEl.textContent = Utils.formatDate(n.date) || '';
+        if (pEl) pEl.textContent = n.description || '';
+        if (img && n.image){ img.src = Utils.sanitizeUrl(n.image); img.alt = Utils.escapeHTML(n.title || 'News Image'); }
+        var content = m.querySelector && m.querySelector('.modal-content');
+        if (content){ content.style.maxHeight='90vh'; content.style.overflowY='auto'; content.style.webkitOverflowScrolling='touch'; }
+        return ModalManager.openModal(m, trigger);
+      }
 
-  function openOutreachTalkModal(index, trigger) {
-    const items = Array.isArray(window.outreachTalksData) ? window.outreachTalksData : (window.outreachTalksData && window.outreachTalksData.items) || [];
-    const t = items[index];
-    const m = DOMElements.outreachTalkDescriptionModal;
-    if (!m || !t) return;
+      // Fallback: dynamic overlay
+      var container = DOMElements.modalContainer || document.body;
+      var overlay = Utils.createEl('div', { className:'modal-overlay active', tabindex:'-1', role:'dialog', 'aria-modal':'true' });
+      var panel   = Utils.createEl('div', { className:'modal-content' });
 
-    m.querySelector('#outreach-talk-modal-title').textContent = t?.title || '';
-    m.querySelector('#outreach-talk-modal-date').textContent = Utils.formatDate(t?.date) || '';
-    m.querySelector('#outreach-talk-modal-description').textContent = t?.description || '';
+      var closeBtn = Utils.createEl('button', { className:'modal-close', text:'×' }); panel.appendChild(closeBtn);
+      var header = Utils.createEl('div', { className:'flex items-center gap-3 mb-3' }, [
+        Utils.createEl('h3', { className:'text-2xl font-bold', text: n.title || '' }),
+        n.date ? Utils.createEl('span', { className:'date-badge', text: Utils.formatDate(n.date) }) : null
+      ].filter(Boolean));
+      panel.appendChild(header);
 
-    const mediaWrap = m.querySelector('#outreach-talk-modal-media');
-    if (mediaWrap) { mediaWrap.replaceChildren(); const media = Utils.createSafeMedia(t?.videoLink || t?.modalMedia || t?.image); if (media) mediaWrap.appendChild(media); }
-    const speakers = m.querySelector('#outreach-talk-modal-speakers');
-    if (speakers) {
-      speakers.replaceChildren();
-      (Array.isArray(t?.speakerIds) ? t.speakerIds : []).forEach(id => {
-        const p = resolvePeople().find(pp => String(pp.id) === String(id));
-        speakers.appendChild(Utils.createEl('a', {
-          href: '#',
-          className: 'inline-block font-bold text-gray-900 hover:underline',
-          dataset: { modalTarget: 'open-person-bio', id },
-          text: p ? p.name : String(id)
-        }));
-      });
+      if (n.image) panel.appendChild(Utils.createEl('img', {
+        src: Utils.sanitizeUrl(n.image), alt: Utils.escapeHTML(n.title || 'News Image'),
+        className: 'w-full h-auto rounded-md object-cover border border-primary-dark mb-3'
+      }));
+      if (n.description) panel.appendChild(Utils.createEl('p', { className:'text-medium-text', text: n.description }));
+
+      overlay.appendChild(panel); container.appendChild(overlay);
+      panel.style.maxHeight='90vh'; panel.style.overflowY='auto'; panel.style.webkitOverflowScrolling='touch';
+      ModalManager.openModal(overlay, trigger);
     }
-    const linkWrap = m.querySelector('#outreach-talk-modal-link');
-    if (linkWrap) { linkWrap.replaceChildren(); if (t?.link) linkWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(t.link), target: '_blank', rel: 'noopener', className: 'text-primary font-bold hover:underline', text: 'View Link' })); }
 
-    openModal(m, trigger);
-  }
+
+  function openOutreachTalkModal(index, trigger){
+      const items = Array.isArray(window.outreachTalksData)
+        ? window.outreachTalksData
+        : (window.outreachTalksData && window.outreachTalksData.items) || [];
+      const t = items[index]; if (!t) return;
+
+      // Prefer existing template if present
+      const m = DOMElements.outreachTalkDescriptionModal;
+      if (m){
+        const te = m.querySelector('#outreach-talk-modal-title');
+        const de = m.querySelector('#outreach-talk-modal-date');
+        const pe = m.querySelector('#outreach-talk-modal-description');
+        const mediaWrap = m.querySelector('#outreach-talk-modal-media');
+        const speakers  = m.querySelector('#outreach-talk-modal-speakers');
+        const linkWrap  = m.querySelector('#outreach-talk-modal-link');
+
+        if (te) te.textContent = t.title || '';
+        if (de) de.textContent = Utils.formatDate(t.date) || '';
+        if (pe) pe.textContent = t.description || '';
+
+        if (mediaWrap){
+          mediaWrap.replaceChildren();
+          const media = Utils.createSafeMedia(t.videoLink || t.modalMedia || t.image);
+          if (media) mediaWrap.appendChild(media);
+        }
+
+        if (speakers){
+          speakers.replaceChildren();
+          (Array.isArray(t.speakerIds) ? t.speakerIds : []).forEach(id => {
+            const p = findPersonById(id);
+            speakers.appendChild(Utils.createEl('a', {
+              href:'#', className:'inline-block font-bold text-gray-900 hover:underline',
+              dataset:{ modalTarget:'open-person-bio', id }, text: p ? p.name : String(id)
+            }));
+          });
+        }
+
+        if (linkWrap){
+          linkWrap.replaceChildren();
+          if (t.link){
+            linkWrap.appendChild(Utils.createEl('a', {
+              href: Utils.sanitizeUrl(t.link), target:'_blank', rel:'noopener',
+              className:'text-primary font-bold hover:underline', text:'View Link'
+            }));
+          }
+        }
+
+        const content = m.querySelector('.modal-content');
+        if (content){ content.style.maxHeight='90vh'; content.style.overflowY='auto'; content.style.webkitOverflowScrolling='touch'; }
+        return openModal(m, trigger);
+      }
+
+      // Fallback: dynamic overlay (if no template exists)
+      const container = DOMElements.modalContainer || document.body;
+      const overlay = Utils.createEl('div', { className:'modal-overlay active', tabindex:'-1', role:'dialog', 'aria-modal':'true' });
+      const panel   = Utils.createEl('div', { className:'modal-content' });
+
+      panel.appendChild(Utils.createEl('button', { className:'modal-close', text:'×' }));
+      panel.appendChild(Utils.createEl('div', { className:'flex items-center gap-3 mb-3' }, [
+        Utils.createEl('h3', { className:'text-2xl font-bold', text: t.title || '' }),
+        t.date ? Utils.createEl('span', { className:'date-badge', text: Utils.formatDate(t.date) }) : null
+      ].filter(Boolean)));
+
+      const media = Utils.createSafeMedia(t.videoLink || t.modalMedia || t.image);
+      if (media) panel.appendChild(media);
+      if (t.description) panel.appendChild(Utils.createEl('p', { className:'text-medium-text mt-3', text: t.description }));
+
+      if (Array.isArray(t.speakerIds) && t.speakerIds.length){
+        const wrap = Utils.createEl('div', { className:'mt-3 flex gap-2 flex-wrap' });
+        t.speakerIds.forEach(id => {
+          const p = findPersonById(id);
+          wrap.appendChild(Utils.createEl('a', {
+            href:'#', className:'inline-block font-bold text-gray-900 hover:underline',
+            dataset:{ modalTarget:'open-person-bio', id }, text: p ? p.name : String(id)
+          }));
+        });
+        panel.appendChild(wrap);
+      }
+
+      overlay.appendChild(panel); container.appendChild(overlay);
+      panel.style.maxHeight='90vh'; panel.style.overflowY='auto'; panel.style.webkitOverflowScrolling='touch';
+      openModal(overlay, trigger);
+    }
+
+
 
   function openOutreachNewsModal(index, trigger) {
     const items = Array.isArray(window.outreachNewsData) ? window.outreachNewsData : (window.outreachNewsData && window.outreachNewsData.items) || [];
@@ -955,39 +1203,55 @@ const ModalManager = (() => {
     openModal(overlay, trigger);
   }
 
-  function openAcademicPresentationModal(index, trigger) {
-    const items = Array.isArray(window.academicPresentationsData) ? window.academicPresentationsData : (window.academicPresentationsData && window.academicPresentationsData.items) || [];
-    const t = items[index];
-    const m = DOMElements.academicPresentationDescriptionModal;
-    if (!m || !t) return;
+      // ADD: dynamic modal for Academic Presentations
+  function openAcademicPresentationModal(index, trigger){
+    var items = Array.isArray(window.academicPresentationsData) ? window.academicPresentationsData
+                : (window.academicPresentationsData && window.academicPresentationsData.items) || [];
+    var t = items[index]; if (!t) return;
+    var container = DOMElements.modalContainer || document.body;
+    var overlay = Utils.createEl('div', { className:'modal-overlay active', tabindex:'-1', role:'dialog', 'aria-modal':'true' });
+    var panel   = Utils.createEl('div', { className:'modal-content' });
 
-    m.querySelector('#academic-presentation-modal-title').textContent = t?.title || '';
-    m.querySelector('#academic-presentation-modal-date').textContent = Utils.formatDate(t?.date) || '';
+    var closeBtn = Utils.createEl('button', { className:'modal-close', text:'×' });
+    panel.appendChild(closeBtn);
+    var header = Utils.createEl('div', { className:'flex items-center gap-3 mb-3' }, [
+      Utils.createEl('h3', { className:'text-2xl font-bold', text: t.title || '' }),
+      t.date ? Utils.createEl('span', { className:'date-badge', text: Utils.formatDate(t.date) }) : null
+    ].filter(Boolean));
+    panel.appendChild(header);
 
-    const mediaWrap = m.querySelector('#academic-presentation-modal-media');
-    if (mediaWrap) { mediaWrap.replaceChildren(); const media = Utils.createSafeMedia(t?.videoLink || t?.modalMedia || t?.image); if (media) mediaWrap.appendChild(media); }
-    const descEl = m.querySelector('#academic-presentation-modal-description');
-    if (mediaWrap && descEl && descEl.parentNode) descEl.parentNode.insertBefore(mediaWrap, descEl);
-    if (descEl) descEl.textContent = t?.description || '';
+      // media
+    var media = Utils.createSafeMedia(t.videoLink || t.modalMedia || t.image);
+    if (media){ panel.appendChild(media); }
 
-    const speakers = m.querySelector('#academic-presentation-modal-speakers');
-    if (speakers) {
-      speakers.replaceChildren();
-      (Array.isArray(t?.speakerIds) ? t.speakerIds : []).forEach(id => {
-        const p = resolvePeople().find(pp => String(pp.id) === String(id));
-        speakers.appendChild(Utils.createEl('a', {
-          href: '#',
-          className: 'inline-block font-bold text-gray-900 hover:underline',
-          dataset: { modalTarget: 'open-person-bio', id },
-          text: p ? p.name : String(id)
+    if (t.description){ panel.appendChild(Utils.createEl('p', { className:'text-medium-text mt-3', text: t.description })); }
+
+      // speakers
+    if (Array.isArray(t.speakerIds) && t.speakerIds.length){
+      var wrap = Utils.createEl('div', { className:'mt-3 flex gap-2 flex-wrap' });
+      t.speakerIds.forEach(function(id){
+        var p = (typeof findPersonById === 'function') ? findPersonById(id) : null;
+        wrap.appendChild(Utils.createEl('a', {
+          href:'#', className:'inline-block font-bold text-gray-900 hover:underline',
+          dataset:{ modalTarget:'open-person-bio', id:id }, text: p ? p.name : String(id)
         }));
       });
+      panel.appendChild(wrap);
     }
-    const linkWrap = m.querySelector('#academic-presentation-modal-link');
-    if (linkWrap) { linkWrap.replaceChildren(); if (t?.link) linkWrap.appendChild(Utils.createEl('a', { href: Utils.sanitizeUrl(t.link), target: '_blank', rel: 'noopener', className: 'text-primary font-bold hover:underline', text: 'View Link' })); }
 
-    openModal(m, trigger);
+      // link
+    if (t.link){ panel.appendChild(Utils.createEl('a', {
+      href: Utils.sanitizeUrl(t.link), target:'_blank', rel:'noopener',
+      className:'text-primary font-bold hover:underline mt-3 inline-block', text:'View Link'
+    })); }
+
+    overlay.appendChild(panel); (DOMElements.modalContainer || document.body).appendChild(overlay);
+
+      // scrollability + open
+    panel.style.maxHeight='90vh'; panel.style.overflowY='auto'; panel.style.webkitOverflowScrolling='touch';
+    ModalManager.openModal(overlay, trigger);
   }
+
 
   function handleModalClicks(e) {
     const t = e.target;
@@ -1031,9 +1295,15 @@ const ModalManager = (() => {
   }
 
   return {
-    openNewsModal, openOutreachTalkModal, openAcademicPresentationModal,
-    openResearchDescriptionModal, openPersonBioModal, openOutreachNewsModal,
-    handleModalClicks, openModal, closeModal
+    openNewsModal: openNewsModal,
+    openOutreachTalkModal: openOutreachTalkModal,
+    openAcademicPresentationModal: openAcademicPresentationModal, // add here
+    openResearchDescriptionModal: openResearchDescriptionModal,
+    openPersonBioModal: openPersonBioModal,
+    openOutreachNewsModal: openOutreachNewsModal,
+    handleModalClicks: handleModalClicks,
+    openModal: openModal,
+    closeModal: closeModal
   };
 })();
 
@@ -1043,14 +1313,29 @@ const NavigationManager = (() => {
   // --- visibility & nav state (unchanged, just with logs) ---
   alog('showPage()', { pageId, hash: window.location.hash });
 
-  DOMElements.pageSections.forEach(section => {
-    const isActive = section.id === pageId + '-page';
-    section.classList.toggle('active', isActive);
-    if (!isActive) {
-      const fadeInContent = section.querySelector('.fade-in-section');
-      if (fadeInContent) fadeInContent.classList.remove('is-visible');
-    }
-  });
+    DOMElements.pageSections.forEach(section => {
+      const isActive = section.id === pageId + '-page';
+      section.classList.toggle('active', isActive);
+
+      // ✅ ensure the visible page can scroll
+      if (isActive) {
+        section.style.overflowY = 'auto';
+        section.style.overflowX = 'visible';
+        section.style.height = 'auto';
+        section.style.maxHeight = 'none';
+      } else {
+        // don't clamp height for hidden pages; keep styles clean
+        section.style.overflow = '';
+        section.style.height = '';
+        section.style.maxHeight = '';
+      }
+
+      if (!isActive) {
+        const fadeInContent = section.querySelector('.fade-in-section');
+        if (fadeInContent) fadeInContent.classList.remove('is-visible');
+      }
+    });
+
 
   DOMElements.navLinks.forEach(link => {
     const isActive = link.hash === '#' + pageId;
@@ -1106,8 +1391,8 @@ const NavigationManager = (() => {
           // Defer slightly so layout settles (avoids 0-width canvas)
           setTimeout(() => {
             try {
-              alog('Calling initResearchHub (4-arg legacy)');
-              window.initResearchHub(window.researchData, window.newsData, window.teamData, window.gamesData);
+              alog('Calling initResearchHub (full args)');
+                window.initResearchHub(window.researchData, window.newsData,  window.teamData,  window.gamesData,  window.outreachTalksData,  window.academicPresentationsData,  window.alumniData);
               alog('initResearchHub returned');
               // researchHub.js sets its own flag too; keep ours in sync
               window.researchHubInitialized = true;
@@ -1235,18 +1520,32 @@ const CollapsibleManager = (() => {
   }
 
   function setExpandedState(h, content, expand) {
-    h.setAttribute('aria-expanded', String(expand));
-    if (!content) return;
-    content.classList.toggle('hidden', !expand);
-    content.classList.toggle('open', !!expand);
-    if (expand) {
-      content.style.maxHeight = content.scrollHeight + 'px';
-      content.setAttribute('aria-hidden', 'false');
-    } else {
-      content.style.maxHeight = '0';
-      content.setAttribute('aria-hidden', 'true');
+      h.setAttribute('aria-expanded', String(expand));
+      if (!content) return;
+
+      content.classList.toggle('hidden', !expand);
+      content.classList.toggle('open', !!expand);
+
+      if (expand) {
+        // expand to actual content, then release the max-height so it can keep growing
+        content.style.maxHeight = content.scrollHeight + 'px';
+        content.style.overflow = 'visible';
+
+        // after transition, let it be natural height so images/iframes can extend it
+        setTimeout(() => { if (content.classList.contains('open')) content.style.maxHeight = 'none'; }, 250);
+
+        // if media loads later, ensure height isn’t clamped
+        content.querySelectorAll('img,iframe,video').forEach(el => {
+          el.addEventListener('load', () => {
+            if (content.classList.contains('open')) content.style.maxHeight = 'none';
+          }, { once: true });
+        });
+      } else {
+        content.style.maxHeight = '0';
+        content.style.overflow = 'hidden';
+      }
     }
-  }
+
 
   function toggle(h) {
     if (!h) return;
@@ -1278,37 +1577,113 @@ const CollapsibleManager = (() => {
   return { setupCollapsibleSections };
 })();
 
+// Ensure buildTalksAndPresentations runs whenever openPersonBioModal is called.
+(function hookPersonModalOnce(){
+  function patch(){
+    if (typeof window.openPersonBioModal !== 'function') { setTimeout(patch, 100); return; }
+    const orig = window.openPersonBioModal;
+    window.openPersonBioModal = function patchedOpenPersonBioModal(){
+      const ret = orig.apply(this, arguments);
+      try {
+        // call the IIFE defined inside openPersonBioModal if present,
+        // otherwise re-invoke by triggering a custom event you can listen for.
+        if (typeof window.SMARTBioPersonModalReady === 'function') window.SMARTBioPersonModalReady();
+      } catch {}
+      try { console.debug('[SMARTBio] patched openPersonBioModal called'); } catch {}
+      return ret;
+    };
+  }
+  patch();
+})();
+
+/* ======================= Game Filter ======================= */
+const GameFilter = (() => {
+  let active = new Set();
+
+  function allThemes() {
+    const items = Array.isArray(window.gamesData) ? window.gamesData : (window.gamesData?.items || []);
+    const s = new Set();
+    items.forEach(g => {
+      const raw = g?.themes ?? g?.theme;
+      if (Array.isArray(raw)) raw.forEach(t => t && s.add(String(t)));
+      else if (raw) s.add(String(raw));
+    });
+    return Array.from(s).sort();
+  }
+
+  function renderChipsIfEmpty() {
+    const wrap = DOMElements.gameFilters;
+    if (!wrap) return;
+    if (wrap.childElementCount) return;                 // keep your existing markup if present
+    allThemes().forEach(th => {
+      wrap.appendChild(Utils.createEl('button', {
+        className: 'filter-chip',
+        text: th,
+        dataset: { theme: th }
+      }));
+    });
+  }
+
+  function toggle(theme) {
+    if (active.has(theme)) active.delete(theme); else active.add(theme);
+    // reflect UI state
+    const wrap = DOMElements.gameFilters;
+    if (wrap) wrap.querySelectorAll('[data-theme]').forEach(b => {
+      b.classList.toggle('active', active.has(b.dataset.theme));
+      b.setAttribute('aria-pressed', String(active.has(b.dataset.theme)));
+    });
+    // re-render games with active filters
+    if (Renderer && typeof Renderer.renderGames === 'function') Renderer.renderGames();
+  }
+
+  function setup() {
+    const wrap = DOMElements.gameFilters;
+    if (!wrap) return;
+    renderChipsIfEmpty();
+    wrap.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-theme]');
+      if (!btn) return;
+      e.preventDefault();
+      toggle(btn.dataset.theme);
+    });
+  }
+
+  function getActiveThemes() { return new Set(active); }
+
+  return { setup, getActiveThemes };
+})();
+
+
+
 /* ======================= App ======================= */
 const App = (() => {
   function setupEventListeners() {
-    document.addEventListener('click', ModalManager.handleModalClicks);
-    DOMElements.navLinks.forEach(link => link.addEventListener('click', NavigationManager.handleNavClick));
-    DOMElements.navLinkHeader && DOMElements.navLinkHeader.addEventListener('click', NavigationManager.handleNavClick);
-    ScrollManager.setupScrollToTop();
-    CollapsibleManager.setupCollapsibleSections();
-    GDPRManager.setupGDPRBanner();
-    // Hamburger toggle
-    if (DOMElements.mobileMenuButton && DOMElements.mobileMenu) {
-      DOMElements.mobileMenuButton.addEventListener('click', () => {
-        const expanded = DOMElements.mobileMenuButton.getAttribute('aria-expanded') === 'true';
-        DOMElements.mobileMenuButton.setAttribute('aria-expanded', String(!expanded));
-        DOMElements.mobileMenu.classList.toggle('hidden', expanded === false ? false : !DOMElements.mobileMenu.classList.contains('hidden'));
-        // simpler: just toggle
-        DOMElements.mobileMenu.classList.toggle('hidden');
-      });
-}
+  document.addEventListener('click', ModalManager.handleModalClicks);
+  DOMElements.navLinks.forEach(link => link.addEventListener('click', NavigationManager.handleNavClick));
+  DOMElements.navLinkHeader && DOMElements.navLinkHeader.addEventListener('click', NavigationManager.handleNavClick);
+  ScrollManager.setupScrollToTop();
+  CollapsibleManager.setupCollapsibleSections();
+  GDPRManager.setupGDPRBanner();
+  GameFilter.setup();
+
+
+  // ✅ Hamburger toggle — fixed
+  if (DOMElements.mobileMenuButton && DOMElements.mobileMenu) {
+    DOMElements.mobileMenuButton.addEventListener('click', () => {
+      const expanded = DOMElements.mobileMenuButton.getAttribute('aria-expanded') === 'true';
+      DOMElements.mobileMenuButton.setAttribute('aria-expanded', String(!expanded));
+      DOMElements.mobileMenu.classList.toggle('hidden'); // simpler: just toggle visibility
+    });
   }
+}
 
   function init() {
-    alog('App.init start');
-    console.time('App.bootstrap');
     if (DOMElements.yearSpan) DOMElements.yearSpan.textContent = new Date().getFullYear();
     DataManager.fetchAllData().then(() => {
       const initial = window.location.hash ? window.location.hash.substring(1) : 'home';
       NavigationManager.showPage(initial);
       CarouselManager.setupCarousel();
       setupEventListeners();
-      console.timeEnd('App.bootstrap');
     });
   }
 
@@ -1327,3 +1702,146 @@ Object.assign(window, {
   openPersonBioModal: ModalManager.openPersonBioModal,
   openResearchDescriptionModal: ModalManager.openResearchDescriptionModal
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.particlesJS) {
+    particlesJS.load('particles-js', './assets/js/particles.json', function() {
+    });
+  } else {
+    console.warn('particlesJS not found');
+  }
+});
+/* ===== SMARTBio: Person Bio augment (CSP-safe, strict) ===== */
+(function SMARTBioPersonAugment(){
+  // Hard guard: ensure this runs once
+  if (window.__sbPersonAugmentHooked) return;
+  window.__sbPersonAugmentHooked = true;
+
+  const log = (...a) => { try { console.debug('[SMARTBio:augment]', ...a); } catch{} };
+
+  // Strict id normaliser
+  const normIds = (arr) => (Array.isArray(arr) ? arr : []).map(v => String(v)).filter(Boolean);
+
+  // Build the "Talks & Presentations" block into a target container
+  function appendTalksAndPresentations(personId, container) {
+    const pid = String(personId);
+    const asArr = v => (Array.isArray(v) ? v : ((v && v.items) || []));
+    const talksAll = asArr(window.outreachTalksData);
+    const presAll  = asArr(window.academicPresentationsData);
+
+    log('seed', { pid, talksLen: talksAll.length, presLen: presAll.length });
+
+    // Strict: both look at speakerIds only
+    const talkMatches = talksAll.filter(it => normIds(it.speakerIds).includes(pid));
+    const presMatches = presAll.filter(it => normIds(it.speakerIds).includes(pid));
+
+    log('matches', { talks: talkMatches.length, pres: presMatches.length });
+
+    if (!talkMatches.length && !presMatches.length) return;
+
+    // Header
+    const h = document.createElement('h4');
+    h.className = 'text-xl font-semibold mt-6 mb-2';
+    h.textContent = 'Talks & Presentations';
+    container.appendChild(h);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'space-y-1';
+
+    // Outreach talks → open-outreach-talk-modal(index)
+    talkMatches.forEach(item => {
+      const idx = talksAll.indexOf(item);
+      if (idx > -1) {
+        const a = document.createElement('a');
+        a.href = '#';
+        a.className = 'block text-primary font-bold hover:underline';
+        a.dataset.modalTarget = 'open-outreach-talk-modal';
+        a.dataset.id = String(idx);
+        a.textContent = item.title || 'View Outreach Talk';
+        wrap.appendChild(a);
+      }
+    });
+
+    // Academic presentations → open-academic-presentation-modal(index)
+    presMatches.forEach(item => {
+      const idx = presAll.indexOf(item);
+      if (idx > -1) {
+        const a = document.createElement('a');
+        a.href = '#';
+        a.className = 'block text-primary font-bold hover:underline';
+        a.dataset.modalTarget = 'open-academic-presentation-modal';
+        a.dataset.id = String(idx);
+        a.textContent = item.title || 'View Presentation';
+        wrap.appendChild(a);
+      }
+    });
+
+    container.appendChild(wrap);
+  }
+
+  // Try to find a good place inside the current modal to append our list
+  function findRightColumn(modalEl) {
+    // Prefer a right-side content column if present
+    return modalEl.querySelector('#person-modal-right, #research-modal-content-text, .modal-content > div:last-child') || modalEl;
+  }
+
+  // Get a person id from the click target (uses data-modal-target id you already emit)
+  function getPersonIdFromTarget(t) {
+    // Buttons created in the hub carry data-modal-target with the team member's id:contentReference[oaicite:3]{index=3}
+    const el = t.closest('[data-modal-target]');
+    if (!el) return null;
+    const id = el.getAttribute('data-modal-target');
+    return id ? String(id) : null;
+  }
+
+  // After a modal opens (overlay gets .active), augment it
+  function augmentOpenModal(personId) {
+    // Grab the currently active modal (generic)
+    const active = document.querySelector('#modal-container .modal-overlay.active .modal-content');
+    if (!active) { log('no active modal to augment'); return; }
+    const right = findRightColumn(active);
+    appendTalksAndPresentations(personId, right);
+  }
+
+  // 1) Hook clicks anywhere; when a control with [data-modal-target] is clicked,
+  // wait for the modal to activate, then augment.
+  document.addEventListener('click', (e) => {
+    const pid = getPersonIdFromTarget(e.target);
+    if (!pid) return;
+    // Wait a tick for the modal to open/activate
+    requestAnimationFrame(() => {
+      // If research hub data not ready yet, poll briefly
+      let tries = 0;
+      (function waitForDataAndModal(){
+        const talksReady = Array.isArray(window.outreachTalksData);
+        const presReady  = Array.isArray(window.academicPresentationsData);
+        const active = document.querySelector('#modal-container .modal-overlay.active .modal-content');
+        if (talksReady && presReady && active) {
+          augmentOpenModal(pid);
+        } else if (tries++ < 40) {
+          setTimeout(waitForDataAndModal, 50);
+        } else {
+          log('timeout waiting for data/modal');
+        }
+      })();
+    });
+  }, { passive: true });
+
+  // 2) Also expose a manual API so you can call it from wherever you actually open the modal.
+  window.SMARTBio = window.SMARTBio || {};
+  window.SMARTBio.augmentPersonModal = function(personId){
+    let tries = 0;
+    (function wait(){
+      const active = document.querySelector('#modal-container .modal-overlay.active .modal-content');
+      if (active && Array.isArray(window.outreachTalksData) && Array.isArray(window.academicPresentationsData)) {
+        augmentOpenModal(String(personId));
+      } else if (tries++ < 40) {
+        setTimeout(wait, 50);
+      } else {
+        log('augmentPersonModal: timeout');
+      }
+    })();
+  };
+
+  log('person augment hook installed');
+})();
