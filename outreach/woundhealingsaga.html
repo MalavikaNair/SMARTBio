@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="./assets/css/tailwind.css">
-  <link rel="stylesheet" href="./assets/css/fonts.css">
-  <link rel="stylesheet" href="./assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/tailwind.css">
+  <link rel="stylesheet" href="../assets/css/fonts.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script src="../assets/js/Tone.min.js"></script>
   <style>body{font-family: var(--font-sans-exo);}</style>
 
     <meta charset="UTF-8">
@@ -403,7 +404,6 @@
         .slider-fill.bad {
             background-color: #ef4444; /* Red */
         }
-
         /* Removed encyclopaedia-specific styles */
     </style>
 <style>.hidden{display:none!important}</style>
@@ -617,12 +617,13 @@
         }
 
         // Helper function to interpolate between two RGB colours
-        function interpolateColour(colour1Rgb, colour2Rgb, factor) {
-            const r = Math.round(colour1Rgb[0] + factor * (colour2Rgb[0] - colour1Rgb[0]));
-            const g = Math.round(colour1Rgb[1] + factor * (colour2Rgb[1] - colour2Rgb[1]));
-            const b = Math.round(colour1Rgb[2] + factor * (colour2Rgb[2] - colour2Rgb[2]));
-            return `rgb(${r}, ${g}, ${b})`;
+        function interpolateColour(c1, c2, f) {
+          const r = Math.round(c1[0] + f * (c2[0] - c1[0]));
+          const g = Math.round(c1[1] + f * (c2[1] - c1[1])); // FIX
+          const b = Math.round(c1[2] + f * (c2[2] - c1[2])); // FIX
+          return `rgb(${r}, ${g}, ${b})`;
         }
+
 
         // Patient-specific parameters
         const patientParams = {
@@ -825,33 +826,25 @@
 
         // --- Start Game Function ---
         function startGame() {
-            gameRunning = true;
-            welcomeScreen.classList.add('hidden');
-            gameMainContainer.classList.remove('hidden');
+          gameRunning = true;
+          welcomeScreen.classList.add('hidden');
+          gameMainContainer.classList.remove('hidden');
 
-            // Removed explicit hide encyclopaedia modal call: hideEncyclopaediaModal(0);
+          // Recalculate canvas AFTER it becomes visible (also draws once)
+          resizeCanvas();
 
-            // IMPORTANT: Recalculate canvas size AFTER it becomes visible
-            resizeCanvas(); // This will also call drawGame()
+          // Show the initial phase modal (normally the loop is started when the modal hides)
+          showPhaseModal(gamePhase);
 
-            // Disable patient selection once game starts
-            patientButtons.forEach(btn => btn.disabled = true);
-
-            // Re-enable action buttons (their disabled state will be managed by updateUI based on energy)
-            activateMacrophagesBtn.disabled = false;
-            releaseGrowthFactorBtn.disabled = false;
-            applyAntimicrobialBtn.disabled = false;
-            // mechanicalStimulationBtn visibility handled by updateUI based on phase
-            restartGameBtn.disabled = false;
-
-            // Update the chosen patient display in the main game UI
-            chosenPatientDisplay.textContent = patientParams[currentPatientType].displayName;
-
-            // Show initial phase modal. This will pause the game loop.
-            showPhaseModal(gamePhase);
-
-            // The gameLoop will be started by hidePhaseModal when the modal dismisses.
+          // SAFEGUARD: if the modal isn’t dismissed (or something blocks), start the loop anyway.
+          setTimeout(() => {
+            if (gameRunning && animationFrameId === null) {
+              isModalActive = false;           // ensure loop can run
+              animationFrameId = requestAnimationFrame(gameLoop);
+            }
+          }, 1000);
         }
+
 
         // --- End Game Function ---
         function endGame(outcome, message) {
@@ -979,44 +972,22 @@
         }
 
         // Function to show phase modal
-        function showPhaseModal(phase) {
-            const info = phaseInfo[phase];
-            if (!info) return;
-
-            clearAllTemporaryMessages(); // Clear messages at phase change
-
-            phaseModalTitle.textContent = info.title;
-            phaseModalText.textContent = info.text;
-            phaseModalOverlay.classList.add('visible'); // Use 'visible' class
-            isModalActive = true; // Set modal active flag
-            if (animationFrameId) { // Pause game loop if running
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
-
-            // Determine dismissal duration
-            let dismissDuration = 7000; // Default auto-dismiss after 7 seconds
-            if (phase === 'Complete Healing') {
-                dismissDuration = 1000; // Complete Healing modal dismisses after 1 second
-            }
-
-            // Clear any existing timeout for the modal
-            if (phaseModalTimeoutId) {
-                clearTimeout(phaseModalTimeoutId);
-            }
-
-            // Auto-dismiss after calculated duration
-            phaseModalTimeoutId = setTimeout(() => {
-                hidePhaseModal();
-            }, dismissDuration);
-
-            // Show dismiss button for regular phase modals, hide for "Complete Healing"
-            if (phase === 'Complete Healing') {
-                dismissPhaseModalButton.classList.add('hidden');
-            } else {
-                dismissPhaseModalButton.classList.remove('hidden');
-            }
+        function showPhaseModal(phaseKey){
+          // pick data or fallbacks
+          const info = (phaseInfo && phaseInfo[phaseKey]) ? phaseInfo[phaseKey] : {
+            title: String(phaseKey || 'Phase'),
+            text: 'Progress the wound by using the controls.'
+          };
+          // write content
+          phaseModalTitle.textContent = info.title;   // <h3 id="phaseModalTitle">
+          phaseModalText.textContent  = info.text;    // <p  id="phaseModalText">
+          phaseModalTitle.style.color = '#1e293b';
+          phaseModalText.style.color  = '#1e293b';
+          // reveal
+          phaseModalOverlay.classList.add('visible'); // overlay with .visible toggles opacity/visibility
+          isModalActive = true;
         }
+
 
         // Function to hide phase modal
         function hidePhaseModal() {
@@ -1046,6 +1017,7 @@
             messageTitleEl.textContent = title;
             messageTextEl.textContent = message;
             messageBox.className = `message-box ${isSuccess ? 'success' : 'error'}`; // Use isSuccess to determine class
+            gameOverOverlay.classList.remove('hidden');
             gameOverOverlay.classList.add('visible'); // Use 'visible' class
             gameOverOverlay.style.pointerEvents = 'auto'; // Ensure it blocks interaction
             cancelAnimationFrame(animationFrameId); // Stop animation when message box is shown
@@ -1055,6 +1027,7 @@
         // Function to hide the game over message box
         function hideGameOverMessageBox() {
             gameOverOverlay.classList.remove('visible'); // Remove 'visible' class
+            gameOverOverlay.classList.add('hidden');
             gameOverOverlay.style.pointerEvents = ''; // Reset to default (auto)
         }
 
@@ -1773,7 +1746,7 @@
 
             updateUI();
         }
-
+        const messageBox = document.getElementById('messageBox');
         // --- Game Loop ---
         function gameLoop() {
             // Only continue the loop if the game is running and no modal is active
@@ -2003,16 +1976,15 @@
         });
 
         // Listen for window resize to adjust canvas
-        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('resize', () => typeof resizeCanvas === 'function' && resizeCanvas());
 
         // Initial setup when the script loads
         initializeGame();
     </script>
 
-  <script src="./assets/js/marked.min.js"></script>
-  <script src="./assets/js/three.min.js"></script>
-  <script src="./assets/js/OrbitControls.js"></script>
-  <script src="./assets/js/particles.min.js"></script>
-  <script src="./assets/js/Tone.min.js"></script>
+  <script src="../assets/js/marked.min.js"></script>
+  <script src="../assets/js/three.min.js"></script>
+  <script src="../assets/js/OrbitControls.js"></script>
+  <script src="../assets/js/particles.min.js"></script>
 </body>
 </html>

@@ -932,23 +932,21 @@
         }
 
         function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            console.log(`Canvas resized to: ${canvas.width}x${canvas.height}`);
-            // Reinitialize background particles on resize
-            backgroundParticles.length = 0; // Clear existing particles
-            for (let i = 0; i < MAX_BG_PARTICLES; i++) {
-                backgroundParticles.push(createBackgroundParticle());
-            }
-            drawRobot(); // Redraw after resizing
-            if (inTutorialMode && !resumeTutorialButton.classList.contains('hidden')) {
-                // If in tutorial and "Try it out!" is active, hide pointer
-                tutorialPointer.style.display = 'none';
-            } else if (inTutorialMode) {
-                // If in tutorial explanation, reposition pointer
-                positionTutorialPointer();
-            }
+          const dpr = Math.max(1, window.devicePixelRatio || 1);
+          const parent = canvas.parentElement || document.body;
+          const cssW = Math.max(600, parent.clientWidth || 600);
+          const cssH = Math.max(400, parent.clientHeight || 400);
+          canvas.style.width = cssW + 'px';
+          canvas.style.height = cssH + 'px';
+          canvas.width = Math.floor(cssW * dpr);
+          canvas.height = Math.floor(cssH * dpr);
+          const ctx2d = canvas.getContext('2d');
+          if (ctx2d && ctx2d.setTransform) ctx2d.setTransform(dpr,0,0,dpr,0,0);
+          backgroundParticles.length = 0;
+          for (let i=0;i<MAX_BG_PARTICLES;i++) backgroundParticles.push(createBackgroundParticle());
+          drawRobot();
         }
+        window.addEventListener('resize', resizeCanvas)
 
         // Function to create a single background particle
         function createBackgroundParticle() {
@@ -1876,6 +1874,7 @@
             animate(); // Ensure animation loop is running
             updateShowInfoButtonText(); // Update button text
             tutorialPointer.style.display = 'none'; // Hide tutorial pointer
+            resizeCanvas();
         }
 
         function showWelcomeScreenUI() {
