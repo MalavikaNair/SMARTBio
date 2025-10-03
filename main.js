@@ -1611,18 +1611,20 @@ const GameFilter = (() => {
     return Array.from(s).sort();
   }
 
-  function renderChipsIfEmpty() {
+  function renderChips() {
     const wrap = DOMElements.gameFilters;
     if (!wrap) return;
-    if (wrap.childElementCount) return;                 // keep your existing markup if present
-    allThemes().forEach(th => {
+    // keep "All Games" button, but remove duplicates
+    wrap.querySelectorAll('[data-theme]').forEach(el => el.remove());
+    GameFilter.allThemes().forEach(th => {
       wrap.appendChild(Utils.createEl('button', {
-        className: 'filter-chip',
+        className: 'filter-btn bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300',
         text: th,
         dataset: { theme: th }
       }));
     });
   }
+
 
   function toggle(theme) {
     if (active.has(theme)) active.delete(theme); else active.add(theme);
@@ -1845,3 +1847,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   log('person augment hook installed');
 })();
+
