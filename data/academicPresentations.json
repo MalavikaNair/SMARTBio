@@ -1,4 +1,16 @@
 [{
+        "id": "pres-9",
+        "title": "The Podium Institute Annual Conference on Sports Medicine & Technology 2025",
+        "date": { "day": "26", "month": "Sep", "year": "2025" },
+        "description": "Samantha Baker-Jones delivered an oral presentation at the Podium Institute Annual Conference on Sports Medicine and Technology 2025 on 'Sub-Zero Multi-Material Additive Manufacturing of Biomimetic Scaffolds for ACL Injury Repair'. Sam's DPhil is co-supervised by Prof. Patrick Grant",
+        "speakerIds": ["sam-baker-jones"],
+        "link": "",
+		"videoLink": "",
+        "image": "./assets/img/podium.png",
+        "type": "academic-presentation",
+        "themes": ["Sensing", "Modulating", "Adaptive", "Regenerative", "Therapeutic"]
+    },
+	{
         "id": "talk-3",
         "title": "Lubbock Lecture 2024: Biomaterials for SMART Medical Devices",
         "date": { "day": "03", "month": "May", "year": "2024" },
@@ -69,7 +81,6 @@
         "image": "./assets/img/thrt.png",
         "type": "academic-presentation",
         "themes": ["Therapeutic", "Regenerative"]
-
     },
     {
         "id": "pres-6",
