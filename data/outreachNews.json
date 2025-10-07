@@ -1,4 +1,12 @@
-[
+[  {
+        "id": "outreach-news-2",
+        "title": "Feature Article on Electroactive Polymers in Materials World",
+        "date": { "day": "19", "month": "MAY", "year": "2025" },
+        "description": "A recent feature article on electroactive polymers written by Matthew Burgess, Ryan Murray and Malavika Nair for Materials World, the professional magazine for the Institute for Materials Minerals and Mining makes the cover.",
+        "image": "https://www.iom3.org/static/b1388c2f-b32c-491e-999665ab904cea99/800x800_highestperformance__4a7c7e45a350/muscle-CMYK.jpg",
+        "link": "https://www.iom3.org/resource/the-push-and-pull-of-life.html",
+        "associatedTeamMembers": ["malavika-nair","matthew-burgess","ryan-murray"]
+    },
   {
         "id": "outreach-news-1",
         "title": "IBME Open Day!",
@@ -6,15 +14,6 @@
         "description": "Our team was part of the annual Open Day run by the Institute of Biomedical Engineering at the University of Oxford. Malavika, Matthew and Ryan presented talks and demonstration on Tissue Engineering Scaffolds and Dynamic Bioreactors",
         "image": "https://eng.ox.ac.uk/media/1d3gknmp/ibme-open-day-cover-image-low-res.jpg?width=850&amp;height=450&amp;format=webp&amp;quality=75&amp;v=1dbef4ee4520670",
         "link": "https://eng.ox.ac.uk/news/2025-ibme-open-day/",
-        "associatedTeamMembers": ["malavika-nair","matthew-burgess","ryan-murray"]
-    },
-  {
-        "id": "outreach-news-2",
-        "title": "Feature Article on Electroactive Polymers in Materials World",
-        "date": { "day": "19", "month": "MAY", "year": "2025" },
-        "description": "A recent feature article on electroactive polymers written by Matthew Burgess, Ryan Murray and Malavika Nair for Materials World, the professional magazine for the Institute for Materials Minerals and Mining makes the cover.",
-        "image": "https://www.iom3.org/static/b1388c2f-b32c-491e-999665ab904cea99/800x800_highestperformance__4a7c7e45a350/muscle-CMYK.jpg",
-        "link": "https://www.iom3.org/resource/the-push-and-pull-of-life.html",
         "associatedTeamMembers": ["malavika-nair","matthew-burgess","ryan-murray"]
     }
 ]

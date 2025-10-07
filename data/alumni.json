@@ -3,6 +3,7 @@
         "id": "zosia-wolny",
         "name": "Zofia (Zosia) Wolny",
         "role": "Part III Oxford Materials Student 2024-25",
+        "bio": "",
         "image": "https://placehold.co/200x200/374151/f3f4f6?text=ZW",
         "themes": ["Sensing"]
 },
@@ -11,6 +12,7 @@
         "name": "Aishani Gupta",
         "role": "Engineering Science 4th Year Project Student 2024-25",
         "image": "./assets/img/aishani-gupta.jpeg",
+        "bio": "",
         "themes": ["Modulating"]
 
     },
@@ -19,6 +21,7 @@
         "name": "Ragini Shet",
         "role": "Engineering Science 4th Year Project Student 2024-25",
         "image": "./assets/img/ragini-shet.jpeg",
+        "bio": "",
         "themes": ["Therapeutic"]
 
     },
@@ -27,6 +30,7 @@
         "name": "Ruth Gregg",
         "role": "Part III Oxford Materials Student 2023-24",
         "image": "./assets/img/ruth-gregg.jpg",
+        "bio": "",
         "themes": ["Sensing"]
     },
 {
@@ -34,6 +38,7 @@
         "name": "Ellen Marsh",
         "role": "Engineering Science 4th Year Project Student 2023-24",
         "image": "./assets/img/ellen-marsh.jpeg",
+        "bio": "",
         "themes": ["Regenerative","Modulating"]
     },
 {
@@ -41,13 +46,23 @@
         "name": "Lauren Gargan",
         "role": "Engineering Science 4th Year Project Student 2023-24",
         "image": "./assets/img/lauren-gargan.jpeg",
+        "bio": "",
         "themes": ["Therapeutic"]
 },
+{
+        "id": "delia-persa",
+        "name": "Delia Persa",
+        "role": "Engineering Science 4th Year Project Student 2023-24",
+        "image": "./assets/img/delia-persa.jpeg",
+        "bio": "",
+        "themes": ["Adaptive"]
+    },
 {
         "id": "veronica-gurung",
         "name": "Veronica Gurung",
         "role": "Engineering Science 4th Year Project Student 2023-24, on Exchange from NUS",
         "image": "./assets/img/veronica-gurung.jpeg",
+        "bio": "",
         "themes": ["Sensing"]
     },
 {
@@ -55,6 +70,7 @@
         "name": "Antonin Berger",
         "role": "Visiting Masters Student from ETH Zurich",
         "image": "./assets/img/antonin-berger.jpeg",
+        "bio": "",
         "themes": ["Modulating","Regenerative"]
     },
 
@@ -63,6 +79,7 @@
         "name": "Yannan Zhou",
         "role": "MPhil in Micro and Nanotechnology Enterprise 2022",
         "image": "./assets/img/yannan-zhou.jpeg",
+        "bio": "",
         "themes": ["Sensing"]
 },
 
@@ -71,6 +88,7 @@
         "name": "Callum Beeston",
         "role": "Part III Cambridge Materials Science Student 2021-22",
         "image": "./assets/img/callum-beeston.jpeg",
+        "bio": "",
         "themes": ["Modulating"]
 }
 ]
