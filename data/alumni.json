@@ -29,7 +29,7 @@
         "id": "ruth-gregg",
         "name": "Ruth Gregg",
         "role": "Part III Oxford Materials Student 2023-24",
-        "image": "./assets/img/ruth-gregg.jpeg",
+        "image": "./assets/img/ruth-gregg.jpg",
         "bio": "",
         "themes": ["Sensing"]
     },
@@ -92,3 +92,4 @@
         "themes": ["Modulating"]
 }
 ]
+
