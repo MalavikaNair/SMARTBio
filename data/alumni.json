@@ -4,7 +4,7 @@
         "name": "Zofia (Zosia) Wolny",
         "role": "Part III Oxford Materials Student 2024-25",
         "bio": "",
-        "image": "https://placehold.co/200x200/374151/f3f4f6?text=ZW",
+        "image": "./assets/img/zosia-wolny.jpg",
         "themes": ["Sensing"]
 },
 {
@@ -92,4 +92,5 @@
         "themes": ["Modulating"]
 }
 ]
+
 
