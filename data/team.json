@@ -66,3 +66,14 @@
       "memberSince":"2024-11"
     }
 ]
+   {
+        "id": "nate-carey",
+        "name": "Nate Carey",
+        "role": "DPhil Student",
+        "image": "./assets/img/nate-carey.jpg",
+        "bio": "Nate is a 2025 graduate of Penn State’s Master of Biotechnology programme, currently pursuing his NIH-OxCam DPhil at the intersection of Bioelectronics, Biomaterials and Immunology as a Marshall Scholar. Nate's PhD involves engineering next-generation bioelectronic devices, specifically in unravelling the role played by electromechanical stimulation on macrophage activation and the immune response during tissue repair and recovery. Nate's project is co-supervised by Drs Michael Gray at the IBME and Kaitlyn Sadtler at the NIBIB (NIH)",
+        "themes": ["Modulating", "Regenerative"],
+      "memberSince":"2025-10"
+    }
+]
+
