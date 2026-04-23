@@ -140,40 +140,6 @@ function addBadgeToThemeNode(themeMesh, letter, nodeRadius = 0.3) {
   themeMesh.userData.badgeAttached = true;
 }
 
-/* ======================
-   PUBLICATIONS CACHE
-   Loaded once on first theme click, then reused.
-   ====================== */
-let _publicationsCache = null;
-let _publicationsLoading = false;
-let _publicationsCallbacks = [];
-
-function loadPublicationsOnce(callback) {
-  if (_publicationsCache !== null) {
-    callback(_publicationsCache);
-    return;
-  }
-  _publicationsCallbacks.push(callback);
-  if (_publicationsLoading) return; // already in flight
-  _publicationsLoading = true;
-
-  fetch('./publications.json')
-    .then(r => r.ok ? r.json() : Promise.reject(r.status))
-    .then(data => {
-      _publicationsCache = Array.isArray(data) ? data : [];
-      dlog('Publications loaded:', _publicationsCache.length, 'entries');
-    })
-    .catch(e => {
-      console.warn('[ResearchHub] Could not load publications.json:', e);
-      _publicationsCache = [];
-    })
-    .finally(() => {
-      _publicationsLoading = false;
-      const cbs = _publicationsCallbacks.splice(0);
-      cbs.forEach(cb => cb(_publicationsCache));
-    });
-}
-
 // Function to initialize the Three.js research hub
 window.initResearchHub = function(researchData, newsData, teamData, gamesData, outreachTalksData, academicPresentationsData, alumniData) {
   const researchContainer = document.getElementById('research-canvas-container');
@@ -355,9 +321,6 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
     if (window.renderer && window.scene && window.camera) {
       window.renderer.render(window.scene, window.camera);
     }
-
-    // Pre-fetch publications.json in the background so it's ready when a node is clicked
-    loadPublicationsOnce(() => dlog('Publications pre-fetched and cached.'));
 
   } catch (e) {
     console.error('Error during initResearchHub execution:', e);
@@ -562,111 +525,66 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
       contentGrid.appendChild(d);
     });
   }
+ // ── Publications ──────────────────────────────────────────
 
-  // ── Publications ──────────────────────────────────────────────────────────
-  // Publications are loaded asynchronously from publications.json.
-  // We insert a placeholder row immediately, then replace it once the data
-  // arrives (or is already cached from a previous click).
-  const pubPlaceholder = makeDiv('text-xs text-medium-text italic p-2');
-  pubPlaceholder.textContent = 'Loading publications…';
-  const pubHeader = makeSectionHeader('Publications');
-  // We'll only append the header if there are matching publications — so we
-  // defer that decision until after the fetch resolves. For now, attach a
-  // sentinel div that we can replace or remove.
-  const pubSentinel = makeDiv('');
-  contentGrid.appendChild(pubSentinel);
+if (!window.publicationsData) {
+  const msg = makeDiv('text-xs text-medium-text italic p-2');
+  msg.textContent = 'Loading publications…';
+  contentGrid.appendChild(msg);
 
-  loadPublicationsOnce((publications) => {
-    // The content grid may have been cleared by another click before the
-    // fetch resolved — check the sentinel is still in the DOM.
-    if (!pubSentinel.isConnected) return;
-
-    const relatedPubs = publications.filter(pub =>
-      Array.isArray(pub.themes) && pub.themes.some(t =>
-        // Case-insensitive match so "sensing" matches "Sensing"
-        t.toLowerCase() === themeName.toLowerCase()
-      )
+  document.addEventListener('smartbio:data-ready', () => {
+    window.updateDynamicContent(
+      themeName,
+      researchData,
+      newsData,
+      teamData,
+      gamesData,
+      outreachTalksData,
+      academicPresentationsData,
+      alumniData
     );
+  }, { once: true });
 
-    if (relatedPubs.length === 0) {
-      // Nothing to show — remove the sentinel silently
-      pubSentinel.remove();
-      return;
-    }
+  return;
+}
 
-    // Sort: newest first
-    const sorted = relatedPubs.slice().sort((a, b) => (b.year || 0) - (a.year || 0));
+const publications = Array.isArray(window.publicationsData)
+  ? window.publicationsData
+  : (window.publicationsData?.items || []);
 
-    // Build the publications block
-    const frag = document.createDocumentFragment();
-    frag.appendChild(makeSectionHeader(`Publications (${sorted.length})`));
+const relatedPubs = publications.filter(pub =>
+  Array.isArray(pub.themes) &&
+  pub.themes.some(t => t.toLowerCase() === themeName.toLowerCase())
+);
 
-    sorted.forEach(pub => {
-      const card = makeDiv('text-sm p-2 rounded-md bg-slate-800/50 space-y-1');
+if (!relatedPubs.length) {
+  const msg = makeDiv('text-xs text-medium-text italic p-2');
+  msg.textContent = 'No publications for this theme';
+  contentGrid.appendChild(msg);
+  return;
+}
 
-      // Title — linked to DOI if available
-      const titleEl = document.createElement(pub.doi ? 'a' : 'p');
-      titleEl.className = 'font-semibold leading-snug' + (pub.doi ? ' text-primary hover:underline' : ' text-light-text');
-      titleEl.textContent = String(pub.title || '');
-      if (pub.doi) {
-        titleEl.href = `https://doi.org/${pub.doi}`;
-        titleEl.target = '_blank';
-        titleEl.rel = 'noopener noreferrer';
-      }
-      card.appendChild(titleEl);
+// render
+const sorted = relatedPubs.slice().sort((a, b) => (b.year || 0) - (a.year || 0));
 
-      // Authors + year
-      const meta = document.createElement('p');
-      meta.className = 'text-xs text-medium-text';
-      const authorStr = String(pub.authors || '');
-      const yearStr   = pub.year ? String(pub.year) : '';
-      meta.textContent = [authorStr, yearStr].filter(Boolean).join(' · ');
-      card.appendChild(meta);
+contentGrid.appendChild(makeSectionHeader(`Publications (${sorted.length})`));
 
-      // Journal / venue
-      if (pub.journal) {
-        const journal = document.createElement('p');
-        journal.className = 'text-xs text-slate-400 italic';
-        journal.textContent = String(pub.journal);
-        card.appendChild(journal);
-      }
+sorted.forEach(pub => {
+  const card = makeDiv('text-sm p-2 rounded-md bg-slate-800/50');
 
-      // Badges row: Open Access + type + dataset link
-      const badges = makeDiv('flex flex-wrap items-center gap-2 mt-1');
+  const title = document.createElement('p');
+  title.className = 'font-semibold';
+  title.textContent = pub.title || '';
 
-      if (pub.openAccess) {
-        const oa = document.createElement('span');
-        oa.className = 'text-xs bg-emerald-700/50 text-emerald-300 px-1.5 py-0.5 rounded-full';
-        oa.textContent = 'Open Access';
-        badges.appendChild(oa);
-      }
+  const meta = document.createElement('p');
+  meta.className = 'text-xs text-medium-text';
+  meta.textContent = [pub.authors, pub.year].filter(Boolean).join(' · ');
 
-      if (pub.type) {
-        const typeBadge = document.createElement('span');
-        typeBadge.className = 'text-xs bg-slate-700/60 text-slate-300 px-1.5 py-0.5 rounded-full capitalize';
-        typeBadge.textContent = String(pub.type);
-        badges.appendChild(typeBadge);
-      }
+  card.appendChild(title);
+  card.appendChild(meta);
 
-      if (pub.dataset && isSafeUrl(pub.dataset)) {
-        const dsLink = document.createElement('a');
-        dsLink.className = 'text-xs text-emerald-400 hover:underline';
-        dsLink.href = String(pub.dataset);
-        dsLink.target = '_blank';
-        dsLink.rel = 'noopener noreferrer';
-        dsLink.textContent = '⬡ Dataset';
-        badges.appendChild(dsLink);
-      }
-
-      if (badges.children.length) card.appendChild(badges);
-
-      frag.appendChild(card);
-    });
-
-    // Replace the sentinel with the built fragment
-    pubSentinel.replaceWith(frag);
-  });
-};
+  contentGrid.appendChild(card);
+});
 
 /* =====================================================================
    SMARTBio Research Hubs
