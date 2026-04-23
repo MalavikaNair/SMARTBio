@@ -1658,7 +1658,7 @@ const GameFilter = (() => {
 
   function getActiveThemes() { return new Set(active); }
 
-  return { setup, getActiveThemes };
+  return { allThemes, setup, getActiveThemes };
 })();
 
 /* ======================= App ======================= */
