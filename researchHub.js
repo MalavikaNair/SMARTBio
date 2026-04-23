@@ -1,9 +1,10 @@
 /* XSS-hardened & CSP-friendly version of researchHub.js
  * - Replaces innerHTML with DOM creation + textContent
- * - Validates and restricts URLs to same-origin http(s)
+ * - Validates and restricts URLs to same-origin http(s) or relative paths
  * - Avoids injecting untrusted HTML and inline event handlers
  * - Keeps original functionality (Three.js scene, clicks, content updates)
  * - Adds SMART letter badges inside each colored theme node
+ * - Shows related Publications when a theme node is clicked
  */
 
 // Global variables for Three.js scene, camera, etc., attached to window for global access
@@ -23,29 +24,45 @@ function dlog(...args) {
     console.log('[ResearchHub]', ...args);
   }
 }
+
 // --- Helpers: sanitization & DOM utils ---
-const isHttpUrlSameOrigin = (value) => {
+
+/**
+ * Returns true for:
+ *   - Absolute http/https URLs on the same origin  (e.g. https://smart-biomaterials.com/…)
+ *   - Relative paths/URLs                          (e.g. ./games/foo.html, assets/img/x.png)
+ *
+ * Rejects:
+ *   - javascript:, data:, blob:, and other potentially dangerous schemes
+ *   - Absolute URLs pointing to a different origin
+ */
+const isSafeUrl = (value) => {
+  if (!value) return false;
+  const s = String(value).trim();
+  // Relative path: starts with ./, ../, /, or is just a bare filename/path with no scheme
+  if (/^\.{0,2}\//.test(s) || /^[^:]+$/.test(s)) return true;
+  // Absolute URL — must be http/https and same origin
   try {
-    const u = new URL(String(value), window.location.origin);
-    // Allow only http/https and same-origin to comply with typical CSP (img-src/script-src 'self')
+    const u = new URL(s, window.location.origin);
     return (u.protocol === 'http:' || u.protocol === 'https:') && u.origin === window.location.origin;
   } catch (_) { return false; }
 };
 
+// Keep the old name as an alias so nothing else breaks
+const isHttpUrlSameOrigin = isSafeUrl;
+
 const safeSetImgSrc = (img, url) => {
-  if (isHttpUrlSameOrigin(url)) {
-    img.src = url;
+  if (isSafeUrl(url)) {
+    img.src = String(url);
   } else {
-    // If not allowed by CSP, don't set; optionally hide image placeholder
     img.removeAttribute('src');
   }
 };
 
 const safeSetAnchorHref = (a, url) => {
-  if (isHttpUrlSameOrigin(url)) {
-    a.href = url;
+  if (isSafeUrl(url)) {
+    a.href = String(url);
   } else {
-    // Disallow external/unsupported schemes to avoid CSP violations
     a.removeAttribute('href');
   }
 };
@@ -72,28 +89,22 @@ const makeDiv = (className) => {
    ====================== */
 /**
  * Create a high-DPI sprite that renders a centered single letter.
- * - Uses a transparent canvas (no background), so the colored sphere shows behind it.
- * - White bold letter with a soft dark stroke to ensure legibility on any node color.
- * - depthTest:false so the letter is always readable atop its node.
  */
 function createLetterBadgeSprite(letter) {
-  const size = 256; // high DPI for crisp text
+  const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d');
 
-  // Text styling
   ctx.font = 'bold 300px "Exo 2", sans-serif';
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
 
-  // Stroke (outline) for contrast
   ctx.lineWidth = 28;
   ctx.strokeStyle = '#000000';
   ctx.strokeText(letter, size / 2, size / 2);
 
-  // Fill
   ctx.fillStyle = '#cfd4cf';
   ctx.fillText(letter, size / 2, size / 2);
 
@@ -104,7 +115,7 @@ function createLetterBadgeSprite(letter) {
   const material = new THREE.SpriteMaterial({
     map: texture,
     transparent: true,
-    depthTest: false,   // keep the letter on top of the sphere
+    depthTest: false,
     depthWrite: false
   });
 
@@ -114,22 +125,14 @@ function createLetterBadgeSprite(letter) {
 
 /**
  * Attach a letter badge sprite to a spherical theme node.
- * Places the sprite slightly above the surface, scaled to the node radius.
  */
 function addBadgeToThemeNode(themeMesh, letter, nodeRadius = 0.3) {
   if (!themeMesh || !letter) return;
-
-  // Avoid duplicates
   if (themeMesh.userData && themeMesh.userData.badgeAttached) return;
 
   const badge = createLetterBadgeSprite(letter);
-  // Scale sprite roughly to the projected diameter of the sphere
-  // Sprite units are in world space like meshes; choose a size that reads well.
-  const spriteSize = nodeRadius * 1.3; // tuned for readability
+  const spriteSize = nodeRadius * 1.3;
   badge.scale.set(spriteSize, spriteSize, 1);
-
-  // Place it slightly in front of the sphere surface toward the camera (z+ from local POV).
-  // If the node rotates with the group, keeping it on local z improves the "stuck-on" look.
   badge.position.set(0, 0, nodeRadius + 0.02);
 
   themeMesh.add(badge);
@@ -137,37 +140,70 @@ function addBadgeToThemeNode(themeMesh, letter, nodeRadius = 0.3) {
   themeMesh.userData.badgeAttached = true;
 }
 
+/* ======================
+   PUBLICATIONS CACHE
+   Loaded once on first theme click, then reused.
+   ====================== */
+let _publicationsCache = null;
+let _publicationsLoading = false;
+let _publicationsCallbacks = [];
+
+function loadPublicationsOnce(callback) {
+  if (_publicationsCache !== null) {
+    callback(_publicationsCache);
+    return;
+  }
+  _publicationsCallbacks.push(callback);
+  if (_publicationsLoading) return; // already in flight
+  _publicationsLoading = true;
+
+  fetch('./publications.json')
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(data => {
+      _publicationsCache = Array.isArray(data) ? data : [];
+      dlog('Publications loaded:', _publicationsCache.length, 'entries');
+    })
+    .catch(e => {
+      console.warn('[ResearchHub] Could not load publications.json:', e);
+      _publicationsCache = [];
+    })
+    .finally(() => {
+      _publicationsLoading = false;
+      const cbs = _publicationsCallbacks.splice(0);
+      cbs.forEach(cb => cb(_publicationsCache));
+    });
+}
+
 // Function to initialize the Three.js research hub
 window.initResearchHub = function(researchData, newsData, teamData, gamesData, outreachTalksData, academicPresentationsData, alumniData) {
   const researchContainer = document.getElementById('research-canvas-container');
   const researchCanvas = document.getElementById('research-canvas');
-    if (!researchCanvas.dataset.rhClickBound) {
-      researchCanvas.addEventListener('click', (event) => {
-        const rect = researchCanvas.getBoundingClientRect();
-        window.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        window.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        window.raycaster.setFromCamera(window.mouse, window.camera);
-        const hits = window.raycaster.intersectObjects(window.themeNodes);
-        if (hits.length > 0) {
-          const themeName = hits[0].object.name;
-          window.updateDynamicContent(
-            themeName,
-            window.researchData,
-            window.newsData,
-            window.teamData,
-            window.gamesData,
-            window.outreachTalksData,
-            window.academicPresentationsData,
-            window.alumniData || []
-          );
-        }
-      }, { passive: true });
-      researchCanvas.dataset.rhClickBound = '1';
-    }
 
+  if (!researchCanvas.dataset.rhClickBound) {
+    researchCanvas.addEventListener('click', (event) => {
+      const rect = researchCanvas.getBoundingClientRect();
+      window.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      window.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      window.raycaster.setFromCamera(window.mouse, window.camera);
+      const hits = window.raycaster.intersectObjects(window.themeNodes);
+      if (hits.length > 0) {
+        const themeName = hits[0].object.name;
+        window.updateDynamicContent(
+          themeName,
+          window.researchData,
+          window.newsData,
+          window.teamData,
+          window.gamesData,
+          window.outreachTalksData,
+          window.academicPresentationsData,
+          window.alumniData || []
+        );
+      }
+    }, { passive: true });
+    researchCanvas.dataset.rhClickBound = '1';
+  }
 
   try {
-    // Stash data safely on window for click handler usage (read-only copies)
     window.researchData = Array.isArray(researchData) ? researchData.slice() : [];
     window.newsData = Array.isArray(newsData) ? newsData.slice() : [];
     window.teamData = Array.isArray(teamData) ? teamData.slice() : [];
@@ -176,7 +212,6 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
     window.academicPresentationsData = Array.isArray(academicPresentationsData) ? academicPresentationsData.slice() : [];
     window.alumniData = Array.isArray(alumniData) ? alumniData.slice() : [];
 
-    // Initialize Three.js components
     window.scene = new THREE.Scene();
     window.camera = new THREE.PerspectiveCamera(75, researchContainer.clientWidth / 600, 0.1, 1000);
     window.renderer = new THREE.WebGLRenderer({ canvas: researchCanvas, alpha: true, antialias: true });
@@ -186,7 +221,6 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
     window.group = new THREE.Group();
     window.scene.add(window.group);
 
-    // Create random background points and lines (network effect)
     const points = [];
     const numPoints = 50;
     for (let i = 0; i < numPoints; i++) {
@@ -213,13 +247,12 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
       window.group.add(node);
     });
 
-    // Define research themes and create interactive nodes
     const themes = [
-      { name: 'Sensing', color: 0xfacc15, position: new THREE.Vector3(3, 2, 0) },
-      { name: 'Modulating', color: 0xef4444, position: new THREE.Vector3(-3, 2, 0) },
-      { name: 'Adaptive', color: 0x3b82f6, position: new THREE.Vector3(0, -2, 3) },
-      { name: 'Regenerative', color: 0x34d399 , position: new THREE.Vector3(2, -2, -3) },
-      { name: 'Therapeutic', color: 0x8b5cf6, position: new THREE.Vector3(-2, -2, -3) }
+      { name: 'Sensing',       color: 0xfacc15, position: new THREE.Vector3( 3,  2,  0) },
+      { name: 'Modulating',    color: 0xef4444, position: new THREE.Vector3(-3,  2,  0) },
+      { name: 'Adaptive',      color: 0x3b82f6, position: new THREE.Vector3( 0, -2,  3) },
+      { name: 'Regenerative',  color: 0x34d399, position: new THREE.Vector3( 2, -2, -3) },
+      { name: 'Therapeutic',   color: 0x8b5cf6, position: new THREE.Vector3(-2, -2, -3) }
     ];
     window.themeNodes = [];
     themes.forEach(theme => {
@@ -227,24 +260,20 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
       const themeNodeMat = new THREE.MeshStandardMaterial({ color: theme.color, metalness: 0.3, roughness: 0.5 });
       const themeNode = new THREE.Mesh(themeNodeGeo, themeNodeMat);
       themeNode.position.copy(theme.position);
-      themeNode.name = theme.name; // For raycasting
+      themeNode.name = theme.name;
       window.group.add(themeNode);
 
-      // Connectors
       const closestPoint = points.reduce((prev, curr) => prev.distanceTo(theme.position) < curr.distanceTo(theme.position) ? prev : curr);
       const connectorGeo = new THREE.BufferGeometry().setFromPoints([theme.position, closestPoint]);
       const connectorLine = new THREE.Line(connectorGeo, new THREE.LineBasicMaterial({ color: theme.color, transparent: true, opacity: 0.5 }));
       window.group.add(connectorLine);
 
-      // --- NEW: add SMART letter badge inside the node ---
-      // Take the first letter of the theme name: S, M, A, R, T
       const letter = (theme.name && theme.name[0]) ? theme.name[0].toUpperCase() : '';
       addBadgeToThemeNode(themeNode, letter, 0.3);
 
       window.themeNodes.push(themeNode);
     });
 
-    // Add lighting to the scene
     const light = new THREE.DirectionalLight(0xffffff, 1.5);
     light.position.set(5, 5, 5);
     window.scene.add(light);
@@ -253,12 +282,9 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
 
     window.camera.position.z = 8;
 
-    // Setup Raycaster for interaction
     window.raycaster = new THREE.Raycaster();
     window.mouse = new THREE.Vector2();
 
-    // Event listeners for interactivity (click and drag)
-    // Attach click handler in a CSP-safe, late-bound way so it works even if window.onCanvasClick is defined later
     if (!researchCanvas.dataset.rhClickBound) {
       researchCanvas.addEventListener('click', (e) => {
         if (typeof window.onCanvasClick === 'function') {
@@ -271,7 +297,6 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
     let isMouseDown = false;
     let previousMousePosition = { x: 0, y: 0 };
 
-    // Named functions for event listeners to ensure proper removal/addition
     const onMouseDown = (e) => { isMouseDown = true; previousMousePosition = { x: e.clientX, y: e.clientY }; };
     const onMouseUp = () => { isMouseDown = false; };
     const onMouseMove = (e) => {
@@ -284,7 +309,6 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
     };
     const onMouseLeave = () => { isMouseDown = false; };
 
-    // Remove and re-add drag listeners
     researchCanvas.removeEventListener('mousedown', onMouseDown);
     researchCanvas.removeEventListener('mouseup', onMouseUp);
     researchCanvas.removeEventListener('mousemove', onMouseMove);
@@ -295,11 +319,10 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
     researchCanvas.addEventListener('mousemove', onMouseMove);
     researchCanvas.addEventListener('mouseleave', onMouseLeave);
 
-    // Define animateResearchHub and assign to window
     window.animateResearchHub = function() {
       requestAnimationFrame(window.animateResearchHub);
       if (!isMouseDown) {
-        window.group.rotation.y += 0.0005; // Continuous subtle rotation when not dragging
+        window.group.rotation.y += 0.0005;
       }
       if (window.renderer && window.scene && window.camera) {
         window.renderer.render(window.scene, window.camera);
@@ -308,34 +331,33 @@ window.initResearchHub = function(researchData, newsData, teamData, gamesData, o
       }
     };
 
-    // Start animation loop only once
     if (!window.researchHubInitialized) {
       window.animateResearchHub();
     }
 
-    // Handle window resize for responsiveness
     window.removeEventListener('resize', window.onResearchCanvasResize);
     window.onResearchCanvasResize = function() {
       if (researchCanvas.offsetParent !== null && window.camera && window.renderer) {
         window.camera.aspect = researchContainer.clientWidth / 600;
         window.camera.updateProjectionMatrix();
         window.renderer.setSize(researchContainer.clientWidth, 600);
-        window.renderer.render(window.scene, window.camera); // Force a render on resize
+        window.renderer.render(window.scene, window.camera);
       } else {
         console.log('Skipping resize: canvas not visible or Three.js components not ready.');
       }
     };
     window.addEventListener('resize', window.onResearchCanvasResize);
 
-    // Expose a legacy init for older main.js signatures (4-arg call)
     window.initResearchHubLegacy = function(r,n,t,g){ return window.initResearchHub(r,n,t,g, [], [], []); };
 
-    window.researchHubInitialized = true; // Set flag to true after successful initialization
+    window.researchHubInitialized = true;
 
-    // Perform an initial render immediately after setup
     if (window.renderer && window.scene && window.camera) {
       window.renderer.render(window.scene, window.camera);
     }
+
+    // Pre-fetch publications.json in the background so it's ready when a node is clicked
+    loadPublicationsOnce(() => dlog('Publications pre-fetched and cached.'));
 
   } catch (e) {
     console.error('Error during initResearchHub execution:', e);
@@ -363,7 +385,6 @@ window.onCanvasClick = function(event) {
 
   if (intersects.length > 0) {
     const themeName = intersects[0].object.name;
-    // Data objects are expected to be globally available after initResearchHub
     if (window.researchData && window.newsData && window.teamData && window.gamesData && window.outreachTalksData && window.academicPresentationsData) {
       window.updateDynamicContent(
         themeName,
@@ -393,7 +414,7 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
   }
 
   contentTitle.textContent = `${themeName} Theme`;
-  clearChildren(contentGrid); // Clear previous content safely
+  clearChildren(contentGrid);
 
   const safeFilter = (arr) => Array.isArray(arr) ? arr.filter(Boolean) : [];
   const relatedResearch = safeFilter(researchData).filter(r => Array.isArray(r.themes) && r.themes.includes(themeName));
@@ -403,7 +424,7 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
   const relatedOutreachTalks = safeFilter(outreachTalksData).filter(talk => Array.isArray(talk.themes) && talk.themes.includes(themeName));
   const relatedAcademicPresentations = safeFilter(academicPresentationsData).filter(pres => Array.isArray(pres.themes) && pres.themes.includes(themeName));
 
-  // Projects
+  // ── Projects ──────────────────────────────────────────────────────────────
   if (relatedResearch.length > 0) {
     contentGrid.appendChild(makeSectionHeader('Projects'));
     relatedResearch.forEach(item => {
@@ -413,7 +434,7 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
     });
   }
 
-  // News
+  // ── News ──────────────────────────────────────────────────────────────────
   if (relatedNews.length > 0) {
     contentGrid.appendChild(makeSectionHeader('News'));
     relatedNews.forEach(item => {
@@ -423,7 +444,7 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
     });
   }
 
-  // Team
+  // ── Team ──────────────────────────────────────────────────────────────────
   if (relatedTeam.length > 0) {
     contentGrid.appendChild(makeSectionHeader('Team'));
     relatedTeam.forEach(item => {
@@ -443,7 +464,6 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
       const btn = document.createElement('button');
       btn.className = 'open-modal-btn text-xs text-primary hover:underline';
       btn.type = 'button';
-      // Preserve data-modal-target as an attribute (used by external modal code)
       if (typeof item.id === 'string') {
         btn.setAttribute('data-modal-target', item.id);
       }
@@ -456,7 +476,7 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
     });
   }
 
-  // Games
+  // ── Games ─────────────────────────────────────────────────────────────────
   if (relatedGames.length > 0) {
     contentGrid.appendChild(makeSectionHeader('Games'));
     relatedGames.forEach(item => {
@@ -487,7 +507,7 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
     });
   }
 
-  // Outreach Talks
+  // ── Outreach Talks ────────────────────────────────────────────────────────
   if (relatedOutreachTalks.length > 0) {
     contentGrid.appendChild(makeSectionHeader('Outreach Talks'));
     relatedOutreachTalks.forEach(item => {
@@ -507,8 +527,7 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
           if (s && s.name) speakerNames.push(String(s.name));
         });
       }
-      const speakersText = speakerNames.length > 0 ? speakerNames.join(', ') : 'N/A';
-      p.textContent = `Speaker(s): ${speakersText}`;
+      p.textContent = `Speaker(s): ${speakerNames.length > 0 ? speakerNames.join(', ') : 'N/A'}`;
 
       d.appendChild(title);
       d.appendChild(p);
@@ -516,7 +535,7 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
     });
   }
 
-  // Academic Presentations
+  // ── Academic Presentations ────────────────────────────────────────────────
   if (relatedAcademicPresentations.length > 0) {
     contentGrid.appendChild(makeSectionHeader('Academic Presentations'));
     relatedAcademicPresentations.forEach(item => {
@@ -536,20 +555,124 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
           if (s && s.name) speakerNames.push(String(s.name));
         });
       }
-      const speakersText = speakerNames.length > 0 ? speakerNames.join(', ') : 'N/A';
-      p.textContent = `Speaker(s): ${speakersText}`;
+      p.textContent = `Speaker(s): ${speakerNames.length > 0 ? speakerNames.join(', ') : 'N/A'}`;
 
       d.appendChild(title);
       d.appendChild(p);
       contentGrid.appendChild(d);
     });
   }
+
+  // ── Publications ──────────────────────────────────────────────────────────
+  // Publications are loaded asynchronously from publications.json.
+  // We insert a placeholder row immediately, then replace it once the data
+  // arrives (or is already cached from a previous click).
+  const pubPlaceholder = makeDiv('text-xs text-medium-text italic p-2');
+  pubPlaceholder.textContent = 'Loading publications…';
+  const pubHeader = makeSectionHeader('Publications');
+  // We'll only append the header if there are matching publications — so we
+  // defer that decision until after the fetch resolves. For now, attach a
+  // sentinel div that we can replace or remove.
+  const pubSentinel = makeDiv('');
+  contentGrid.appendChild(pubSentinel);
+
+  loadPublicationsOnce((publications) => {
+    // The content grid may have been cleared by another click before the
+    // fetch resolved — check the sentinel is still in the DOM.
+    if (!pubSentinel.isConnected) return;
+
+    const relatedPubs = publications.filter(pub =>
+      Array.isArray(pub.themes) && pub.themes.some(t =>
+        // Case-insensitive match so "sensing" matches "Sensing"
+        t.toLowerCase() === themeName.toLowerCase()
+      )
+    );
+
+    if (relatedPubs.length === 0) {
+      // Nothing to show — remove the sentinel silently
+      pubSentinel.remove();
+      return;
+    }
+
+    // Sort: newest first
+    const sorted = relatedPubs.slice().sort((a, b) => (b.year || 0) - (a.year || 0));
+
+    // Build the publications block
+    const frag = document.createDocumentFragment();
+    frag.appendChild(makeSectionHeader(`Publications (${sorted.length})`));
+
+    sorted.forEach(pub => {
+      const card = makeDiv('text-sm p-2 rounded-md bg-slate-800/50 space-y-1');
+
+      // Title — linked to DOI if available
+      const titleEl = document.createElement(pub.doi ? 'a' : 'p');
+      titleEl.className = 'font-semibold leading-snug' + (pub.doi ? ' text-primary hover:underline' : ' text-light-text');
+      titleEl.textContent = String(pub.title || '');
+      if (pub.doi) {
+        titleEl.href = `https://doi.org/${pub.doi}`;
+        titleEl.target = '_blank';
+        titleEl.rel = 'noopener noreferrer';
+      }
+      card.appendChild(titleEl);
+
+      // Authors + year
+      const meta = document.createElement('p');
+      meta.className = 'text-xs text-medium-text';
+      const authorStr = String(pub.authors || '');
+      const yearStr   = pub.year ? String(pub.year) : '';
+      meta.textContent = [authorStr, yearStr].filter(Boolean).join(' · ');
+      card.appendChild(meta);
+
+      // Journal / venue
+      if (pub.journal) {
+        const journal = document.createElement('p');
+        journal.className = 'text-xs text-slate-400 italic';
+        journal.textContent = String(pub.journal);
+        card.appendChild(journal);
+      }
+
+      // Badges row: Open Access + type + dataset link
+      const badges = makeDiv('flex flex-wrap items-center gap-2 mt-1');
+
+      if (pub.openAccess) {
+        const oa = document.createElement('span');
+        oa.className = 'text-xs bg-emerald-700/50 text-emerald-300 px-1.5 py-0.5 rounded-full';
+        oa.textContent = 'Open Access';
+        badges.appendChild(oa);
+      }
+
+      if (pub.type) {
+        const typeBadge = document.createElement('span');
+        typeBadge.className = 'text-xs bg-slate-700/60 text-slate-300 px-1.5 py-0.5 rounded-full capitalize';
+        typeBadge.textContent = String(pub.type);
+        badges.appendChild(typeBadge);
+      }
+
+      if (pub.dataset && isSafeUrl(pub.dataset)) {
+        const dsLink = document.createElement('a');
+        dsLink.className = 'text-xs text-emerald-400 hover:underline';
+        dsLink.href = String(pub.dataset);
+        dsLink.target = '_blank';
+        dsLink.rel = 'noopener noreferrer';
+        dsLink.textContent = '⬡ Dataset';
+        badges.appendChild(dsLink);
+      }
+
+      if (badges.children.length) card.appendChild(badges);
+
+      frag.appendChild(card);
+    });
+
+    // Replace the sentinel with the built fragment
+    pubSentinel.replaceWith(frag);
+  });
 };
 
-/* SMARTBio Research Hubs
+/* =====================================================================
+   SMARTBio Research Hubs
    - Topic Hub mount left intact
    - Anatomy Hub reads research.json and opens a modal per "application"
-*/
+   ===================================================================== */
 
 window.SMARTBio = window.SMARTBio || {};
 const { modal } = window.SMARTBio;
@@ -560,7 +683,6 @@ const { modal } = window.SMARTBio;
 (function initTopicHub() {
   const mount = document.getElementById('topicHubMount');
   if (!mount) return;
-  // Your existing Topic Hub code can continue to render here.
 })();
 
 /* --------------------------
@@ -617,7 +739,6 @@ async function loadResearchJSON() {
     regions.forEach(r => r.classList.remove('active-stroke'));
     regions.filter(r => r.dataset.region === regionKey).forEach(r => r.classList.add('active-stroke'));
 
-    // Load JSON
     const data = await loadResearchJSON();
     if (data?.error) {
       applicationsWrap.innerHTML = '';
@@ -628,10 +749,7 @@ async function loadResearchJSON() {
     }
     jsonErrEl.style.display = 'none';
 
-    // Expected structure:
-    // research.json -> { "anatomy": { "<region>": [ { application, title, authors, year, link, summary, tags[] }, ... ] } }
     const items = data?.anatomy?.[regionKey] || [];
-    // Group by application
     const appMap = items.reduce((acc, it) => {
       const app = it.application || 'General';
       (acc[app] = acc[app] || []).push(it);
@@ -664,28 +782,62 @@ async function loadResearchJSON() {
   }
 
   function openApplicationModal(regionPretty, appName, list) {
-    const html = list.map(item => {
-      const tags = (item.tags || []).map(t => `<span class="chip" style="cursor:default">#${t}</span>`).join(' ');
-      const link = item.link ? `<a href="${item.link}" target="_blank" rel="noopener">View</a>` : '';
-      return `
-        <div class="result-card">
-          <div class="result-title"><strong>${item.title || ''}</strong></div>
-          <div class="result-meta">${item.authors || ''}${item.year ? ' · ' + item.year : ''}</div>
-          <p class="result-summary">${item.summary || ''}</p>
-          <div class="result-tags">${tags}</div>
-          <div style="margin-top:6px">${link}</div>
-        </div>
-      `;
-    }).join('');
+    // Build modal content using safe DOM methods (no innerHTML with untrusted data)
+    const wrap = document.createDocumentFragment();
 
-    modal.open({
-      title: `${regionPretty} · ${appName}`,
-      html: html || '<div class="empty-state">No entries yet for this application.</div>'
+    list.forEach(item => {
+      const card = makeDiv('result-card');
+
+      const titleEl = document.createElement('div');
+      titleEl.className = 'result-title';
+      const strong = document.createElement('strong');
+      strong.textContent = String(item.title || '');
+      titleEl.appendChild(strong);
+      card.appendChild(titleEl);
+
+      const meta = document.createElement('div');
+      meta.className = 'result-meta';
+      meta.textContent = [item.authors, item.year].filter(Boolean).join(' · ');
+      card.appendChild(meta);
+
+      const summary = document.createElement('p');
+      summary.className = 'result-summary';
+      summary.textContent = String(item.summary || '');
+      card.appendChild(summary);
+
+      const tagsRow = makeDiv('result-tags');
+      (item.tags || []).forEach(t => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.style.cursor = 'default';
+        chip.textContent = `#${t}`;
+        tagsRow.appendChild(chip);
+      });
+      card.appendChild(tagsRow);
+
+      if (item.link && isSafeUrl(item.link)) {
+        const linkWrap = document.createElement('div');
+        linkWrap.style.marginTop = '6px';
+        const a = document.createElement('a');
+        a.href = String(item.link);
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = 'View';
+        linkWrap.appendChild(a);
+        card.appendChild(linkWrap);
+      }
+
+      wrap.appendChild(card);
     });
+
+    if (modal && typeof modal.open === 'function') {
+      modal.open({
+        title: `${regionPretty} · ${appName}`,
+        fragment: wrap
+      });
+    }
   }
 
-  // Default state
   applicationsWrap.innerHTML = '';
   emptyEl.style.display = 'block';
 })();
-
