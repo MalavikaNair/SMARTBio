@@ -217,6 +217,7 @@ const DOMElements = (() => {
   const outreachTalksGrid = document.getElementById('outreach-talks-grid');
   const academicPresentationsGrid = document.getElementById('academic-presentations-grid');
   const outreachNewsList = document.getElementById('outreach-news-list');
+  const publicationsList = document.getElementById('publications-list');
   const gamesGrid = document.getElementById('games-grid');
   const gameFilters = document.getElementById('game-filters');
 
@@ -269,7 +270,7 @@ const DataManager = (() => {
     try {
       const [
         research, team, alumni, news, games, outreachTalks,
-        academicPresentations, outreachNews
+        academicPresentations, outreachNews, publications
       ] = await Promise.all([
         fetchJSON('data/research.json').catch(() => ({ items: [] })),
         fetchJSON('data/team.json').catch(() => ({ items: [] })),
@@ -279,6 +280,7 @@ const DataManager = (() => {
         fetchJSON('data/outreachTalks.json').catch(() => ({ items: [] })),
         fetchJSON('data/academicPresentations.json').catch(() => ({ items: [] })),
         fetchJSON('data/outreachNews.json').catch(() => ({ items: [] })),
+        fetchJSON('data/publications.json').catch(() => ({ items: [] })) 
       ]);
 
       const assign = (name, data) => {
@@ -293,6 +295,7 @@ const DataManager = (() => {
       assign('outreachTalksData', outreachTalks);
       assign('academicPresentationsData', academicPresentations);
       assign('outreachNewsData', outreachNews);
+      assign('publicationsData', publications);
       Renderer.renderAllContent();
       window.smartbioDataReady = true;
       document.dispatchEvent(new CustomEvent('smartbio:data-ready'));
@@ -309,6 +312,8 @@ const DataManager = (() => {
       if (DOMElements.outreachTalksGrid) DOMElements.outreachTalksGrid.textContent = msg;
       if (DOMElements.academicPresentationsGrid) DOMElements.academicPresentationsGrid.textContent = msg;
       if (DOMElements.outreachNewsList) DOMElements.outreachNewsList.textContent = msg;
+      if (DOMElements.publicationsList) DOMElements.publicationsList.textContent = msg;
+
     }
   }
 
@@ -461,6 +466,58 @@ const Renderer = (() => {
       });
 
     grid.append(...cards);
+  }
+
+  function renderPublications() {
+    const container = DOMElements.publicationsList;
+    if (!container) return;
+  
+    container.replaceChildren();
+  
+    const items = Array.isArray(window.publicationsData)
+      ? window.publicationsData
+      : (window.publicationsData?.items || []);
+  
+    if (!items.length) {
+      container.textContent = 'No publications available.';
+      return;
+    }
+  
+    // group by year
+    const grouped = {};
+    items.forEach(p => {
+      const y = p.year || 'Unknown';
+      if (!grouped[y]) grouped[y] = [];
+      grouped[y].push(p);
+    });
+  
+    Object.keys(grouped).sort((a,b) => b - a).forEach(year => {
+      const yearBlock = document.createElement('div');
+  
+      const heading = document.createElement('h3');
+      heading.className = 'text-2xl font-bold mb-4';
+      heading.textContent = year;
+  
+      const list = document.createElement('ul');
+  
+      grouped[year].forEach(p => {
+        const li = document.createElement('li');
+        li.className = 'mb-4';
+  
+        li.innerHTML = `
+          <strong>${p.title}</strong><br>
+          ${p.authors || ''}<br>
+          <em>${p.journal || ''}</em>
+          ${p.doi ? `<br><a href="https://doi.org/${p.doi}" target="_blank">DOI</a>` : ''}
+        `;
+  
+        list.appendChild(li);
+      });
+  
+      yearBlock.appendChild(heading);
+      yearBlock.appendChild(list);
+      container.appendChild(yearBlock);
+    });
   }
 
   function renderGames() {
@@ -648,6 +705,7 @@ const Renderer = (() => {
     renderOutreachTalks();
     renderAcademicPresentations();
     renderOutreachNews();
+    renderPublications();
     alog('Renderers invoked for all sections.');
   }
 
