@@ -495,7 +495,7 @@
     "openAccess": true,
     "themes": ["Modulating", "Regenerative"],
     "dataset": null,
-    "interactive": null,
+    "interactive": null
   },
   {
     "id": "pub-016",
@@ -511,6 +511,6 @@
     "openAccess": true,
     "themes": ["Regenerative"],
     "dataset": null,
-    "interactive": null,
+    "interactive": null
   }
 ]
