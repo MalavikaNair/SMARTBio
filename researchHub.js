@@ -525,7 +525,7 @@ window.updateDynamicContent = function(themeName, researchData, newsData, teamDa
       contentGrid.appendChild(d);
     });
   }
- // ── Publications ──────────────────────────────────────────
+// ── Publications ──────────────────────────────────────────
 
 if (!window.publicationsData) {
   const msg = makeDiv('text-xs text-medium-text italic p-2');
@@ -564,7 +564,7 @@ if (!relatedPubs.length) {
   return;
 }
 
-// render
+// render publications
 const sorted = relatedPubs.slice().sort((a, b) => (b.year || 0) - (a.year || 0));
 
 contentGrid.appendChild(makeSectionHeader(`Publications (${sorted.length})`));
@@ -585,7 +585,7 @@ sorted.forEach(pub => {
 
   contentGrid.appendChild(card);
 });
-
+}
 /* =====================================================================
    SMARTBio Research Hubs
    - Topic Hub mount left intact
