@@ -9,9 +9,9 @@
   <meta property="og:title" content="SMART Biomaterials - University of Oxford">
   <meta property="og:description" content="Engineering the future of medicine through intelligent materials that sense, respond and integrate with the body. Discover our research, team, news, and outreach.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="">
-  <meta property="og:image" content="">
-  <meta property="og:image:alt" content="SMART Biomaterials">
+  <meta property="og:url" content="https://smart-biomaterials.com">
+  <meta property="og:image" content="https://smart-biomaterials.com/assets/img/og-image.jpg">
+  <meta property="og:image:alt" content="SMART Biomaterials Group at the University of Oxford">
   <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
   script-src 'self';
@@ -53,9 +53,10 @@
                 <div id="main-nav" class="hidden md:flex items-center space-x-8 text-light-text">
                     <a href="#home" class="nav-link active" aria-current="page">Home</a>
                     <a href="#research" class="nav-link">Research</a>
+                    <a href="#publications" class="nav-link">Publications</a>
                     <a href="#team" class="nav-link">Team</a>
                     <a href="#news" class="nav-link">News</a>
-                    <a href="#outreach" class="nav-link">Dissemination</a>
+                    <a href="#outreach" class="nav-link">Outreach</a>
                     <a href="#contact" class="nav-link">Contact</a>
                     <a href="#privacy" class="nav-link">Privacy</a>
                 </div>
@@ -69,9 +70,10 @@
         <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 header-glass border-t border-emerald-500/20" role="navigation" aria-label="Mobile navigation">
             <a href="#home" class="nav-link block py-2 text-light-text">Home</a>
             <a href="#research" class="nav-link block py-2 text-light-text">Research</a>
+            <a href="#publications" class="nav-link block py-2 text-light-text">Publications</a>
             <a href="#team" class="nav-link block py-2 text-light-text">Team</a>
             <a href="#news" class="nav-link block py-2 text-light-text">News</a>
-            <a href="#outreach" class="nav-link block py-2 text-light-text">Dissemination</a>
+            <a href="#outreach" class="nav-link block py-2 text-light-text">Outreach</a>
             <a href="#contact" class="nav-link block py-2 text-light-text">Contact</a>
             <a href="#privacy" class="nav-link block py-2 text-light-text">Privacy</a>
         </div>
@@ -137,6 +139,46 @@
                 <div id="research-content-grid" class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" aria-live="polite">
                     <div class="loader" aria-label="Loading research items..."></div>
                     <!-- Research items will be dynamically loaded here by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Publications Page Section -->
+        <section id="publications-page" class="page-section py-28" aria-busy="true">
+            <div class="container mx-auto px-6 fade-in-section">
+                <h2 class="text-4xl font-bold text-center mb-4 section-title">Publications</h2>
+                <p class="text-center text-medium-text max-w-3xl mx-auto mb-12">Peer-reviewed journal articles, book chapters, and preprints from the SMART Biomaterials group.</p>
+
+                <!-- Filter controls -->
+                <div class="flex flex-wrap justify-center gap-3 mb-10" id="publication-filters" role="group" aria-label="Filter publications by type">
+                    <button class="filter-btn bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300 active" data-filter="all">All</button>
+                    <button class="filter-btn bg-transparent border border-primary text-primary hover:bg-primary hover:text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300" data-filter="journal">Journal Articles</button>
+                    <button class="filter-btn bg-transparent border border-primary text-primary hover:bg-primary hover:text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300" data-filter="chapter">Book Chapters</button>
+                    <button class="filter-btn bg-transparent border border-primary text-primary hover:bg-primary hover:text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300" data-filter="preprint">Preprints</button>
+                </div>
+
+                <!-- Year-grouped publication list -->
+                <div id="publications-list" class="max-w-4xl mx-auto space-y-10" aria-live="polite">
+                    <div class="loader" aria-label="Loading publications..."></div>
+                    <!-- Publications will be dynamically loaded here by JavaScript -->
+                    <!-- Expected JSON structure: publications.json
+                    [
+                      {
+                        "id": "pub-001",
+                        "type": "journal",           // "journal" | "chapter" | "preprint"
+                        "year": 2024,
+                        "title": "Title of the paper",
+                        "authors": "Nair M, Smith J, ...",
+                        "journal": "Nature Materials",
+                        "volume": "23",
+                        "pages": "100–110",
+                        "doi": "10.1038/s41563-024-00001-x",
+                        "openAccess": true,
+                        "themes": ["drug-delivery", "sensing"],  // links to research themes
+                        "dataset": null                          // URL to linked dataset, or null
+                      }
+                    ]
+                    -->
                 </div>
             </div>
         </section>
@@ -237,142 +279,141 @@
         </section>
 
         <!-- Contact Page Section -->
-<section id="contact-page" class="page-section py-20">
-  <div class="container mx-auto px-6 fade-in-section">
-    <h2 class="text-4xl lg:text-5xl font-extrabold text-center mb-6 section-title">Get In Touch</h2>
-    <p class="text-lg lg:text-xl text-slate-200 mb-6 text-center max-w-3xl mx-auto leading-relaxed">
-      We are always delighted to hear from enthusiastic students, researchers, and collaborators who share our interest in intelligent biomaterials and translational biomedical engineering.
-    </p>
+        <section id="contact-page" class="page-section py-20">
+          <div class="container mx-auto px-6 fade-in-section">
+            <h2 class="text-4xl lg:text-5xl font-extrabold text-center mb-6 section-title">Get In Touch</h2>
+            <p class="text-lg lg:text-xl text-slate-200 mb-6 text-center max-w-3xl mx-auto leading-relaxed">
+              We are always delighted to hear from enthusiastic students, researchers, and collaborators who share our interest in intelligent biomaterials and translational biomedical engineering.
+            </p>
 
-    <!-- Card with faded vignette background (no border) -->
-    <div class="relative max-w-3xl mx-auto rounded-3xl overflow-hidden shadow-lg">
-      <div class="absolute inset-0 pointer-events-none rounded-3xl bg-gradient-to-br from-slate-900/90 via-slate-800/80 to-slate-900/90 shadow-[inset_0_0_80px_rgba(0,0,0,0.6)]"></div>
-      <div class="relative p-8 lg:p-10 text-left text-slate-200">
+            <!-- Card with faded vignette background (no border) -->
+            <div class="relative max-w-3xl mx-auto rounded-3xl overflow-hidden shadow-lg">
+              <div class="absolute inset-0 pointer-events-none rounded-3xl bg-gradient-to-br from-slate-900/90 via-slate-800/80 to-slate-900/90 shadow-[inset_0_0_80px_rgba(0,0,0,0.6)]"></div>
+              <div class="relative p-8 lg:p-10 text-left text-slate-200">
 
-        <!-- DPhil / PhD FAQ -->
-        <div class="collapsible-section mb-8">
-          <button class="collapsible-header flex items-center justify-between" aria-expanded="false" aria-controls="faq-phd">
-            <h3 class="text-2xl lg:text-3xl font-semibold text-light-text section-title">DPhil / PhD Opportunities</h3>
-            <svg class="w-6 h-6 text-primary ml-3" aria-hidden="true"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
-          </button>
-          <div id="faq-phd" class="collapsible-content mt-4">
-            <ul class="space-y-4 text-lg lg:text-xl leading-8 text-medium-text">
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Capacity & funding:</strong> Please note that I have limited capacity to supervise new DPhil students. Due to the current funding landscape, I can only support applicants who have confirmed funding for tuition/stipend and project consumables.
-              </li>
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Eligible funding routes:</strong> I can support students who will be pursuing scholarships that fully support student and research costs, or programmes such as NIH OxCam, OxKen, Interdisciplinary Biosciences DTP, or Engineering Biology CDT.
-              </li>
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">University scholarships:</strong> It may be helpful to explore centrally administered University of Oxford scholarships for possible support (fees & living costs). For more information, see the
-                <a href="https://www.ox.ac.uk/admissions/graduate/fees-and-funding/graduate-scholarships" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Graduate Scholarships page</a>.
-              </li>
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Applying:</strong> If eligible, apply directly via the relevant University DPhil portal with a short proposal aligned to the research areas of SMART Biomaterials. 
-              </li>
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Informal enquiries:</strong> If you have any further questions, I am happy to discuss fit or funding briefly — please include your proposed projects and funding routes when you get in touch.
-              </li>
-            </ul>
+                <!-- DPhil / PhD FAQ -->
+                <div class="collapsible-section mb-8">
+                  <button class="collapsible-header flex items-center justify-between" aria-expanded="false" aria-controls="faq-phd">
+                    <h3 class="text-2xl lg:text-3xl font-semibold text-light-text section-title">DPhil / PhD Opportunities</h3>
+                    <svg class="w-6 h-6 text-primary ml-3" aria-hidden="true"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
+                  </button>
+                  <div id="faq-phd" class="collapsible-content mt-4">
+                    <ul class="space-y-4 text-lg lg:text-xl leading-8 text-medium-text">
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Capacity & funding:</strong> Please note that I have limited capacity to supervise new DPhil students. Due to the current funding landscape, I can only support applicants who have confirmed funding for tuition/stipend and project consumables.
+                      </li>
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Eligible funding routes:</strong> I can support students who will be pursuing scholarships that fully support student and research costs, or programmes such as NIH OxCam, OxKen, Interdisciplinary Biosciences DTP, or Engineering Biology CDT.
+                      </li>
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">University scholarships:</strong> It may be helpful to explore centrally administered University of Oxford scholarships for possible support (fees & living costs). For more information, see the
+                        <a href="https://www.ox.ac.uk/admissions/graduate/fees-and-funding/graduate-scholarships" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Graduate Scholarships page</a>.
+                      </li>
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Applying:</strong> If eligible, apply directly via the relevant University DPhil portal with a short proposal aligned to the research areas of SMART Biomaterials.
+                      </li>
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Informal enquiries:</strong> If you have any further questions, I am happy to discuss fit or funding briefly — please include your proposed projects and funding routes when you get in touch.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Postdoctoral FAQ -->
+                <div class="collapsible-section mb-8">
+                  <button class="collapsible-header flex items-center justify-between" aria-expanded="false" aria-controls="faq-postdoc">
+                    <h3 class="text-2xl lg:text-3xl font-semibold text-light-text section-title">Postdoctoral Opportunities</h3>
+                    <svg class="w-6 h-6 text-primary ml-3" aria-hidden="true"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
+                  </button>
+                  <div id="faq-postdoc" class="collapsible-content mt-4">
+                    <ul class="space-y-4 text-lg lg:text-xl leading-8 text-medium-text">
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Current status:</strong> There are no open postdoctoral positions in the group at present.
+                      </li>
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Future opportunities:</strong> Any new roles will be advertised both here and via the
+                        <a href="https://www.jobs.ox.ac.uk/home" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Oxford University Jobs Portal</a>.
+                      </li>
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Hosted fellowships:</strong> If you hold (or are applying for) an external fellowship and wish to be hosted here, please <strong class="text-primary">get in touch</strong> to discuss fit and support before applying.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Work Experience FAQ -->
+                <div class="collapsible-section mb-8">
+                  <button class="collapsible-header flex items-center justify-between" aria-expanded="false" aria-controls="faq-workexp">
+                    <h3 class="text-2xl lg:text-3xl font-semibold text-light-text section-title">Work Experience Opportunities</h3>
+                    <svg class="w-6 h-6 text-primary ml-3" aria-hidden="true"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
+                  </button>
+                  <div id="faq-workexp" class="collapsible-content mt-4">
+                    <ul class="space-y-4 text-lg lg:text-xl leading-8 text-medium-text">
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Eligibility:</strong> We welcome students in their final years of school interested in biomedical engineering / biomaterials research.
+                      </li>
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">How to apply:</strong> Placements must be arranged through the joint IBME / Department of Engineering Science Work Experience Programme to ensure appropriate supervision.
+                      </li>
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Next steps:</strong> Please <strong class="text-primary">get in touch</strong> for guidance before applying.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Collaborations -->
+                <div class="collapsible-section mb-8">
+                  <button class="collapsible-header flex items-center justify-between" aria-expanded="false" aria-controls="faq-collab">
+                    <h3 class="text-2xl lg:text-3xl font-semibold text-light-text section-title">Collaborations & Partnerships</h3>
+                    <svg class="w-6 h-6 text-primary ml-3" aria-hidden="true"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
+                  </button>
+                  <div id="faq-collab" class="collapsible-content mt-4">
+                    <ul class="space-y-4 text-lg lg:text-xl leading-8 text-medium-text">
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Collaborative projects:</strong> We welcome academic, clinical, and industrial partners working on materials innovation and translational biomaterials.
+                      </li>
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Getting in touch:</strong> Send a short overview of your organisation, research area, and potential alignment to start a conversation.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Consultancy -->
+                <div class="collapsible-section">
+                  <button class="collapsible-header flex items-center justify-between" aria-expanded="false" aria-controls="faq-consultancy">
+                    <h3 class="text-2xl lg:text-3xl font-semibold text-light-text section-title">Consultancy & Advisory Work</h3>
+                    <svg class="w-6 h-6 text-primary ml-3" aria-hidden="true"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
+                  </button>
+                  <div id="faq-consultancy" class="collapsible-content mt-4">
+                    <ul class="space-y-4 text-lg lg:text-xl leading-8 text-medium-text">
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">Process:</strong> Consultancy and advisory requests are handled via
+                        <a href="https://innovation.ox.ac.uk" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Oxford University Innovation (OUI)</a>.
+                      </li>
+                      <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
+                        <strong class="text-primary">How to proceed:</strong> Please contact me briefly with your project summary; formal arrangements will be coordinated through OUI in line with University policy.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact details -->
+            <p class="text-lg lg:text-xl text-slate-200 mt-8 mb-4 text-center max-w-3xl mx-auto leading-relaxed">
+              For specific enquiries or collaborations, please contact <strong class="text-primary">Malavika Nair</strong> via the University of Oxford Engineering Science email.
+            </p>
+
+            <address class="mt-4 text-medium-text not-italic text-center max-w-3xl mx-auto">
+              <p>SMART Biomaterials Team</p>
+              <p>Institute of Biomedical Engineering – Marcela Botnar Wing</p>
+              <p>Botnar Research Centre, University of Oxford</p>
+              <p>Windmill Road, Headington, Oxford OX3 7LD, UK</p>
+            </address>
           </div>
-        </div>
-
-        <!-- Postdoctoral FAQ -->
-        <div class="collapsible-section mb-8">
-          <button class="collapsible-header flex items-center justify-between" aria-expanded="false" aria-controls="faq-postdoc">
-            <h3 class="text-2xl lg:text-3xl font-semibold text-light-text section-title">Postdoctoral Opportunities</h3>
-            <svg class="w-6 h-6 text-primary ml-3" aria-hidden="true"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
-          </button>
-          <div id="faq-postdoc" class="collapsible-content mt-4">
-            <ul class="space-y-4 text-lg lg:text-xl leading-8 text-medium-text">
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Current status:</strong> There are no open postdoctoral positions in the group at present.
-              </li>
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Future opportunities:</strong> Any new roles will be advertised both here and via the
-                <a href="https://www.jobs.ox.ac.uk/home" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Oxford University Jobs Portal</a>.
-              </li>
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Hosted fellowships:</strong> If you hold (or are applying for) an external fellowship and wish to be hosted here, please <strong class="text-primary">get in touch</strong> to discuss fit and support before applying.
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Work Experience FAQ -->
-        <div class="collapsible-section mb-8">
-          <button class="collapsible-header flex items-center justify-between" aria-expanded="false" aria-controls="faq-workexp">
-            <h3 class="text-2xl lg:text-3xl font-semibold text-light-text section-title">Work Experience Opportunities</h3>
-            <svg class="w-6 h-6 text-primary ml-3" aria-hidden="true"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
-          </button>
-          <div id="faq-workexp" class="collapsible-content mt-4">
-            <ul class="space-y-4 text-lg lg:text-xl leading-8 text-medium-text">
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Eligibility:</strong> We welcome students in their final years of school interested in biomedical engineering / biomaterials research.
-              </li>
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">How to apply:</strong> Placements must be arranged through the joint IBME / Department of Engineering Science Work Experience Programme to ensure appropriate supervision.
-              </li>
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Next steps:</strong> Please <strong class="text-primary">get in touch</strong> for guidance before applying.
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Collaborations -->
-        <div class="collapsible-section mb-8">
-          <button class="collapsible-header flex items-center justify-between" aria-expanded="false" aria-controls="faq-collab">
-            <h3 class="text-2xl lg:text-3xl font-semibold text-light-text section-title">Collaborations & Partnerships</h3>
-            <svg class="w-6 h-6 text-primary ml-3" aria-hidden="true"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
-          </button>
-          <div id="faq-collab" class="collapsible-content mt-4">
-            <ul class="space-y-4 text-lg lg:text-xl leading-8 text-medium-text">
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Collaborative projects:</strong> We welcome academic, clinical, and industrial partners working on materials innovation and translational biomaterials.
-              </li>
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Getting in touch:</strong> Send a short overview of your organisation, research area, and potential alignment to start a conversation.
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Consultancy -->
-        <div class="collapsible-section">
-          <button class="collapsible-header flex items-center justify-between" aria-expanded="false" aria-controls="faq-consultancy">
-            <h3 class="text-2xl lg:text-3xl font-semibold text-light-text section-title">Consultancy & Advisory Work</h3>
-            <svg class="w-6 h-6 text-primary ml-3" aria-hidden="true"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
-          </button>
-          <div id="faq-consultancy" class="collapsible-content mt-4">
-            <ul class="space-y-4 text-lg lg:text-xl leading-8 text-medium-text">
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">Process:</strong> Consultancy and advisory requests are handled via
-                <a href="https://innovation.ox.ac.uk" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Oxford University Innovation (OUI)</a>.
-              </li>
-              <li class="relative pl-6 before:content-['•'] before:absolute before:left-0 before:text-emerald-400">
-                <strong class="text-primary">How to proceed:</strong> Please contact me briefly with your project summary; formal arrangements will be coordinated through OUI in line with University policy.
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contact details -->
-    <p class="text-lg lg:text-xl text-slate-200 mt-8 mb-4 text-center max-w-3xl mx-auto leading-relaxed">
-      For specific enquiries or collaborations, please contact <strong class="text-primary">Malavika Nair</strong> via the University of Oxford Engineering Science email.
-    </p>
-
-    <address class="mt-4 text-medium-text not-italic text-center max-w-3xl mx-auto">
-      <p>SMART Biomaterials Team</p>
-      <p>Institute of Biomedical Engineering – Marcela Botnar Wing</p>
-      <p>Botnar Research Centre, University of Oxford</p>
-      <p>Windmill Road, Headington, Oxford OX3 7LD, UK</p>
-    </address>
-  </div>
-</section>
-
+        </section>
 
         <!-- Privacy Page Section -->
         <section id="privacy-page" class="page-section py-28">
@@ -391,7 +432,9 @@
         <div class="container mx-auto px-6 text-center text-slate-500">
             <p>© <span id="year"></span> SMART Biomaterials Team. All Rights Reserved.</p>
             <p>University of Oxford</p>
-            <p class="text-xs text-slate-600 mt-2">This website was created with the aid of Google Gemini Flash 2.5 and OpenAI ChatGPT-5 for Edu</p>
+            <p class="text-xs text-slate-600 mt-2">
+                This website was developed with the assistance of AI language models — including Google Gemini 2.5 Flash, OpenAI ChatGPT for Education, and Anthropic Claude Sonnet 4.6 — as part of a commitment to responsible and transparent use of AI tools in research communication.
+            </p>
         </div>
     </footer>
 
@@ -470,16 +513,16 @@
     </div>
 
   <!-- GDPR Consent Banner -->
-<div id="gdpr-consent-banner"
-     class="hidden fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 flex flex-col sm:flex-row items-center justify-between z-50 shadow-lg"
-     role="dialog"
-     aria-live="polite"
-     aria-label="Cookie Consent Banner">
+  <div id="gdpr-consent-banner"
+       class="hidden fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 flex flex-col sm:flex-row items-center justify-between z-50 shadow-lg"
+       role="dialog"
+       aria-live="polite"
+       aria-label="Cookie Consent Banner">
         <p class="text-sm mb-2 sm:mb-0">This website itself does not use cookies or collect personal data.
       However, some embedded third-party services (e.g. YouTube videos or other externally hosted images and links) may set cookies or collect limited data.
       For details, see our <a href="#privacy" class="text-emerald-400 underline font-semibold">Privacy Notice</a></p>
         <button id="accept-cookies-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300">Accept and Continue Browsing</button>
-    </div>
+  </div>
 
   <!-- Local vendor JS -->
   <script src="./assets/js/three.min.js"></script>
@@ -492,4 +535,3 @@
 
 </body>
 </html>
-
