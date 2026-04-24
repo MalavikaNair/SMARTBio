@@ -54,6 +54,7 @@
                     <a href="#home" class="nav-link active" aria-current="page">Home</a>
                     <a href="#research" class="nav-link">Research</a>
                     <a href="#publications" class="nav-link">Publications</a>
+                    <a href = "https://data.smart-biomaterials.com" class="nav-link">Open Data and Tools</a>
                     <a href="#team" class="nav-link">Team</a>
                     <a href="#news" class="nav-link">News</a>
                     <a href="#outreach" class="nav-link">Outreach</a>
@@ -150,12 +151,12 @@
                 <p class="text-center text-medium-text max-w-3xl mx-auto mb-12">Peer-reviewed journal articles, book chapters, and preprints from the SMART Biomaterials group.</p>
 
                 <!-- Filter controls -->
-                <div class="flex flex-wrap justify-center gap-3 mb-10" id="publication-filters" role="group" aria-label="Filter publications by type">
-                    <button class="filter-btn bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300 active" data-filter="all">All</button>
-                    <button class="filter-btn bg-transparent border border-primary text-primary hover:bg-primary hover:text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300" data-filter="journal">Journal Articles</button>
-                    <button class="filter-btn bg-transparent border border-primary text-primary hover:bg-primary hover:text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300" data-filter="chapter">Book Chapters</button>
-                    <button class="filter-btn bg-transparent border border-primary text-primary hover:bg-primary hover:text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300" data-filter="preprint">Preprints</button>
-                </div>
+               <div class="flex flex-wrap justify-center gap-3 mb-10" id="publication-filters" role="group" aria-label="Filter publications">
+                  <button class="filter-btn bg-primary text-white font-bold py-2 px-4 rounded-full text-sm active" data-filter="all">All</button>
+                  <button class="filter-btn border border-primary text-primary py-2 px-4 rounded-full text-sm" data-filter="research">Research Articles</button>
+                  <button class="filter-btn border border-primary text-primary py-2 px-4 rounded-full text-sm" data-filter="review">Reviews & Perspectives</button>
+                  <button class="filter-btn border border-primary text-primary py-2 px-4 rounded-full text-sm" data-filter="preprint">Preprints</button>
+              </div>
 
                 <!-- Year-grouped publication list -->
                 <div id="publications-list" class="max-w-4xl mx-auto space-y-10" aria-live="polite">
