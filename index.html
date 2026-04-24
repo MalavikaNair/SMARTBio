@@ -53,13 +53,11 @@
                 <div id="main-nav" class="hidden md:flex items-center space-x-8 text-light-text">
                     <a href="#home" class="nav-link active" aria-current="page">Home</a>
                     <a href="#research" class="nav-link">Research</a>
-                    <a href="#publications" class="nav-link">Publications</a>
-                    <a href = "https://data.smart-biomaterials.com" target="_blank" rel="noopener" class="text-light-text">Open Data and Tools</a>
-                    <a href="#team" class="nav-link">Team</a>
+                    <a href = "https://data.smart-biomaterials.com" target="_blank" rel="noopener" class="text-light-text">Interactive Data & Tools</a>
+                    <a href="#publications" class="nav-link">Outputs</a>
+                    <a href="#team" class="nav-link">People</a>
                     <a href="#news" class="nav-link">News</a>
-                    <a href="#outreach" class="nav-link">Outreach</a>
-                    <a href="#contact" class="nav-link">Contact</a>
-                    <a href="#privacy" class="nav-link">Privacy</a>
+                    <a href="#outreach" class="nav-link">Engagement</a>
                 </div>
                 <!-- Mobile Menu Button -->
                 <button id="mobile-menu-button" class="md:hidden text-2xl text-light-text" aria-label="Open mobile menu" aria-expanded="false">
@@ -71,7 +69,7 @@
         <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 header-glass border-t border-emerald-500/20" role="navigation" aria-label="Mobile navigation">
             <a href="#home" class="nav-link block py-2 text-light-text">Home</a>
             <a href="#research" class="nav-link block py-2 text-light-text">Research</a>
-            <a href="#publications" class="nav-link block py-2 text-light-text">Publications</a>
+            <a href="#publications" class="nav-link block py-2 text-light-text">Outputs</a>
             <a href="#team" class="nav-link block py-2 text-light-text">Team</a>
             <a href="#news" class="nav-link block py-2 text-light-text">News</a>
             <a href="#outreach" class="nav-link block py-2 text-light-text">Outreach</a>
@@ -145,25 +143,50 @@
         </section>
 
         <!-- Publications Page Section -->
-        <section id="publications-page" class="page-section py-28" aria-busy="true">
-            <div class="container mx-auto px-6 fade-in-section">
-                <h2 class="text-4xl font-bold text-center mb-4 section-title">Publications</h2>
-                <p class="text-center text-medium-text max-w-3xl mx-auto mb-12">Peer-reviewed journal articles, book chapters, and preprints from the SMART Biomaterials group.</p>
+        <section id="publications-page" class="page-section py-28">
+        <div class="container mx-auto px-6 fade-in-section">
+    <h2 class="text-4xl font-bold text-center mb-12 section-title">
+      Publications & Presentations
+    </h2>
 
-                <!-- Filter controls -->
-               <div class="flex flex-wrap justify-center gap-3 mb-10" id="publication-filters" role="group" aria-label="Filter publications">
-                  <button class="filter-btn bg-primary text-white font-bold py-2 px-4 rounded-full text-sm active" data-filter="all">All</button>
-                  <button class="filter-btn border border-primary text-primary py-2 px-4 rounded-full text-sm" data-filter="research">Research Articles</button>
-                  <button class="filter-btn border border-primary text-primary py-2 px-4 rounded-full text-sm" data-filter="review">Reviews & Perspectives</button>
-                  <button class="filter-btn border border-primary text-primary py-2 px-4 rounded-full text-sm" data-filter="preprint">Preprints</button>
-              </div>
+    <!-- Publications -->
+    <div class="collapsible-section mb-8">
+      <button class="collapsible-header" aria-expanded="true" aria-controls="publications-content">
+        <h3 class="text-3xl font-bold text-light-text">Publications</h3>
+        <svg class="w-6 h-6 text-primary"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
+      </button>
 
-                <!-- Year-grouped publication list -->
-                <div id="publications-list" class="max-w-4xl mx-auto space-y-10" aria-live="polite">
-                    <div class="loader" aria-label="Loading publications..."></div>
-                </div>
-            </div>
-        </section>
+      <div id="publications-content" class="collapsible-content expanded">
+        <!-- filters -->
+        <div class="flex flex-wrap justify-center gap-3 mb-10" id="publication-filters">
+          <button class="filter-btn bg-primary text-white px-4 py-2 rounded-full text-sm active" data-filter="all">All</button>
+          <button class="filter-btn border border-primary text-primary px-4 py-2 rounded-full text-sm" data-filter="research">Research Articles</button>
+          <button class="filter-btn border border-primary text-primary px-4 py-2 rounded-full text-sm" data-filter="review">Reviews & Perspectives</button>
+          <button class="filter-btn border border-primary text-primary px-4 py-2 rounded-full text-sm" data-filter="preprint">Preprints</button>
+        </div>
+
+        <div id="publications-list" class="max-w-4xl mx-auto space-y-10">
+          <div class="loader"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Academic Presentations -->
+    <div class="collapsible-section">
+      <button class="collapsible-header" aria-expanded="false" aria-controls="presentations-content">
+        <h3 class="text-3xl font-bold text-light-text">Talks & Presentations</h3>
+        <svg class="w-6 h-6 text-primary"><use href="./assets/img/icons.svg#chevron-down"></use></svg>
+      </button>
+
+      <div id="presentations-content" class="collapsible-content">
+        <div id="academic-presentations-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="loader"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
 
         <!-- Team Page Section -->
         <section id="team-page" class="page-section py-28" aria-busy="true">
