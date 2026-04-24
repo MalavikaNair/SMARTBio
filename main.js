@@ -319,7 +319,7 @@ const DataManager = (() => {
 
   return { fetchAllData };
 })();
-
+let activePublicationFilter = 'all';
 /* ======================= Renderer ======================= */
 const Renderer = (() => {
   const resolve = (raw) => Array.isArray(raw) ? raw : (raw && raw.items) || [];
@@ -469,56 +469,66 @@ const Renderer = (() => {
   }
 
   function renderPublications() {
-    const container = DOMElements.publicationsList;
-    if (!container) return;
-  
-    container.replaceChildren();
-  
-    const items = Array.isArray(window.publicationsData)
-      ? window.publicationsData
-      : (window.publicationsData?.items || []);
-  
-    if (!items.length) {
-      container.textContent = 'No publications available.';
-      return;
-    }
-  
-    // group by year
-    const grouped = {};
-    items.forEach(p => {
-      const y = p.year || 'Unknown';
-      if (!grouped[y]) grouped[y] = [];
-      grouped[y].push(p);
-    });
-  
-    Object.keys(grouped).sort((a,b) => b - a).forEach(year => {
-      const yearBlock = document.createElement('div');
-  
-      const heading = document.createElement('h3');
-      heading.className = 'text-2xl font-bold mb-4';
-      heading.textContent = year;
-  
-      const list = document.createElement('ul');
-  
-      grouped[year].forEach(p => {
-        const li = document.createElement('li');
-        li.className = 'mb-4';
-  
-        li.innerHTML = `
-          <strong>${p.title}</strong><br>
-          ${p.authors || ''}<br>
-          <em>${p.journal || ''}</em>
-          ${p.doi ? `<br><a href="https://doi.org/${p.doi}" target="_blank">DOI</a>` : ''}
-        `;
-  
-        list.appendChild(li);
-      });
-  
-      yearBlock.appendChild(heading);
-      yearBlock.appendChild(list);
-      container.appendChild(yearBlock);
+  const container = DOMElements.publicationsList;
+  if (!container) return;
+
+  container.replaceChildren();
+
+  let items = Array.isArray(window.publicationsData)
+    ? window.publicationsData
+    : (window.publicationsData?.items || []);
+
+  // --- FILTER LOGIC ---
+  if (activePublicationFilter !== 'all') {
+    items = items.filter(p => {
+      if (p.category) return p.category === activePublicationFilter;
+      if (activePublicationFilter === 'preprint') return p.type === 'preprint';
+      if (activePublicationFilter === 'research') return p.type === 'journal';
+      return false;
     });
   }
+
+  if (!items.length) {
+    container.textContent = 'No publications available.';
+    return;
+  }
+
+  // group by year
+  const grouped = {};
+  items.forEach(p => {
+    const y = p.year || 'Unknown';
+    if (!grouped[y]) grouped[y] = [];
+    grouped[y].push(p);
+  });
+
+  Object.keys(grouped).sort((a, b) => b - a).forEach(year => {
+    const yearBlock = document.createElement('div');
+
+    const heading = document.createElement('h3');
+    heading.className = 'text-2xl font-bold mb-4';
+    heading.textContent = year;
+
+    const list = document.createElement('ul');
+
+    grouped[year].forEach(p => {
+      const li = document.createElement('li');
+      li.className = 'mb-4';
+
+      li.innerHTML = `
+        <strong>${p.title}</strong><br>
+        ${p.authors || ''}<br>
+        <em>${p.journal || ''}</em>
+        ${p.doi ? `<br><a href="https://doi.org/${p.doi}" target="_blank">DOI</a>` : ''}
+      `;
+
+      list.appendChild(li);
+    });
+
+    yearBlock.appendChild(heading);
+    yearBlock.appendChild(list);
+    container.appendChild(yearBlock);
+  });
+}
 
   function renderGames() {
     const grid = DOMElements.gamesGrid;
@@ -1671,6 +1681,17 @@ const App = (() => {
     CollapsibleManager.setupCollapsibleSections();
     GDPRManager.setupGDPRBanner();
     GameFilter.setup();
+    document.querySelectorAll('#publication-filters .filter-btn')
+      .forEach(btn => {
+        btn.addEventListener('click', () => {
+          activePublicationFilter = btn.dataset.filter;
+          document.querySelectorAll('#publication-filters .filter-btn')
+            .forEach(b => b.classList.remove('active'));
+
+          btn.classList.add('active');
+          Renderer.renderAllContent();
+    });
+  });
 
     if (DOMElements.mobileMenuButton && DOMElements.mobileMenu) {
       DOMElements.mobileMenuButton.addEventListener('click', () => {
