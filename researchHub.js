@@ -368,13 +368,294 @@ window.onCanvasClick = function(event) {
 };
 
 // Function to update the content panel based on selected theme (made global)
-window.updateDynamicContent = function(themeName, researchData, newsData, teamData, gamesData, outreachTalksData, academicPresentationsData, alumniData = []) {
+// ===============================
+// TWO-COLUMN TAB SYSTEM (SAFE)
+// ===============================
+function createTwoColumnTabs(tabs, defaultKey) {
+  const wrapper = makeDiv('grid grid-cols-1 md:grid-cols-4 gap-4');
+
+  const nav = makeDiv('flex md:flex-col gap-2');
+  const right = makeDiv('md:col-span-3 flex flex-col gap-3');
+
+  const controls = makeDiv('flex flex-wrap items-center gap-2');
+  const content = makeDiv('');
+
+  let activeKey = defaultKey || Object.keys(tabs)[0];
+  let searchTerm = '';
+  let sortMode = 'default';
+
+  const searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.placeholder = 'Search...';
+  searchInput.className = 'px-2 py-1 text-sm rounded bg-slate-800 border border-slate-600';
+
+  searchInput.addEventListener('input', () => {
+    searchTerm = searchInput.value.toLowerCase();
+    render();
+  });
+
+  const sortBtn = document.createElement('button');
+  sortBtn.type = 'button';
+  sortBtn.className = 'px-2 py-1 text-xs border border-primary text-primary rounded';
+
+  sortBtn.addEventListener('click', () => {
+    sortMode =
+      sortMode === 'default' ? 'az' :
+      sortMode === 'az' ? 'newest' :
+      'default';
+    render();
+  });
+
+  function render() {
+    clearChildren(nav);
+    clearChildren(content);
+
+    Object.entries(tabs).forEach(([key, tab]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+
+      btn.className = `text-left px-3 py-2 rounded-lg text-sm border flex items-center gap-2 ${
+        key === activeKey
+          ? 'bg-primary text-white border-primary'
+          : 'border-primary text-primary hover:bg-primary/20'
+      }`;
+
+      const icon = document.createElement('span');
+      icon.textContent = tab.icon || '•';
+
+      const label = document.createElement('span');
+      label.textContent = tab.label;
+
+      btn.appendChild(icon);
+      btn.appendChild(label);
+
+      btn.addEventListener('click', () => {
+        activeKey = key;
+        render();
+      });
+
+      nav.appendChild(btn);
+    });
+
+    clearChildren(controls);
+    sortBtn.textContent =
+      sortMode === 'az' ? 'A–Z' :
+      sortMode === 'newest' ? 'Newest' : 'Default';
+
+    controls.appendChild(searchInput);
+    controls.appendChild(sortBtn);
+
+    const raw = tabs[activeKey].items || [];
+
+    let filtered = raw.filter(item =>
+      (item.title || item.name || '').toLowerCase().includes(searchTerm)
+    );
+
+    if (sortMode === 'az') {
+      filtered.sort((a, b) =>
+        (a.title || a.name || '').localeCompare(b.title || b.name || '')
+      );
+    }
+
+    if (sortMode === 'newest') {
+      filtered.sort((a, b) => (b.year || 0) - (a.year || 0));
+    }
+
+    content.appendChild(tabs[activeKey].render(filtered));
+  }
+
+  render();
+
+  right.appendChild(controls);
+  right.appendChild(content);
+
+  wrapper.appendChild(nav);
+  wrapper.appendChild(right);
+
+  return wrapper;
+}
+
+
+// ===============================
+// SAFE CLICKABLE CARDS
+// ===============================
+function createClickableCard(text, modalTarget, id) {
+  const c = makeDiv('card p-3 text-sm cursor-pointer hover:bg-slate-700/30');
+  c.textContent = text || '';
+
+  if (modalTarget && id !== -1 && id !== undefined) {
+    c.dataset.modalTarget = modalTarget;
+    c.dataset.id = String(id);
+  }
+
+  return c;
+}
+
+function createTeamCard(item) {
+  const c = makeDiv('card p-2 flex items-center gap-2 cursor-pointer hover:bg-slate-700/30');
+
+  const img = document.createElement('img');
+  img.className = 'w-8 h-8 rounded-full';
+  safeSetImgSrc(img, item.image);
+
+  const name = document.createElement('span');
+  name.textContent = item.name || '';
+
+  c.appendChild(img);
+  c.appendChild(name);
+
+  if (item.id) {
+    c.dataset.modalTarget = 'open-person-bio';
+    c.dataset.id = String(item.id);
+  }
+
+  return c;
+}
+
+
+// ===============================
+// NEW MAIN RENDER
+// ===============================
+window.updateDynamicContent = function(
+  themeName,
+  researchData,
+  newsData,
+  teamData,
+  gamesData,
+  outreachTalksData,
+  academicPresentationsData,
+  alumniData = []
+) {
   const contentGrid = document.getElementById('dynamic-content-grid');
   const contentTitle = document.getElementById('dynamic-content-title');
-  if (!contentGrid || !contentTitle) {
-    console.warn('Dynamic content grid or title not found.');
+
+  contentTitle.textContent = `${themeName} Theme`;
+  clearChildren(contentGrid);
+
+  const filter = (arr) =>
+    (Array.isArray(arr) ? arr : []).filter(x =>
+      Array.isArray(x.themes) && x.themes.includes(themeName)
+    );
+
+  const relatedResearch = filter(researchData);
+  const relatedNews = filter(newsData);
+  const relatedTeam = filter(teamData);
+  const relatedTalks = filter(outreachTalksData);
+  const relatedPres = filter(academicPresentationsData);
+
+  const publications = Array.isArray(window.publicationsData)
+    ? window.publicationsData
+    : (window.publicationsData?.items || []);
+
+  const relatedPubs = publications.filter(p =>
+    Array.isArray(p.themes) &&
+    p.themes.some(t => t.toLowerCase() === themeName.toLowerCase())
+  );
+
+  const tabs = {};
+
+  // PROJECTS (DEFAULT)
+  if (relatedResearch.length) {
+    tabs.projects = {
+      label: `Projects (${relatedResearch.length})`,
+      icon: '🧪',
+      items: relatedResearch,
+      render: (items) => {
+        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
+
+        items.forEach(item => {
+          const idx = researchData.findIndex(r => r.id === item.id);
+          grid.appendChild(createClickableCard(item.title, 'open-research-modal', idx));
+        });
+
+        return grid;
+      }
+    };
+  }
+
+  if (relatedPubs.length) {
+    tabs.publications = {
+      label: `Publications (${relatedPubs.length})`,
+      icon: '📄',
+      items: relatedPubs,
+      render: (items) => {
+        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
+        items.forEach(p => grid.appendChild(createClickableCard(p.title)));
+        return grid;
+      }
+    };
+  }
+
+  if (relatedTeam.length) {
+    tabs.team = {
+      label: `Team (${relatedTeam.length})`,
+      icon: '👥',
+      items: relatedTeam,
+      render: (items) => {
+        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
+        items.forEach(t => grid.appendChild(createTeamCard(t)));
+        return grid;
+      }
+    };
+  }
+
+  if (relatedNews.length) {
+    tabs.news = {
+      label: `News (${relatedNews.length})`,
+      icon: '📰',
+      items: relatedNews,
+      render: (items) => {
+        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
+        items.forEach(n => {
+          const idx = newsData.findIndex(x => x.id === n.id);
+          grid.appendChild(createClickableCard(n.title, 'open-news-modal', idx));
+        });
+        return grid;
+      }
+    };
+  }
+
+  if (relatedTalks.length) {
+    tabs.talks = {
+      label: `Talks (${relatedTalks.length})`,
+      icon: '🎤',
+      items: relatedTalks,
+      render: (items) => {
+        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
+        items.forEach(t => {
+          const idx = outreachTalksData.findIndex(x => x.id === t.id);
+          grid.appendChild(createClickableCard(t.title, 'open-outreach-talk-modal', idx));
+        });
+        return grid;
+      }
+    };
+  }
+
+  if (relatedPres.length) {
+    tabs.presentations = {
+      label: `Presentations (${relatedPres.length})`,
+      icon: '📊',
+      items: relatedPres,
+      render: (items) => {
+        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
+        items.forEach(p => {
+          const idx = academicPresentationsData.findIndex(x => x.id === p.id);
+          grid.appendChild(createClickableCard(p.title, 'open-academic-presentation-modal', idx));
+        });
+        return grid;
+      }
+    };
+  }
+
+  if (!Object.keys(tabs).length) {
+    const empty = makeDiv('text-sm text-medium-text');
+    empty.textContent = 'No content for this theme';
+    contentGrid.appendChild(empty);
     return;
   }
+
+  contentGrid.appendChild(createTwoColumnTabs(tabs, 'projects'));
+};
 
   contentTitle.textContent = `${themeName} Theme`;
   clearChildren(contentGrid);
