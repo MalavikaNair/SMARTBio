@@ -514,12 +514,35 @@ const Renderer = (() => {
       const li = document.createElement('li');
       li.className = 'mb-4';
 
-      li.innerHTML = `
-        <strong>${p.title}</strong><br>
-        ${p.authors || ''}<br>
-        <em>${p.journal || ''}</em>
-        ${p.doi ? `<br><a href="https://doi.org/${p.doi}" target="_blank">DOI</a>` : ''}
-      `;
+      const strong = document.createElement('strong');
+strong.textContent = p.title || '';
+
+const br1 = document.createElement('br');
+
+const authors = document.createTextNode(p.authors || '');
+
+const br2 = document.createElement('br');
+
+const journal = document.createElement('em');
+journal.textContent = p.journal || '';
+
+li.appendChild(strong);
+li.appendChild(br1);
+li.appendChild(authors);
+li.appendChild(br2);
+li.appendChild(journal);
+
+if (p.doi) {
+  const br3 = document.createElement('br');
+  const link = document.createElement('a');
+  link.href = `https://doi.org/${encodeURIComponent(p.doi)}`;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.textContent = 'DOI';
+
+  li.appendChild(br3);
+  li.appendChild(link);
+}
 
       list.appendChild(li);
     });
@@ -1682,14 +1705,16 @@ const App = (() => {
     GDPRManager.setupGDPRBanner();
     GameFilter.setup();
     document.querySelectorAll('#publication-filters .filter-btn')
-      .forEach(btn => {
-        btn.addEventListener('click', () => {
-          activePublicationFilter = btn.dataset.filter;
-          document.querySelectorAll('#publication-filters .filter-btn')
-            .forEach(b => b.classList.remove('active'));
+  .forEach(btn => {
+    btn.addEventListener('click', () => {
+      activePublicationFilter = btn.dataset.filter;
 
-          btn.classList.add('active');
-          Renderer.renderAllContent();
+      document.querySelectorAll('#publication-filters .filter-btn')
+        .forEach(b => b.classList.remove('active'));
+
+      btn.classList.add('active');
+
+      Renderer.renderAllContent();
     });
   });
 
