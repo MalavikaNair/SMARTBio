@@ -387,7 +387,7 @@ function createTwoColumnTabs(tabs, defaultKey) {
   const searchInput = document.createElement('input');
   searchInput.type = 'text';
   searchInput.placeholder = 'Search...';
-  searchInput.className = 'px-2 py-1 text-sm rounded bg-slate-800 border border-slate-600';
+  searchInput.className = 'px-3 py-1.5 text-sm rounded-md bg-white text-black border border-slate-400 placeholder-gray-500';
 
   searchInput.addEventListener('input', () => {
     searchTerm = searchInput.value.toLowerCase();
@@ -396,7 +396,7 @@ function createTwoColumnTabs(tabs, defaultKey) {
 
   const sortBtn = document.createElement('button');
   sortBtn.type = 'button';
-  sortBtn.className = 'px-2 py-1 text-xs border border-primary text-primary rounded';
+  sortBtn.className = 'px-3 py-1.5 text-xs rounded-md bg-slate-700 text-white border border-slate-500 hover:bg-slate-600';
 
   sortBtn.addEventListener('click', () => {
     sortMode =
@@ -414,7 +414,7 @@ function createTwoColumnTabs(tabs, defaultKey) {
       const btn = document.createElement('button');
       btn.type = 'button';
 
-      btn.className = `text-left px-3 py-2 rounded-lg text-sm border flex items-center gap-2 ${
+      btn.className = `text-left px-3 py-1.5 rounded-md text-sm border flex items-center gap-2 ${
         key === activeKey
           ? 'bg-primary text-white border-primary'
           : 'border-primary text-primary hover:bg-primary/20'
@@ -439,9 +439,9 @@ function createTwoColumnTabs(tabs, defaultKey) {
 
     clearChildren(controls);
     sortBtn.textContent =
-      sortMode === 'az' ? 'A–Z' :
-      sortMode === 'newest' ? 'Newest' : 'Default';
-
+      sortMode === 'az' ? 'Sort: A–Z' :
+      sortMode === 'newest' ? 'Sort: Newest' :
+      'Sort: Default';
     controls.appendChild(searchInput);
     controls.appendChild(sortBtn);
 
@@ -565,7 +565,27 @@ window.updateDynamicContent = function(
 
         items.forEach(item => {
           const idx = researchData.findIndex(r => String(r.id) === String(item.id));
-          grid.appendChild(createClickableCard(item.title, 'open-research-modal', idx));
+          const card = makeDiv('card p-3 cursor-pointer hover:bg-slate-700/30 flex flex-col gap-2');
+
+if (item.image) {
+  const img = document.createElement('img');
+  img.className = 'w-full h-28 object-cover rounded-md';
+  safeSetImgSrc(img, item.image);
+  card.appendChild(img);
+}
+
+const title = document.createElement('p');
+title.className = 'text-sm font-semibold leading-tight';
+title.textContent = item.title || '';
+
+card.appendChild(title);
+
+if (idx !== -1) {
+  card.dataset.modalTarget = 'open-research-modal';
+  card.dataset.id = String(idx);
+}
+
+grid.appendChild(card);
         });
 
         return grid;
