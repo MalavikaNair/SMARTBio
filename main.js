@@ -247,7 +247,7 @@ const DOMElements = (() => {
     pageSections, yearSpan,
     researchContentGrid, teamGrid, alumniGrid, newsList,
     newsCarouselTrack, carouselDotsContainer, carouselPrevBtn, carouselNextBtn,
-    outreachTalksGrid, academicPresentationsGrid, outreachNewsList,
+    outreachTalksGrid, academicPresentationsGrid, outreachNewsList, publicationsList,
     gamesGrid, gameFilters,
     modalContainer,
     researchDescriptionModal, researchModalMedia, researchModalCaption, researchModalCredit,
