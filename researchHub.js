@@ -564,7 +564,7 @@ window.updateDynamicContent = function(
         const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
 
         items.forEach(item => {
-          const idx = researchData.findIndex(r => r.id === item.id);
+          const idx = researchData.findIndex(r => String(r.id) === String(item.id));
           grid.appendChild(createClickableCard(item.title, 'open-research-modal', idx));
         });
 
@@ -607,7 +607,7 @@ window.updateDynamicContent = function(
       render: (items) => {
         const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
         items.forEach(n => {
-          const idx = newsData.findIndex(x => x.id === n.id);
+          const idx = newsData.findIndex(x => String(x.id) === String(n.id));
           grid.appendChild(createClickableCard(n.title, 'open-news-modal', idx));
         });
         return grid;
@@ -623,7 +623,7 @@ window.updateDynamicContent = function(
       render: (items) => {
         const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
         items.forEach(t => {
-          const idx = outreachTalksData.findIndex(x => x.id === t.id);
+          const idx = outreachTalksData.findIndex(x => String(x.id) === String(t.id));
           grid.appendChild(createClickableCard(t.title, 'open-outreach-talk-modal', idx));
         });
         return grid;
@@ -639,7 +639,7 @@ window.updateDynamicContent = function(
       render: (items) => {
         const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
         items.forEach(p => {
-          const idx = academicPresentationsData.findIndex(x => x.id === p.id);
+          const idx = academicPresentationsData.findIndex(x => String(x.id) === String(p.id));
           grid.appendChild(createClickableCard(p.title, 'open-academic-presentation-modal', idx));
         });
         return grid;
@@ -656,217 +656,6 @@ window.updateDynamicContent = function(
 
   contentGrid.appendChild(createTwoColumnTabs(tabs, 'projects'));
 };
-
-  contentTitle.textContent = `${themeName} Theme`;
-  clearChildren(contentGrid);
-
-  const safeFilter = (arr) => Array.isArray(arr) ? arr.filter(Boolean) : [];
-  const relatedResearch = safeFilter(researchData).filter(r => Array.isArray(r.themes) && r.themes.includes(themeName));
-  const relatedNews = safeFilter(newsData).filter(n => Array.isArray(n.themes) && n.themes.includes(themeName));
-  const relatedTeam = safeFilter(teamData).filter(t => Array.isArray(t.themes) && t.themes.includes(themeName));
-  const relatedGames = safeFilter(gamesData).filter(g => Array.isArray(g.themes) && g.themes.includes(themeName));
-  const relatedOutreachTalks = safeFilter(outreachTalksData).filter(talk => Array.isArray(talk.themes) && talk.themes.includes(themeName));
-  const relatedAcademicPresentations = safeFilter(academicPresentationsData).filter(pres => Array.isArray(pres.themes) && pres.themes.includes(themeName));
-
-  // ── Projects ──────────────────────────────────────────────────────────────
-  if (relatedResearch.length > 0) {
-    contentGrid.appendChild(makeSectionHeader('Projects'));
-    relatedResearch.forEach(item => {
-      const d = makeDiv('text-sm p-2 rounded-md bg-slate-800/50');
-      d.textContent = String(item.title || '');
-      contentGrid.appendChild(d);
-    });
-  }
-
-  // ── News ──────────────────────────────────────────────────────────────────
-  if (relatedNews.length > 0) {
-    contentGrid.appendChild(makeSectionHeader('News'));
-    relatedNews.forEach(item => {
-      const d = makeDiv('text-sm p-2 rounded-md bg-slate-800/50');
-      d.textContent = String(item.title || '');
-      contentGrid.appendChild(d);
-    });
-  }
-
-  // ── Team ──────────────────────────────────────────────────────────────────
-  if (relatedTeam.length > 0) {
-    contentGrid.appendChild(makeSectionHeader('Team'));
-    relatedTeam.forEach(item => {
-      const row = makeDiv('flex items-center gap-2 p-2 rounded-md bg-slate-800/50');
-
-      const img = document.createElement('img');
-      img.className = 'w-8 h-8 rounded-full';
-      img.alt = '';
-      img.loading = 'lazy';
-      img.referrerPolicy = 'no-referrer';
-      safeSetImgSrc(img, item.image);
-
-      const span = document.createElement('span');
-      span.className = 'flex-grow text-sm';
-      span.textContent = String(item.name || '');
-
-      const btn = document.createElement('button');
-      btn.className = 'open-modal-btn text-xs text-primary hover:underline';
-      btn.type = 'button';
-      if (typeof item.id === 'string') {
-        btn.setAttribute('data-modal-target', item.id);
-      }
-      btn.textContent = 'Bio';
-
-      row.appendChild(img);
-      row.appendChild(span);
-      row.appendChild(btn);
-      contentGrid.appendChild(row);
-    });
-  }
-
-  // ── Games ─────────────────────────────────────────────────────────────────
-  if (relatedGames.length > 0) {
-    contentGrid.appendChild(makeSectionHeader('Games'));
-    relatedGames.forEach(item => {
-      const row = makeDiv('flex items-center gap-2 p-2 rounded-md bg-slate-800/50');
-
-      const img = document.createElement('img');
-      img.className = 'w-8 h-8 rounded-full';
-      img.alt = '';
-      img.loading = 'lazy';
-      img.referrerPolicy = 'no-referrer';
-      safeSetImgSrc(img, item.thumbnail);
-
-      const span = document.createElement('span');
-      span.className = 'flex-grow text-sm';
-      span.textContent = String(item.title || '');
-
-      const link = document.createElement('a');
-      link.className = 'text-xs text-primary hover:underline';
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      safeSetAnchorHref(link, item.file);
-      link.textContent = 'Play';
-
-      row.appendChild(img);
-      row.appendChild(span);
-      row.appendChild(link);
-      contentGrid.appendChild(row);
-    });
-  }
-
-  // ── Outreach Talks ────────────────────────────────────────────────────────
-  if (relatedOutreachTalks.length > 0) {
-    contentGrid.appendChild(makeSectionHeader('Outreach Talks'));
-    relatedOutreachTalks.forEach(item => {
-      const d = makeDiv('text-sm p-2 rounded-md bg-slate-800/50');
-      const title = document.createElement('p');
-      title.className = 'font-semibold';
-      title.textContent = String(item.title || '');
-
-      const p = document.createElement('p');
-      p.className = 'text-xs text-light-text/70';
-
-      const speakerNames = [];
-      const pool = [...safeFilter(teamData), ...safeFilter(alumniData)];
-      if (Array.isArray(item.speakerIds)) {
-        item.speakerIds.forEach(sid => {
-          const s = pool.find(m => m && m.id === sid);
-          if (s && s.name) speakerNames.push(String(s.name));
-        });
-      }
-      p.textContent = `Speaker(s): ${speakerNames.length > 0 ? speakerNames.join(', ') : 'N/A'}`;
-
-      d.appendChild(title);
-      d.appendChild(p);
-      contentGrid.appendChild(d);
-    });
-  }
-
-  // ── Academic Presentations ────────────────────────────────────────────────
-  if (relatedAcademicPresentations.length > 0) {
-    contentGrid.appendChild(makeSectionHeader('Academic Presentations'));
-    relatedAcademicPresentations.forEach(item => {
-      const d = makeDiv('text-sm p-2 rounded-md bg-slate-800/50');
-      const title = document.createElement('p');
-      title.className = 'font-semibold';
-      title.textContent = String(item.title || '');
-
-      const p = document.createElement('p');
-      p.className = 'text-xs text-light-text/70';
-
-      const speakerNames = [];
-      const pool = [...safeFilter(teamData), ...safeFilter(alumniData)];
-      if (Array.isArray(item.speakerIds)) {
-        item.speakerIds.forEach(sid => {
-          const s = pool.find(m => m && m.id === sid);
-          if (s && s.name) speakerNames.push(String(s.name));
-        });
-      }
-      p.textContent = `Speaker(s): ${speakerNames.length > 0 ? speakerNames.join(', ') : 'N/A'}`;
-
-      d.appendChild(title);
-      d.appendChild(p);
-      contentGrid.appendChild(d);
-    });
-  }
-// ── Publications ──────────────────────────────────────────
-
-if (!window.publicationsData) {
-  const msg = makeDiv('text-xs text-medium-text italic p-2');
-  msg.textContent = 'Loading publications…';
-  contentGrid.appendChild(msg);
-
-  document.addEventListener('smartbio:data-ready', () => {
-    window.updateDynamicContent(
-      themeName,
-      researchData,
-      newsData,
-      teamData,
-      gamesData,
-      outreachTalksData,
-      academicPresentationsData,
-      alumniData
-    );
-  }, { once: true });
-
-  return;
-}
-
-const publications = Array.isArray(window.publicationsData)
-  ? window.publicationsData
-  : (window.publicationsData?.items || []);
-
-const relatedPubs = publications.filter(pub =>
-  Array.isArray(pub.themes) &&
-  pub.themes.some(t => t.toLowerCase() === themeName.toLowerCase())
-);
-
-if (!relatedPubs.length) {
-  const msg = makeDiv('text-xs text-medium-text italic p-2');
-  msg.textContent = 'No publications for this theme';
-  contentGrid.appendChild(msg);
-  return;
-}
-
-// render publications
-const sorted = relatedPubs.slice().sort((a, b) => (b.year || 0) - (a.year || 0));
-
-contentGrid.appendChild(makeSectionHeader(`Publications (${sorted.length})`));
-
-sorted.forEach(pub => {
-  const card = makeDiv('text-sm p-2 rounded-md bg-slate-800/50');
-
-  const title = document.createElement('p');
-  title.className = 'font-semibold';
-  title.textContent = pub.title || '';
-
-  const meta = document.createElement('p');
-  meta.className = 'text-xs text-medium-text';
-  meta.textContent = [pub.authors, pub.year].filter(Boolean).join(' · ');
-
-  card.appendChild(title);
-  card.appendChild(meta);
-
-  contentGrid.appendChild(card);
-});
-}
 /* =====================================================================
    SMARTBio Research Hubs
    - Topic Hub mount left intact
