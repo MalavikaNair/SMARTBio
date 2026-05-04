@@ -1,612 +1,1169 @@
-/* Base body styles, font, and custom cursor */
-body {
-    background-color: #1f1f1f;
-    color: #f3f4f6;
-    font-family: 'Exo 2', sans-serif;
+/* ============================================================
+   SMART Biomaterials — Custom Stylesheet
+   Theme: dark (#1f1f1f), emerald (#10b981) accent, Exo 2 font
+   ============================================================ */
+
+/* === 0. Global scroll === */
+html {
+  scroll-behavior: smooth;
 }
+
+/* === 1. Base === */
 body {
   background: linear-gradient(
     135deg,
-    rgba(16,185,129,0.025) 0%,
-    rgba(59,130,246,0.025) 25%,
-    rgba(250,204,21,0.025) 50%,
-    rgba(239,68,68,0.025) 75%,
-    rgba(139,92,246,0.025) 100%
+    rgba(16,185,129,0.025)  0%,
+    rgba(59,130,246,0.025)  25%,
+    rgba(250,204,21,0.025)  50%,
+    rgba(239,68,68,0.025)   75%,
+    rgba(139,92,246,0.025)  100%
   ), #1f1f1f;
-    background-attachment: fixed;
+  background-attachment: fixed;
   background-size: cover;
-}
-/* Glassmorphism effect for header */
-.header-glass {
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
-}
-/* Navigation link styling with hover and active states */
-.nav-link {
-    transition: all 0.3s ease;
-    position: relative;
-    font-weight: 500;
-}
-.nav-link.active, .nav-link:hover {
-    color: #10b981;
-    text-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
-}
-.nav-link.active::after, .nav-link:hover::after {
-    width: 100%;
-}
-.nav-link::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #10b981;
-    transition: width 0.3s ease;
-}
-/* Hero section height */
-.hero-section {
-    height: 100vh;
-}
-/* Hero title animation */
-.hero-title {
-     text-shadow: 0 0 8px rgba(255, 255, 255, 0.3), 0 0 20px rgba(16, 185, 129, 0.8);
-     animation: breathe 5s ease-in-out infinite;
-}
-/* Section title underline */
-.section-title {
-    border-bottom: 3px solid #10b981;
-    padding-bottom: 10px;
-    display: inline-block;
-}
-/* Card styling with hover effects */
-.card {
-    background-color: var(--card-bg, rgba(20, 20, 20, 0.7));
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.15), 0 0 15px rgba(16, 185, 129, 0.1);
-}
-/* Particles.js canvas positioning */
-#particles-js {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: -1;
-}
-/* Page section display logic */
-.page-section {
-    display: none;
-    min-height: 100vh;
-}
-.page-section.active {
-    display: block;
-}
-/* Fade-in animation for section content */
-.fade-in-section {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-.fade-in-section.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-/* Modal overlay styles */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(5px);
-    z-index: 100;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-.modal-overlay.active { opacity: 1; visibility: visible; }
-/* Modal content styles */
-.modal-content {
-    background: #111827; padding: 2rem; border-radius: 0.5rem;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    width: 90%; max-width: 60rem; max-height: 90vh;
-    overflow-y: auto; position: relative;
-    transform: scale(0.95); transition: transform 0.3s ease;
-}
-.modal-overlay.active .modal-content { transform: scale(1); }
-/* Modal close button */
-.modal-close {
-    position: absolute; top: 1rem; right: 1rem;
-    cursor: pointer; font-size: 1.5rem; color: #9ca3af;
-    transition: color 0.3s ease;
-}
-.modal-close:hover { color: #f3f4f6; }
-/* Carousel specific styles */
-.carousel-container {
-    overflow: hidden;
-    position: relative;
-}
-.carousel-track {
-    display: flex;
-    transition: transform 0.5s ease-in-out;
-}
-.carousel-slide {
-    min-width: 100%;
-    padding: 1rem;
-}
-/* Carousel dot indicators */
-.carousel-dots {
-    display: flex;
-    justify-content: center;
-    margin-top: 1rem;
-    gap: 0.5rem;
-}
-.carousel-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: rgba(16, 185, 129, 0.3);
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-.carousel-dot.active {
-    background-color: #10b981;
-    transform: scale(1.2);
-}
-/* 3D Hub Styles */
-#research-hub-container {
-    position: relative;
-}
-#research-canvas {
-    width: 100%;
-    height: 600px;
-    cursor: grab;
-}
-#research-canvas:active {
-    cursor: grabbing;
-}
-/* --- Interactive Research Hub: dynamic content images --- */
-#dynamic-content-panel img {
-  max-width: 50px;       /* cap width to something small */
-  max-height: 50px;      /* optional: keep them square-ish */
-  height: auto;           /* scale proportionally */
-  width: auto;
-  object-fit: contain;    /* no cropping */
-  display: block;
-  margin: 0.5rem auto;    /* center + some breathing room */
-}
-/* Keyframe animation for hero title */
-@keyframes breathe {
-    0%, 100% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.3), 0 0 20px rgba(16, 185, 129, 0.8); }
-    50% { text-shadow: 0 0 12px rgba(255, 255, 255, 0.4), 0 0 30px rgba(16, 185, 129, 1); }
-}
-/* Loading spinner styles */
-.loader {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #10b981;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-/* Scroll to top button styles */
-#scroll-to-top-btn {
-    display: none;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 99;
-    background-color: #10b981;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    transition: background-color 0.3s, opacity 0.3s;
-}
-#scroll-to-top-btn:hover {
-    background-color: #047857;
+  color: #f3f4f6;
+  font-family: 'Exo 2', sans-serif;
 }
 
-/* Collapsible Section Styles */
-.collapsible-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 1rem;
-    background-color: rgba(20, 20, 20, 0.7); /* card-bg */
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-    margin-bottom: 1rem; /* Space between headers */
+/* External link superscript on nav */
+.nav-ext-icon {
+  font-size: 0.6em;
+  vertical-align: super;
+  opacity: 0.7;
+  margin-left: 2px;
+  line-height: 1;
 }
-.collapsible-header:hover {
-    background-color: rgba(30, 30, 30, 0.8);
-    border-color: rgba(16, 185, 129, 0.4);
+
+/* === 2a. Mobile nav overrides — left-border style instead of underline === */
+#mobile-menu .nav-link {
+  border-left: 2px solid transparent;
+  padding-left: 0.75rem;
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
-.collapsible-header .section-title {
-    border-bottom: none; /* Remove underline from inner title */
-    padding-bottom: 0;
-    margin-bottom: 0;
+#mobile-menu .nav-link::after {
+  display: none; /* underline animation doesn't suit block links */
 }
-.collapsible-header .chevron {
-    transition: transform 0.3s ease;
+#mobile-menu .nav-link.active,
+#mobile-menu .nav-link:hover {
+  border-left-color: #10b981;
+  text-shadow: none;
 }
-.collapsible-header.expanded .chevron {
-    transform: rotate(180deg);
+
+/* === 2. Header === */
+.header-glass {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.25);
 }
-.collapsible-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-out; /* Smooth transition for height */
-    padding: 0 1rem; /* Adjust padding as needed */
-    margin-top: -1rem; /* Overlap with header bottom margin */
-    margin-bottom: 1rem;
+
+.nav-link {
+  position: relative;
+  font-weight: 500;
+  transition: color 0.3s ease;
 }
-.collapsible-content.expanded {
-    max-height: 2000px; /* Large enough value to accommodate content */
-    padding: 1rem; /* Restore padding when expanded */
-    margin-top: 0;
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #10b981;
+  transition: width 0.3s ease;
 }
-.collapsible-content > *:first-child {
-    margin-top: 0;
+.nav-link.active,
+.nav-link:hover {
+  color: #10b981;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
 }
-/* --- 1) Latest News carousel images: fixed, consistent crop --- */
-.carousel-slide img,
-#news-carousel-track img {
+.nav-link.active::after,
+.nav-link:hover::after {
   width: 100%;
-  height: 220px;      /* adjust 200–260px to taste */
-  object-fit: cover;  /* crops edges, keeps center interesting */
+}
+
+/* === 3. Hero === */
+.hero-section {
+  height: 100vh;
+}
+.hero-title {
+  text-shadow: 0 0 8px rgba(255,255,255,0.3), 0 0 20px rgba(16,185,129,0.8);
+  animation: breathe 5s ease-in-out infinite;
+}
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding: 0.75rem 2rem;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  color: #10b981;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+.hero-cta:hover {
+  background: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  transform: translateY(-2px);
+}
+.hero-scroll-arrow {
+  animation: bounce 2s ease-in-out infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(4px); }
+}
+@keyframes breathe {
+  0%, 100% { text-shadow: 0 0 8px rgba(255,255,255,0.3), 0 0 20px rgba(16,185,129,0.8); }
+  50%       { text-shadow: 0 0 12px rgba(255,255,255,0.4), 0 0 30px rgba(16,185,129,1); }
+}
+
+/* === 4. Page Sections === */
+.page-section {
+  display: none;
+  min-height: 100vh;
+}
+.page-section.active {
+  display: block;
+}
+
+/* === 5. Section Titles === */
+.section-title {
+  border-bottom: 3px solid #10b981;
+  padding-bottom: 10px;
+  display: inline-block;
+}
+
+/* === 6. Fade-in Animation === */
+.fade-in-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-in-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === 7. Cards === */
+.card {
+  background-color: rgba(20, 20, 20, 0.7);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45), 0 0 16px rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.38);
+}
+
+/* === 8. Particles === */
+#particles-js {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+/* === 9. Modals === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+.modal-content {
+  background: #111827;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  width: 90%;
+  max-width: 60rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+.modal-overlay.active .modal-content {
+  transform: scale(1);
+}
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #9ca3af;
+  line-height: 1;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.modal-close:hover {
+  color: #f3f4f6;
+  transform: scale(1.2) rotate(90deg);
+}
+
+/* === 10. Modal images === */
+.modal-content img {
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
   display: block;
   border-radius: 0.5rem;
 }
+.modal-content img.rounded-full {
+  width: 12rem;
+  height: 12rem;
+  object-fit: cover;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  margin: 0 auto;
+  border: 2px solid rgba(16, 185, 129, 0.4);
+}
 
-/* Prevent slide content from stretching due to tall images */
+/* === 11. Carousel === */
+.carousel-container {
+  overflow: hidden;
+  position: relative;
+}
+.carousel-track {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
 .carousel-slide {
+  min-width: 100%;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  gap: 0.5rem;
+}
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(16, 185, 129, 0.3);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.carousel-dot.active {
+  background-color: #10b981;
+  transform: scale(1.25);
+}
 
-/* --- Bonus: modal images shouldn’t explode in height --- */
-.modal-content img,
-#news-modal-image {
+/* === 12. News Carousel === */
+#news-carousel-track {
+  display: flex;
+  flex-wrap: nowrap;
+  will-change: transform;
+}
+/* Slides are a simple column: image on top, title below */
+#news-carousel-track .carousel-slide {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+/* Constrain carousel image — contain avoids awkward wide crops */
+#news-carousel-track .carousel-slide img {
+  width: 100% !important;   /* override h-64 Tailwind class set in JS */
+  height: 220px !important;
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 0.5rem;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* === 13. Research Hub === */
+#research-hub-container {
+  position: relative;
+}
+#research-canvas {
   width: 100%;
-  max-height: 360px;   /* keep modal headers/footers visible */
+  height: 600px;
+  cursor: grab;
+}
+#research-canvas:active {
+  cursor: grabbing;
+}
+#dynamic-content-panel img {
+  max-width: 50px;
+  max-height: 50px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0.5rem auto;
+}
+/* Hub team avatars live inside #dynamic-content-panel — override the generic img rule */
+#dynamic-content-panel img.hub-team-avatar {
+  width: 28px;
+  height: 28px;
+  max-width: 28px;
+  max-height: 28px;
+  object-fit: cover;
+  border-radius: 9999px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* === 13a. Research Hub — projects grid === */
+.hub-projects-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* === 13b. Research Hub — project cards (thumbnail left, title right) === */
+.hub-project-card {
+  display: flex;          /* explicit — not relying on Tailwind "flex" class */
+  flex-direction: row;
+  align-items: stretch;
+  background: rgba(28, 28, 28, 0.7);
+  border: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+  min-height: 72px;
+}
+.hub-project-card:hover {
+  background: rgba(45, 45, 45, 0.9);
+  transform: translateY(-2px);
+}
+.hub-project-thumb {
+  width: 80px;
+  min-width: 80px;        /* prevent shrinking */
+  height: 72px;
+  object-fit: cover;
+  flex-shrink: 0;
+  display: block;
+  align-self: stretch;
+}
+.hub-project-body {
+  padding: 0.5rem 0.65rem;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;           /* allow text to wrap inside flex child */
+}
+.hub-project-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #f3f4f6;
+  overflow-wrap: break-word;
+}
+
+/* === 13c. Research Hub — plain list items (pubs, news, talks, presentations) === */
+.hub-list-item {
+  font-size: 0.8rem;
+  color: #d1d5db;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  line-height: 1.4;
+  overflow-wrap: break-word;  /* prevent text running off edge */
+  word-break: break-word;
+}
+.hub-list-item:hover {
+  background: rgba(16, 185, 129, 0.1);
+  color: #f3f4f6;
+}
+
+/* === 13c-ii. Team items inside hub — grid layout so image+name never spread === */
+.hub-team-item {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #d1d5db;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  line-height: 1.4;
+}
+.hub-team-item:hover {
+  background: rgba(16, 185, 129, 0.1);
+  color: #f3f4f6;
+}
+.hub-team-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
   object-fit: cover;
   display: block;
 }
 
-/* --- 2) Compact “green date” chips (News + Outreach News) --- */
-/* General pill/date badge style */
-.date-badge {
-  display: inline-flex;       /* shrink to fit content */
-  align-items: center;        /* vertically center text */
-  justify-content: center;
-  height: auto !important;    /* cancel any h-full */
-  flex: 0 0 auto !important;  /* don't grow or stretch */
-  align-self: flex-start;     /* opt out of parent's align-items: stretch */
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.2;
-  font-weight: 600;
-  border-radius: 0.5rem;
-  background-color: rgba(16, 185, 129, 0.15);
+/* === 13d. Research Hub — tab layout (horizontal pills above content) === */
+.hub-tabs-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  overflow: hidden;
+}
+.hub-tabs-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.hub-tabs-content {
+  min-width: 0;
+  overflow: hidden;
+}
+.hub-tabs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.hub-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  background: rgba(255,255,255,0.05);
+  color: #9ca3af;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+}
+.hub-tab-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: #f3f4f6;
+}
+.hub-tab-btn--active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
   color: #10b981;
+  font-weight: 600;
 }
 
-/* Fallback if you can’t add classes: target time tags in lists/cards */
+/* === 13e. Research Hub — dynamic content panel overflow guard === */
+#dynamic-content-panel {
+  overflow: hidden;
+  min-width: 0;
+}
+#dynamic-content-grid {
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* === 14. Research Hub section transparency === */
+#home-research-hub-section,
+#home-page .bg-dark-bg\/80 {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* === 15. Loader === */
+.loader {
+  border: 4px solid rgba(255, 255, 255, 0.08);
+  border-top: 4px solid #10b981;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  animation: spin 0.85s linear infinite;
+  margin: 24px auto;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === 16. Scroll to Top === */
+#scroll-to-top-btn {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+#scroll-to-top-btn:hover {
+  background-color: #047857;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.55);
+}
+
+/* === 17. Collapsible Sections === */
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background-color: rgba(20, 20, 20, 0.7);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  margin-bottom: 1rem;
+}
+.collapsible-header:hover {
+  background-color: rgba(30, 30, 30, 0.85);
+  border-color: rgba(16, 185, 129, 0.45);
+}
+.collapsible-header .section-title {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+.collapsible-header .chevron,
+.collapsible-header > svg {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+  transition: transform 0.35s ease;
+}
+.collapsible-header.expanded > svg,
+.collapsible-header.expanded .chevron {
+  transform: rotate(180deg);
+}
+.collapsible-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-out;
+  padding: 0 1rem;
+  margin-top: -1rem;
+  margin-bottom: 1rem;
+}
+.collapsible-content.expanded {
+  max-height: none;
+  overflow: visible;
+  padding: 1rem;
+  margin-top: 0;
+}
+
+/* Prevent parent cards from clipping expanded content */
+#academic-presentations-grid,
+#outreach-page .card,
+#outreach-page .grid {
+  overflow: visible;
+}
+
+/* === 18. Date Badges === */
+.date-badge,
 #news-list time,
 #outreach-news-list time,
 .card time {
   display: inline-flex;
   align-items: center;
-  white-space: nowrap;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1;
+  width: auto;
+  height: auto;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.8rem;
+  line-height: 1.3;
   font-weight: 600;
-  border-radius: 0.5rem;
+  border-radius: 0.4rem;
   background-color: rgba(16, 185, 129, 0.15);
   color: #10b981;
-  max-width: max-content;
+  white-space: nowrap;
 }
 
-/* If a flex row is stretching the date chip vertically */
-.news-card,
-.outreach-card {
-  align-items: flex-start;   /* stop chips from getting tall inside flex */
-}
-/* Compact, non-stretching date chips everywhere */
-.date-badge,
-#news-list time,
-#outreach-news-list time,
-#news-modal-date .date-badge,
-#outreach-talk-modal-date .date-badge,
-#academic-presentation-modal-date .date-badge {
-  display: inline-block;        /* shrink to content */
-  width: auto !important;       /* defeat w-full */
-  min-width: 0 !important;      /* allow wrapping to shrink */
-  height: auto !important;      /* defeat h-full */
-  flex: 0 0 auto !important;    /* defeat flex-1 growth */
-  align-self: flex-start !important; /* defeat align-stretch */
-  white-space: normal;          /* allow wrapping at spaces */
-  overflow-wrap: anywhere;      /* break only at whitespace */
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.2;
-  font-weight: 600;
-  border-radius: 0.5rem;
-  background-color: rgba(16,185,129,0.15);
-  color: #10b981;
-}
-
-/* If a parent row is still stretching items, stop it */
-.news-card,
-.outreach-card,
-#news-modal-content-text,
-#outreach-talk-modal-content-text,
-#academic-presentation-modal-content-text {
-  align-items: flex-start;      /* prevent vertical stretching in flex rows */
-}
-
-/* Belt-and-braces: if something added huge padding on the chip */
-.date-badge { padding: 0.25rem 0.5rem !important; }
-
-/* --- Carousel: desktop-specific sizing --- */
-@media (min-width: 1024px) {
-  /* Give each slide a sane width envelope so it doesn't sprawl */
-  #news-carousel-track .carousel-slide {
-    min-width: 720px;          /* enough space for image + copy */
-    max-width: 1040px;         /* don't stretch across huge screens */
-    padding-right: 1rem;
-    padding-left: 1rem;
-    align-items: flex-start;    /* stop vertical stretching */
-    gap: 1rem;
-  }
-
-  /* Image becomes a fixed column, scales to height, never stretches */
-  #news-carousel-track .carousel-slide img {
-    height: 240px;             /* desktop height */
-    width: auto !important;    /* beats any w-1/3 etc */
-    max-width: 280px;          /* column width cap */
-    flex: 0 0 280px;           /* fixed column */
-    object-fit: contain;       /* scale to height, no crop */
-    align-self: flex-start;    /* don't stretch to slide height */
-    margin: 0;
-    display: block;
-  }
-
-  /* Copy column can grow, wrap, and not push layout */
-  #news-carousel-track .carousel-slide > div {
-    flex: 1 1 0%;
-    min-width: 0;              /* allow text to wrap instead of forcing width */
-    text-align: left;          /* avoid center-aligned weirdness on desktop */
-  }
-}
-
-/* Safety: if any image still stretches because of utility classes */
-#news-carousel-track .carousel-slide img {
-  height: 220px;               /* mobile/tablet default */
-  width: auto !important;
-  flex: 0 0 auto;
-  object-fit: contain;
-}
-/* Team section images: consistent headshot sizing */
-.team img {
-  width: 120px;           /* same width for all */
-  height: 120px;          /* same height for all */
-  object-fit: cover;      /* crop to fill box, no distortion */
-  border-radius: 9999px;  /* perfect circle (if you want avatars) */
-  display: block;
-  margin: 0 auto 1rem;    /* center above name */
-}
-/* Carousel track: single row, no wrapping */
-#news-carousel-track {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 1rem;
-  will-change: transform;
-}
-
-/* Each slide is a fixed column + flexible copy (matches your JS sizing) */
-#news-carousel-track .carousel-slide {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-/* Image column never stretches (works on desktop + “request desktop site”) */
-#news-carousel-track .carousel-slide .carousel-img {
-  height: 220px;          /* 240px on very large if you prefer */
-  width: auto !important;
-  max-width: 280px;
-  flex: 0 0 280px;        /* fixed image column */
-  object-fit: contain;    /* or 'cover' if you want cropping */
-  border-radius: 0.5rem;
-}
-
-/* Copy column gets the rest; long text won't force overflow */
-#news-carousel-track .carousel-slide .carousel-copy {
-  flex: 1 1 0%;
-  min-width: 0;           /* allows wrapping instead of pushing width */
-  text-align: left;
-}
-
-/* (Optional) clamp the whole carousel block so it doesn’t sprawl edge-to-edge */
-@media (min-width: 1280px) {
-  #news-carousel-track {
-    margin-inline: auto;
-    max-width: 1100px;
-  }
-  #news-carousel-track .carousel-slide .carousel-img {
-    height: 240px;
-  }
-}
-/* News list: keep the date pill compact on all breakpoints */
-#news-list .card {
-  align-items: flex-start !important;  /* opt out of equal-height rows */
-}
-
-#news-list .card > .bg-primary {
-  display: inline-flex !important;     /* size to content */
-  align-items: center;
-  justify-content: center;
-  width: auto !important;              /* defeat any w-full */
-  min-width: 0 !important;
-  height: auto !important;             /* defeat h-full */
-  min-height: 0 !important;
-  flex: 0 0 auto !important;           /* defeat flex-1 growth */
-  align-self: flex-start !important;   /* opt out of row stretching */
-  padding: 0.25rem 0.5rem !important;  /* compact padding */
-  border-radius: 0.5rem !important;
-  line-height: 1.2 !important;
-  white-space: normal;                 /* allow wrap if long */
-  overflow-wrap: anywhere;             /* wrap at spaces */
-  margin-right: 0.5rem;                 /* right padding after pill */
-
-}
-/* Outreach news: make pill compact + add gap */
+/* === 19. News / Outreach card date pills === */
+#news-list .card,
 #outreach-news-list .card {
-  align-items: flex-start !important;   /* stop equal-height stretching */
+  align-items: flex-start;
 }
-
+#news-list .card > .bg-primary,
 #outreach-news-list .card > .bg-primary {
-  display: inline-flex !important;      /* shrink to text size */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: auto !important;               /* cancel w-full / w-24 */
-  height: auto !important;              /* cancel h-full */
-  flex: 0 0 auto !important;            /* don’t flex-grow */
-  align-self: flex-start !important;    /* opt out of stretch */
-  padding: 0.25rem 0.5rem !important;   /* compact pill look */
-  border-radius: 0.5rem !important;
-  line-height: 1.2 !important;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  margin-right: 0.5rem;                 /* right padding after pill */
-}
-/* Center the image column inside each slide */
-#news-carousel-track .carousel-slide {
-  align-items: center;        /* centers image + copy vertically */
+  width: auto;
+  height: auto;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  padding: 0.2rem 0.55rem;
+  border-radius: 0.4rem;
+  line-height: 1.3;
+  margin-right: 0.5rem;
 }
 
-/* Make sure the image itself centers inside its fixed column */
-#news-carousel-track .carousel-slide .carousel-img {
-  display: block;
-  margin: 0 auto;             /* center horizontally inside its column */
-  align-self: center;         /* belt-and-braces vertical center */
-}
-/* Research cards: identical image crop (16:9-ish, adjust height to taste) */
-.research-card-img {
-  width: 100%;
-  height: 200px;          /* set the common height for all cards */
-  object-fit: cover;      /* crop to fill without distortion */
-  display: block;
-}
-/* Ensure avatar boxes are identical everywhere */
-.team img, .alumni img,
-.modal-content img.rounded-full {
-  width: 48rem;           /* 48 (Tailwind) for modal, but CSS ensures consistency */
-  height: 48rem;
-  aspect-ratio: 1;
+/* === 20. Team / Alumni Avatars === */
+.team img,
+.alumni img {
+  width: 120px;
+  height: 120px;
   object-fit: cover;
+  border-radius: 9999px;
   display: block;
+  margin: 0 auto 1rem;
+  border: 2px solid rgba(16, 185, 129, 0.25);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
-
-/* Avatars in cards ONLY (not buttons) */
+.team img:hover,
+.alumni img:hover {
+  border-color: rgba(16, 185, 129, 0.65);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+}
+/* Round avatars in cards */
 .card img.rounded-full {
-  width: 30rem;      /* w-32 */
-  height: 30rem;     /* h-32 */
+  width: 8rem;
+  height: 8rem;
   object-fit: cover;
   aspect-ratio: 1;
+  display: block;
+  margin: 0 auto;
+}
+
+/* === 21. Research Card Images === */
+.research-card-img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
   display: block;
 }
 
-/* Avatar in the person modal */
-.modal-content img.rounded-full {
-  width: 48rem;     /* w-48 */
-  height: 48rem;    /* h-48 */
-  object-fit: cover;
-  aspect-ratio: 1;
-  display: block;
+/* === 21b. Publication year heading === */
+.pub-year-heading {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 9999px;
+  padding: 0.2rem 0.85rem;
+  margin-bottom: 1.25rem;
+  margin-top: 2rem;
 }
-/* Research cards: identical image crop (16:9-ish, adjust height to taste) */
-.research-card-img {
+/* First year heading needs no top margin */
+.pub-year-heading:first-child {
+  margin-top: 0;
+}
+
+/* === Publication cards === */
+.pub-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+.pub-card {
+  background: rgba(20, 20, 20, 0.6);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 0.6rem;
+  padding: 1rem 1.15rem;
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+.pub-card:hover {
+  background: rgba(28, 28, 28, 0.8);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+.pub-card-title {
+  font-weight: 600;
+  font-size: 0.975rem;
+  color: #f3f4f6;
+  line-height: 1.45;
+  margin-bottom: 0.35rem;
+}
+.pub-card-authors {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  margin-bottom: 0.25rem;
+  line-height: 1.5;
+}
+.pub-card-meta {
+  font-size: 0.82rem;
+  color: #6b7280;
+  margin-bottom: 0.65rem;
+}
+.pub-card-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+.pub-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.pub-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  letter-spacing: 0.02em;
+}
+.pub-tag--oa {
+  background: rgba(249, 115, 22, 0.12);
+  color: #fb923c;
+  border-color: rgba(249, 115, 22, 0.3);
+}
+.pub-card-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.pub-link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #9ca3af;
+  background: rgba(255,255,255,0.04);
+  text-decoration: none;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+}
+.pub-link:hover {
+  color: #f3f4f6;
+  border-color: rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.08);
+}
+.pub-link--doi {
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+.pub-link--doi:hover {
+  border-color: rgba(16, 185, 129, 0.65);
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+}
+.pub-link--interactive {
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.08);
+}
+.pub-link--interactive:hover {
+  border-color: rgba(59, 130, 246, 0.65);
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.15);
+}
+
+/* === 22. News Cards === */
+.news-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.news-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.45), 0 0 14px rgba(16,185,129,0.1);
+  border-color: rgba(16,185,129,0.35);
+}
+.news-card-img {
   width: 100%;
-  height: 220px;          /* set the common height for all cards */
-  object-fit: cover;      /* crop to fill without distortion */
+  height: 190px;
+  object-fit: cover;
   display: block;
+  flex-shrink: 0;
 }
+.news-card-body {
+  padding: 1rem 1.1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.news-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+.news-card-title {
+  font-size: 0.975rem;
+  font-weight: 700;
+  color: #f3f4f6;
+  line-height: 1.4;
+  margin-bottom: 0.4rem;
+}
+.news-card-desc {
+  font-size: 0.825rem;
+  color: #9ca3af;
+  line-height: 1.5;
+  flex: 1;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.news-card-cta {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #10b981;
+  letter-spacing: 0.02em;
+  align-self: flex-start;
+}
+.news-card-ext-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #10b981;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(16,185,129,0.35);
+  border-radius: 9999px;
+  background: rgba(16,185,129,0.08);
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  align-self: flex-start;
+  margin-top: auto;
+}
+.news-card-ext-btn:hover {
+  background: rgba(16,185,129,0.16);
+  border-color: rgba(16,185,129,0.6);
+}
+
+/* === 22b. Filter Buttons === */
+.filter-btn {
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.filter-btn:hover:not(.active) {
+  background-color: rgba(16, 185, 129, 0.1);
+}
+.filter-btn.active {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5);
+}
+
+/* Game theme chips — dynamically added, so Tailwind classes won't compile */
+.game-theme-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.game-theme-chip:hover:not(.active) {
+  background: rgba(16, 185, 129, 0.16);
+}
+.game-theme-chip.active,
+.filter-btn.active {
+  background: rgba(16, 185, 129, 0.22) !important;
+  color: #34d399 !important;
+  border-color: rgba(16, 185, 129, 0.7) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+}
+[data-theme="light"] .game-theme-chip {
+  background: rgba(5, 150, 105, 0.08);
+  color: #059669;
+  border-color: rgba(5, 150, 105, 0.3);
+}
+[data-theme="light"] .game-theme-chip:hover:not(.active) {
+  background: rgba(5, 150, 105, 0.15);
+}
+[data-theme="light"] .game-theme-chip.active,
+[data-theme="light"] .filter-btn.active {
+  background: rgba(5, 150, 105, 0.18) !important;
+  color: #047857 !important;
+  border-color: rgba(5, 150, 105, 0.6) !important;
+}
+
+/* === 23. Modal action buttons === */
 .open-research-modal-btn,
 .open-outreach-talk-modal-btn,
 .open-academic-presentation-modal-btn {
   display: inline-flex;
   align-items: center;
-}
-/* On small screens, make sure slides can't overflow the viewport */
-@media (max-width: 639px) {
-  #news-carousel-track .carousel-slide {
-    flex: 0 0 100% !important;
-    width: 100% !important;
-    min-width: 100% !important;
-  }
-}
-/* 1) Let the Outreach page (and any page-section) grow + scroll on mobile */
-@media (max-width: 640px) {
-  .page-section {
-    min-height: 100vh;          /* grow with content */
-    height: auto !important;    /* defeat fixed 100vh if present */
-    overflow: auto !important;  /* allow scrolling */
-  }
-  #outreach-page {
-    overflow: visible !important;
-  }
+  gap: 0.35rem;
 }
 
-/* Modern mobile viewports (iOS/Chrome address bar quirks) */
+/* === 24. App Canvas === */
+#app-canvas { display: block; width: 100%; height: 100%; }
+#app-canvas-container { width: 100%; height: 100vh; }
+
+/* === 25. Responsive (mobile) === */
+@media (max-width: 640px) {
+  .page-section {
+    min-height: 100vh;
+    height: auto;
+    overflow: auto;
+  }
+  #outreach-page { overflow: visible; }
+}
 @supports (min-height: 100svh) {
   @media (max-width: 640px) {
     .page-section { min-height: 100svh; }
   }
 }
 
-/* 2) Collapsible content: remove the height cap when expanded */
-.collapsible-content {
-  overflow: hidden;             /* collapsed state */
+/* ============================================================
+   === 26. Theme Toggle Button ===
+   ============================================================ */
+.theme-toggle-btn {
+  background: none;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 9999px;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #9ca3af;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
 }
-.collapsible-content.expanded {
-  max-height: none !important;  /* no cap when open */
-  overflow: visible !important; /* let children render fully */
+.theme-toggle-btn:hover {
+  border-color: #10b981;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+/* In dark mode: show moon, hide sun */
+.theme-icon-sun  { display: none;        }
+.theme-icon-moon { display: inline-flex; }
+
+/* ============================================================
+   === 27. Light Mode ===
+   ============================================================ */
+[data-theme="light"] {
+  color-scheme: light;
 }
 
-/* 3) Ensure cards/containers don’t clip expanded content */
-#academic-presentations-grid,
-#outreach-page .card,
-#outreach-page .grid {
-  overflow: visible !important;
+/* Particles stay visible in light mode — JS reinitialises with darker colours */
+
+/* Body */
+[data-theme="light"] body {
+  background: linear-gradient(
+    135deg,
+    rgba(16,185,129,0.12)  0%,
+    rgba(59,130,246,0.10)  25%,
+    rgba(250,204,21,0.07)  50%,
+    rgba(239,68,68,0.09)   75%,
+    rgba(139,92,246,0.10)  100%
+  ), #e8e8ec;
+  color: #0f172a;
 }
-/* Remove background + blur for research hub + carousel sections */
-#home-research-hub-section,
-#home-page .bg-dark-bg\/80 {
-  background: transparent !important;
+
+/* Header */
+[data-theme="light"] .header-glass {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Nav links */
+[data-theme="light"] .nav-link           { color: #374151; }
+[data-theme="light"] .nav-link.active,
+[data-theme="light"] .nav-link:hover     { color: #10b981; text-shadow: none; }
+[data-theme="light"] #mobile-menu        { background: rgba(255, 255, 255, 0.97); }
+[data-theme="light"] #mobile-menu .nav-link { color: #374151; }
+
+/* Theme toggle: show sun in light mode, hide moon */
+[data-theme="light"] .theme-icon-sun     { display: inline-flex; }
+[data-theme="light"] .theme-icon-moon    { display: none; }
+[data-theme="light"] .theme-toggle-btn   { color: #6b7280; }
+
+/* Tailwind colour overrides — text */
+[data-theme="light"] .text-light-text    { color: #111827; }
+[data-theme="light"] .text-medium-text   { color: #6b7280; }
+[data-theme="light"] .text-white         { color: #111827; }
+[data-theme="light"] .text-slate-200     { color: #334155; }
+[data-theme="light"] .text-gray-300      { color: #374151; }
+[data-theme="light"] .text-gray-400      { color: #4b5563; }
+
+/* Tailwind colour overrides — backgrounds */
+/* Let the fixed body gradient show through section panels in light mode */
+[data-theme="light"] .bg-dark-bg\/80,
+[data-theme="light"] .bg-dark-bg\/50 {
+  background-color: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-#app-canvas { display:block; width:100%; height:100%; }
-#app-canvas-container { width:100%; height:100vh; }
+[data-theme="light"] .backdrop-blur-sm {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+[data-theme="light"] .bg-gray-900 { background-color: #f1f5f9 !important; }
+
+/* Hero */
+[data-theme="light"] .hero-title {
+  color: #0f172a;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+  animation: none;
+}
+[data-theme="light"] .hero-cta {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+/* Carousel buttons */
+[data-theme="light"] #carousel-prev,
+[data-theme="light"] #carousel-next {
+  background: rgba(255, 255, 255, 0.7);
+  color: #059669;
+}
+
+/* Section titles */
+[data-theme="light"] .section-title { color: #0f172a; }
+
+/* Cards */
+[data-theme="light"] .card {
+  background-color: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+[data-theme="light"] .card:hover {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1), 0 0 14px rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Collapsible sections */
+[data-theme="light"] .collapsible-header {
+  background-color: rgba(255, 255, 255, 0.82);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+[data-theme="light"] .collapsible-header:hover {
+  background-color: rgba(240, 253, 244, 0.95);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+/* Publication cards */
+[data-theme="light"] .pub-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.07);
+}
+[data-theme="light"] .pub-card:hover {
+  background: rgba(240, 253, 244, 0.95);
+  border-color: rgba(16, 185, 129, 0.22);
+}
+[data-theme="light"] .pub-card-title   { color: #111827; }
+[data-theme="light"] .pub-card-authors { color: #4b5563; }
+[data-theme="light"] .pub-card-meta    { color: #6b7280; }
+[data-theme="light"] .pub-link         { color: #4b5563; border-color: rgba(0,0,0,0.12); background: rgba(0,0,0,0.03); }
+[data-theme="light"] .pub-link:hover   { color: #111827; background: rgba(0,0,0,0.07); }
+
+/* Year headings */
+[data-theme="light"] .pub-year-heading { background: rgba(16,185,129,0.08); }
+
+/* News cards */
+[data-theme="light"] .news-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(16,185,129,0.12);
+}
+[data-theme="light"] .news-card-title  { color: #111827; }
+[data-theme="light"] .news-card-desc   { color: #6b7280; }
+
+/* Research hub panel */
+[data-theme="light"] #dynamic-content-panel { background: rgba(255, 255, 255, 0.85); }
+[data-theme="light"] .hub-project-card      { background: rgba(240, 242, 241, 0.8); }
+[data-theme="light"] .hub-project-card:hover { background: rgba(220, 245, 235, 0.85); }
+[data-theme="light"] .hub-project-title     { color: #111827; }
+[data-theme="light"] .hub-list-item         { color: #374151; }
+[data-theme="light"] .hub-list-item:hover   { background: rgba(16,185,129,0.07); color: #111827; }
+[data-theme="light"] .hub-team-item         { color: #374151; }
+[data-theme="light"] .hub-team-item:hover   { background: rgba(16,185,129,0.07); color: #111827; }
+[data-theme="light"] .hub-tab-btn           { background: rgba(0,0,0,0.04); color: #6b7280; }
+[data-theme="light"] .hub-tab-btn:hover     { background: rgba(0,0,0,0.08); color: #374151; }
+[data-theme="light"] .hub-tab-btn--active   { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.35); color: #059669; }
+
+/* Modals */
+[data-theme="light"] .modal-overlay    { background: rgba(0, 0, 0, 0.45); }
+[data-theme="light"] .modal-content    { background: #f8fafc; border-color: rgba(16,185,129,0.2); }
+[data-theme="light"] .modal-close      { color: #6b7280; }
+[data-theme="light"] .modal-close:hover { color: #111827; }
+
+/* Date badges and tags */
+[data-theme="light"] .date-badge       { background-color: rgba(16,185,129,0.1); }
+[data-theme="light"] .pub-tag          { background: rgba(16,185,129,0.08); }
+
+/* Loader spinner */
+[data-theme="light"] .loader           { border-color: rgba(0,0,0,0.08); border-top-color: #10b981; }
+
+/* GDPR banner — keep dark regardless (it needs contrast either way) */
+
+/* Scroll to top button — already green, fine on both themes */
+
+/* ============================================================
+   === 28. Games — Age Badges & Title Row ===
+   ============================================================ */
+
+/* Title + age badge row inside each game card */
+.game-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+/* Age range pill badge */
+.game-age-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  white-space: nowrap;
+  margin-top: 0.2rem;
+}
+
+[data-theme="light"] .game-age-badge {
+  background: rgba(5, 150, 105, 0.1);
+  color: #059669;
+  border-color: rgba(5, 150, 105, 0.3);
+}
