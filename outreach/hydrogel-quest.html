@@ -4,6 +4,7 @@
   <link rel="stylesheet" href="../assets/css/tailwind.css">
   <link rel="stylesheet" href="../assets/css/fonts.css">
   <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
   <style>body{font-family: var(--font-sans-exo);}
 /* On-screen D-pad for mobile */
 #dpad{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;display:grid;grid-template-columns:60px 60px 60px;gap:8px;z-index:9999}
@@ -43,10 +44,7 @@
             border: 1px solid rgba(16, 185, 129, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.15), 0 0 15px rgba(16, 185, 129, 0.1);
-        }
+        /* No hover lift on game container — would jitter during play */
         .section-title {
             border-bottom: 3px solid #10b981;
             padding-bottom: 10px;
@@ -103,12 +101,26 @@
     </style>
 </head>
 <body class="antialiased">
+<script>function sbToggleResearch(){document.getElementById('sb-panel').classList.toggle('open');}document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('sb-panel').classList.remove('open');});</script>
+<header class="sb-header">
+  <a href="../index.html#outreach" class="sb-brand">SMARTBio</a>
+  <span class="sb-title">Hydrogel Quest</span>
+  <div class="sb-tags"><span class="sb-tag">Regenerative</span><span class="sb-tag">Therapeutic</span></div>
+  <button class="sb-research-btn" onclick="sbToggleResearch()">🔬 Research</button>
+</header>
+<div class="sb-panel" id="sb-panel" role="complementary" aria-label="Research connection">
+  <button class="sb-panel-close" onclick="sbToggleResearch()" aria-label="Close">×</button>
+  <h3>How this connects to our research</h3>
+  <p>Hydrogels are water-swollen polymer networks — imagine a molecular sponge. Our group engineers hydrogels that can be injected into the body, where they solidify and slowly release drugs or support cell growth in damaged tissue.</p>
+  <p>The three ingredients in this game — Polymer, Cross-linker, and Photoinitiator — are the real components used in our photocrosslinkable hydrogel research. UV light activates the photoinitiator, which chemically links the polymer chains together through the cross-linker, locking the gel in place.</p>
+  <a href="../index.html#research" class="sb-more">Explore our research →</a>
+</div>
     <div class="py-20">
         <div class="container mx-auto px-6 text-center">
             <h2 class="text-3xl font-bold text-center mb-8 section-title">Hydrogel Quest</h2>
             <p class="text-medium-text mb-8 max-w-2xl mx-auto">Explore the lab and collect the ingredients to synthesize a hydrogel! Use the arrow keys to move.</p>
             <div id="game-container" class="card p-4">
-                <canvas id="game-canvas" width="800" height="600"></canvas>
+                <canvas id="game-canvas" width="800" height="600" role="img" aria-label="Hydrogel Quest lab map — navigate to collect Polymer, Cross-linker and Photoinitiator"></canvas>
 <div id="dpad"><button data-dir="up">↑</button><div class="spacer"></div><div></div><button data-dir="left">←</button><button data-dir="down">↓</button><button data-dir="right">→</button></div>
                 <div id="game-inventory">
                     <h3 class="font-bold mb-2">Inventory:</h3>
@@ -130,9 +142,12 @@
                 const TILE_SIZE = 40;
                 const player = { x: TILE_SIZE * 2, y: TILE_SIZE * 2, size: TILE_SIZE / 2 };
                 const ingredients = [
-                    { name: 'Polymer', x: TILE_SIZE * 5, y: TILE_SIZE * 10, collected: false, color: '#ff6347' },
-                    { name: 'Cross-linker', x: TILE_SIZE * 15, y: TILE_SIZE * 3, collected: false, color: '#4682b4' },
-                    { name: 'Photoinitiator', x: TILE_SIZE * 10, y: TILE_SIZE * 12, collected: false, color: '#32cd32' }
+                    { name: 'Polymer', x: TILE_SIZE * 5, y: TILE_SIZE * 10, collected: false, color: '#ff6347',
+                      tooltip: 'Polymer — the backbone of the hydrogel! Long chain molecules that form the gel structure.' },
+                    { name: 'Cross-linker', x: TILE_SIZE * 15, y: TILE_SIZE * 3, collected: false, color: '#4682b4',
+                      tooltip: 'Cross-linker — chemically bridges the polymer chains together, giving the gel its strength and shape.' },
+                    { name: 'Photoinitiator', x: TILE_SIZE * 10, y: TILE_SIZE * 12, collected: false, color: '#32cd32',
+                      tooltip: 'Photoinitiator — activated by UV light to trigger the cross-linking reaction. No light, no gel!' }
                 ];
                 const labObjects = [
                     { x: 0, y: 0, width: TILE_SIZE * 20, height: TILE_SIZE }, // Top wall
@@ -174,6 +189,23 @@
                         inventoryList.appendChild(li);
                     });
                 }
+
+                // Ingredient pickup tooltip
+                var _tooltipTimer = null;
+                var _tooltipEl = (function(){
+                    var el = document.createElement('div');
+                    el.style.cssText='position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(8,18,28,0.93);border:1px solid rgba(16,185,129,0.45);color:#cbd5e1;font-size:0.78rem;line-height:1.5;padding:9px 14px;border-radius:10px;max-width:340px;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.25s;z-index:10;font-family:\'Exo 2\',system-ui,sans-serif;';
+                    var container = document.getElementById('game-container');
+                    if(container){ container.style.position='relative'; container.appendChild(el); }
+                    return el;
+                })();
+                function showIngredientTooltip(text){
+                    if(!_tooltipEl) return;
+                    _tooltipEl.textContent = text;
+                    _tooltipEl.style.opacity = '1';
+                    if(_tooltipTimer) clearTimeout(_tooltipTimer);
+                    _tooltipTimer = setTimeout(function(){ _tooltipEl.style.opacity='0'; }, 3500);
+                }
                 
                 function checkCollision(newX, newY) {
                     for(const obj of labObjects) {
@@ -200,16 +232,18 @@
                     }
 
                     ingredients.forEach(ing => {
-                        if (!ing.collected && player.x < ing.x + TILE_SIZE && player.x + player.size > ing.x &&
-                            player.y < ing.y + TILE_SIZE && player.y + player.size > ing.y) {
+                        // Fixed: use player.size*2 (full diameter) for correct hitbox
+                        if (!ing.collected && player.x < ing.x + TILE_SIZE && player.x + player.size * 2 > ing.x &&
+                            player.y < ing.y + TILE_SIZE && player.y + player.size * 2 > ing.y) {
                             ing.collected = true;
                             updateInventory();
+                            showIngredientTooltip(ing.tooltip);
                             if (ingredients.every(i => i.collected)) {
                                 setTimeout(() => {
                                    const successModal = document.createElement('div');
                                    successModal.id = 'success-modal';
                                    successModal.className = 'modal-overlay active';
-                                   successModal.innerHTML = `<div class="modal-content text-center"><span class="modal-close">&times;</span><h2 class="text-3xl font-bold text-primary mb-4">Hydrogel Synthesized!</h2><img src="https://placehold.co/600x400/10b981/ffffff?text=Hydrogel" alt="Hydrogel" class="mx-auto rounded-lg"><p class="mt-4 text-medium-text">Congratulations! You've collected all the ingredients.</p></div>`;
+                                   successModal.innerHTML = `<div class="modal-content text-center"><span class="modal-close">&times;</span><h2 class="text-3xl font-bold text-primary mb-4">Hydrogel Synthesized!</h2><div style="width:100%;max-width:400px;margin:0 auto;padding:2rem;background:rgba(16,185,129,0.1);border:2px solid rgba(16,185,129,0.35);border-radius:1rem;font-size:4rem;line-height:1;">🧪</div><p class="mt-4 text-medium-text">Congratulations! You've collected all the ingredients and successfully synthesized a hydrogel! In our lab, we load these with cells or drugs to help wounds heal.</p></div>`;
                                    document.getElementById('modal-container').appendChild(successModal);
                                 }, 100);
                             }

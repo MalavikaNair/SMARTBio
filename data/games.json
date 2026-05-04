@@ -50,7 +50,7 @@
         "description": "Navigate the lab, collect ingredients, and synthesise a hydrogel in this fun educational game!",
         "thumbnail": "./assets/img/hydrogel-quest.png",
         "file": "./outreach/hydrogel-quest.html",
-        "themes": [],
+        "themes": ["Regenerative", "Therapeutic"],
 		"ageRange": "6+"
     }
    ]

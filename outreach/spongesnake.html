@@ -14,24 +14,25 @@
     <title>Sponge Snake 2D Enhanced</title>
 <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Exo 2', system-ui, sans-serif;
+            background-color: #0d1117;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden; /* Prevent scrollbars */
+            overflow: hidden;
         }
         .game-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(8,18,28,0.96);
+            border: 1px solid rgba(16,185,129,0.2);
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
             padding: 20px;
-            max-width: 95vw; /* Responsive width */
+            max-width: 95vw;
             box-sizing: border-box;
         }
         .game-content {
@@ -43,11 +44,11 @@
             align-items: flex-start;
         }
         #gameCanvas {
-            border: 2px solid #a0a0a0;
+            border: 1px solid rgba(16,185,129,0.3);
             border-radius: 10px;
             display: block;
-            touch-action: none; /* Disable default touch actions like scrolling/zooming */
-            background-color: #e0e0e0; /* Path color */
+            touch-action: none;
+            background-color: #111827;
         }
         .controls {
             display: flex;
@@ -57,74 +58,64 @@
             flex-wrap: wrap; /* Allow wrapping on smaller screens */
         }
         .button {
-            padding: 12px 25px;
-            background: linear-gradient(145deg, #6a82fb, #8b9efb);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1em;
+            padding: 9px 22px;
+            background: rgba(16,185,129,0.12);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.45);
+            border-radius: 9999px;
+            font-size: 0.9em;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            font-weight: bold;
+            transition: background 0.2s ease, transform 0.1s ease;
+            font-weight: 700;
+            font-family: 'Exo 2', system-ui, sans-serif;
         }
         .button:hover {
-            background: linear-gradient(145deg, #5a71e0, #7a8ce0);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-            transform: translateY(-2px);
+            background: rgba(16,185,129,0.24);
+            transform: translateY(-1px);
         }
-        .button:active {
-            background: linear-gradient(145deg, #4a61d0, #6a7cdf0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            transform: translateY(0);
-        }
+        .button:active { transform: translateY(0); }
         .score-display {
-            font-size: 1.4em;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 8px;
             text-align: center;
             width: 100%;
         }
-        /* High Score Display */
         .high-score-display {
-            font-size: 1em;
-            font-weight: bold;
-            color: #555;
-            margin-top: 10px;
+            font-size: 0.82em;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: 4px;
             text-align: center;
             width: 100%;
         }
-        /* Enhanced message box styles */
         .message-box {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(255, 255, 255, 0.98); /* Semi-transparent white */
-            color: #333;
-            padding: 20px 30px; /* Reduced padding */
-            border-radius: 20px;
+            background: rgba(8,18,28,0.97);
+            border: 1px solid rgba(16,185,129,0.35);
+            color: #e2e8f0;
+            padding: 24px 30px;
+            border-radius: 16px;
             text-align: center;
-            font-size: 1.2em; /* Reduced font size */
-            font-weight: bold;
+            font-size: 0.95em;
+            font-weight: 600;
             z-index: 1000;
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3); /* Stronger shadow */
-            border: 2px solid #6a82fb; /* Blue border */
-            max-width: 600px; /* Reduced max-width */
-            line-height: 1.5; /* Better readability */
-            display: none; /* Hidden by default */
-            animation: fadeIn 0.5s ease-out forwards;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+            max-width: 520px;
+            line-height: 1.6;
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
         }
-
         .message-box h2 {
-            font-size: 1.8em; /* Reduced font size */
-            color: #6a82fb;
-            margin-bottom: 15px; /* Reduced margin */
+            font-size: 1.4em;
+            color: #10b981;
+            margin-bottom: 12px;
         }
-        .message-box p {
-            margin-bottom: 10px; /* Reduced margin */
-        }
+        .message-box p { margin-bottom: 10px; }
         .mobile-controls {
             display: grid;
             grid-template-areas:
@@ -162,34 +153,37 @@
 
         /* Legend styles */
         .game-sidebar {
-            background-color: #f8f8f8;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            background: rgba(8,18,28,0.7);
+            border: 1px solid rgba(16,185,129,0.18);
+            border-radius: 12px;
+            padding: 14px;
             min-width: 150px;
             max-width: 200px;
             box-sizing: border-box;
         }
         .legend h3 {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
+            font-size: 0.85em;
+            font-weight: 700;
+            color: #10b981;
             margin-bottom: 10px;
             text-align: center;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
         .legend-item {
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            font-size: 0.95em;
-            color: #555;
+            font-size: 0.82em;
+            color: #94a3b8;
         }
         .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            margin-right: 10px;
-            border: 1px solid rgba(0,0,0,0.1);
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            margin-right: 8px;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.15);
         }
         /* Updated legend colors */
         .grow-food-color {
@@ -203,31 +197,34 @@
             box-shadow: 0 0 8px #800080; /* Glowing effect */
         }
 
-        /* Porosity selector styles */
+        /* Porosity / metabolism selector styles */
         .porosity-selector, .metabolism-selector {
-            margin-top: 15px;
+            margin-top: 14px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         .porosity-selector label, .metabolism-selector label {
-            font-size: 1em;
-            font-weight: bold;
-            color: #333;
+            font-size: 0.82em;
+            font-weight: 700;
+            color: #94a3b8;
+            letter-spacing: 0.02em;
         }
         .porosity-selector select, .metabolism-selector select {
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 8px;
-            border: 1px solid #ccc;
-            background-color: #f0f0f0;
-            font-size: 1em;
+            border: 1px solid rgba(16,185,129,0.35);
+            background: rgba(8,18,28,0.9);
+            color: #e2e8f0;
+            font-size: 0.82em;
             cursor: pointer;
             outline: none;
-            transition: border-color 0.3s ease;
+            font-family: 'Exo 2', system-ui, sans-serif;
+            transition: border-color 0.2s;
         }
         .porosity-selector select:focus, .metabolism-selector select:focus {
-            border-color: #6a82fb;
+            border-color: #10b981;
         }
 
         /* Snake head animation */
@@ -269,11 +266,26 @@
     </style>
   <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen p-4" style="background:#0d1117;">
+<script>function sbToggleResearch(){document.getElementById('sb-panel').classList.toggle('open');}document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('sb-panel').classList.remove('open');});</script>
+<header class="sb-header">
+  <a href="../index.html#outreach" class="sb-brand">SMARTBio</a>
+  <span class="sb-title">Bloody Snake in a Sponge!</span>
+  <div class="sb-tags"><span class="sb-tag">Therapeutic</span><span class="sb-tag">Regenerative</span></div>
+  <button class="sb-research-btn" onclick="sbToggleResearch()">🔬 Research</button>
+</header>
+<div class="sb-panel" id="sb-panel" role="complementary" aria-label="Research connection">
+  <button class="sb-panel-close" onclick="sbToggleResearch()" aria-label="Close">×</button>
+  <h3>How this connects to our research</h3>
+  <p>For a tissue scaffold to work, it needs a blood supply — without blood vessels, cells die. Our group engineers porous scaffolds (the sponge!) that allow vessels to grow through them. The pore size and surface chemistry directly affect how well a vessel can navigate.</p>
+  <p>Growth Factors encourage vessels to expand; Anti-angiogenic Factors slow them down. Electrical stimulation (spacebar!) can also promote vessel growth — a key focus of our electroactive biomaterials research, where conducting polymers are used to guide tissue regeneration.</p>
+  <a href="../index.html#research" class="sb-more">Explore our research →</a>
+</div>
     <div class="game-wrapper">
         <div class="score-display" id="scoreDisplay" aria-live="polite">Length: 1</div>
         <div class="high-score-display" id="maxLengthHighScoreDisplay" aria-live="polite">Max Length: 0</div>
         <div class="high-score-display" id="maxTimeHighScoreDisplay" aria-live="polite">Max Time: 0s</div>
+        <div id="vasculGoal" style="font-family:'Exo 2',system-ui,sans-serif;font-size:0.78rem;font-weight:600;color:#10b981;text-align:center;padding:4px 10px;margin-top:4px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:8px;" aria-live="polite">🎯 Goal: Reach length 15 to vascularise the scaffold!</div>
         <div class="game-content">
             <canvas id="gameCanvas" role="img" aria-label="Sponge Snake Game Area"></canvas>
             <div class="game-sidebar">
@@ -281,15 +293,15 @@
                     <h3>Legend</h3>
                     <div class="legend-item">
                         <span class="legend-color grow-food-color"></span>
-                        <span>Grow Food (Square)</span>
+                        <span>Growth Factor (Square)</span>
                     </div>
                     <div class="legend-item">
                         <span class="legend-color shrink-food-color"></span>
-                        <span>Shrink Food (Triangle)</span>
+                        <span>Anti-angiogenic Factor (Triangle)</span>
                     </div>
                     <div class="legend-item">
                         <span class="legend-color bonus-food-color"></span>
-                        <span>External Nutrient Stimulus (Star)</span>
+                        <span>Electrical Stimulus (Star)</span>
                     </div>
                 </div>
             </div>
@@ -364,6 +376,8 @@
         let currentDirection = 'right'; // Current movement direction
         let nextDirection = 'right'; // Pending direction change
         let score = INITIAL_SNAKE_LENGTH;
+        const VASCUL_TARGET = 15;
+        let vascularised = false;
         let gameOver = false;
         let gamePaused = false; // New state for pause
         let gameInterval;
@@ -385,6 +399,24 @@
 
         // --- UI elements ---
         const scoreDisplay = document.getElementById('scoreDisplay');
+        const vasculGoalEl = document.getElementById('vasculGoal');
+        function updateVasculGoal() {
+            if (!vasculGoalEl) return;
+            if (score >= VASCUL_TARGET) {
+                if (!vascularised) {
+                    vascularised = true;
+                    vasculGoalEl.innerHTML = '🏆 Scaffold vascularised! Keep your vessel growing!';
+                    vasculGoalEl.style.background = 'rgba(16,185,129,0.18)';
+                    vasculGoalEl.style.borderColor = 'rgba(16,185,129,0.6)';
+                    vasculGoalEl.style.color = '#34d399';
+                }
+            } else {
+                vasculGoalEl.innerHTML = `🎯 Goal: Reach length ${VASCUL_TARGET} to vascularise the scaffold! (${score}/${VASCUL_TARGET})`;
+                vasculGoalEl.style.background = 'rgba(16,185,129,0.08)';
+                vasculGoalEl.style.borderColor = 'rgba(16,185,129,0.25)';
+                vasculGoalEl.style.color = '#10b981';
+            }
+        }
         const maxLengthHighScoreDisplay = document.getElementById('maxLengthHighScoreDisplay');
         const maxTimeHighScoreDisplay = document.getElementById('maxTimeHighScoreDisplay');
         const pauseButton = document.getElementById('pauseButton');
@@ -675,10 +707,11 @@
                 if (newBonusX === snake[i].x && newBonusY === snake[i].y) {
                     score++; // Grow snake
                     // Add new segment at bonus food location (makes it appear that it was consumed by the snake's body)
-                    snake.unshift({ x: newBonusX, y: newHeadY }); // Fix: use newHeadY instead of newBonusY
+                    snake.unshift({ x: newBonusX, y: newBonusY });
                     bonusFood = null;
                     bonusFoodActive = false;
                     scoreDisplay.textContent = `Length: ${score}`;
+                    updateVasculGoal();
                     if (score > currentMaxGameLength) {
                         currentMaxGameLength = score;
                     }
@@ -729,6 +762,8 @@
             }
 
             scoreDisplay.textContent = `Length: ${score}`;
+            vascularised = false;
+            updateVasculGoal();
             createInitialFood(); // Create/update food objects
             bonusFood = null; // Clear any bonus food from previous game
             bonusFoodActive = false;
@@ -856,8 +891,9 @@
 
             // Update UI and check for final game over condition (only for food-based death)
             scoreDisplay.textContent = `Length: ${score}`;
+            updateVasculGoal();
             if (score <= 0) {
-                endGame('Your snake disappeared from eating too much Shrink Food (Triangle)!', true);
+                endGame('Your vessel disappeared — too many Anti-angiogenic Factors or insufficient Growth Factors!', true);
                 return;
             }
         }
@@ -1104,17 +1140,17 @@
          */
         function showWelcomeMessage() {
             const welcomeMessageHTML = `
-                <p>Your goal is to grow your snake by eating <b>Grow Food (Square)</b>. But beware, your snake is always shrinking!</p>
+                <p>Your goal is to grow your blood vessel by collecting <b>Growth Factors (Square)</b>. But beware — vessels need constant support or they shrink!</p>
                 <p>
                     Use <b>Arrow Keys</b> or <b>Touch Controls</b> to move.
                     You can also drag on the canvas to change your camera angle.
                 </p>
                 <p>
-                    Eat <b>Shrink Food (Triangle)</b> to shrink.
-                    Press <b>SPACEBAR</b> to summon an <b>External Nutrient Stimulus (Star)</b> for a quick growth boost!
+                    Avoid <b>Anti-angiogenic Factors (Triangle)</b> — they shrink your vessel.
+                    Press <b>SPACEBAR</b> to apply an <b>Electrical Stimulus (Star)</b> for a growth boost!
                 </p>
                 <p class="font-bold text-red-600">
-                    Game Over if your length drops to 0 from eating Shrink Food (Triangle) or due to your snake's metabolism!
+                    Game Over if your vessel disappears from Anti-angiogenic Factors or insufficient growth signals!
                 </p>
                 <div class="porosity-selector">
                     <label for="porosityLevel">Maze Porosity:</label>

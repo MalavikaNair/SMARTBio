@@ -4,6 +4,7 @@
   <link rel="stylesheet" href="../assets/css/tailwind.css">
   <link rel="stylesheet" href="../assets/css/fonts.css">
   <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
   <script src="../assets/js/Tone.min.js"></script>
   <style>body{font-family: var(--font-sans-exo);}
 /* Ensure the game canvas is visible and responsive */
@@ -14,7 +15,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Blob</title>
+    <title>Flappy Cell</title>
 <!-- Include Tone.js for sound effects -->
 <style>
         /* Custom CSS for the game elements */
@@ -24,9 +25,9 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #f0f8ff; /* Alice Blue */
+            background-color: #0d1117;
             margin: 0;
-            overflow: hidden; /* Prevent scrollbars */
+            overflow: hidden;
         }
         .main-content-wrapper {
             display: flex;
@@ -53,192 +54,228 @@
             position: relative; /* For pause button positioning */
         }
         .message-box {
-            /* Changed to fixed positioning to cover the whole screen */
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
-            color: white;
-            display: flex; /* Use flexbox to center content */
+            background: rgba(8,18,28,0.85);
+            backdrop-filter: blur(6px);
+            color: #e2e8f0;
+            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 9999; /* Ensure it's on top of everything */
-            display: none; /* Hidden by default */
-            font-size: 1.2rem;
-            padding: 20px; /* Add padding for content inside */
-            box-sizing: border-box; /* Include padding in width/height */
+            z-index: 9999;
+            display: none;
+            font-size: 1rem;
+            padding: 20px;
+            box-sizing: border-box;
+            font-family: 'Exo 2', system-ui, sans-serif;
         }
         .message-content {
-            background-color: rgba(0, 0, 0, 0.85); /* Slightly darker background for content */
-            padding: 30px 40px;
-            border-radius: 15px;
+            background: rgba(8,18,28,0.97);
+            border: 1px solid rgba(16,185,129,0.3);
+            padding: 36px 44px;
+            border-radius: 18px;
             text-align: center;
-            max-width: 90%; /* Ensure it fits on small screens */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.6);
         }
         .message-box h3 {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #10b981;
+            margin-bottom: 14px;
         }
         .message-box p {
-            margin-bottom: 15px;
-            line-height: 1.5;
+            margin-bottom: 10px;
+            line-height: 1.65;
+            color: #cbd5e1;
+            font-size: 0.95rem;
         }
         .message-box button {
-            background-color: #4CAF50; /* Green */
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
+            background: rgba(16,185,129,0.15);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.5);
+            padding: 11px 32px;
+            border-radius: 9999px;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 18px;
             font-size: 1rem;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-weight: 700;
+            font-family: 'Exo 2', system-ui, sans-serif;
+            transition: background 0.2s ease, transform 0.1s ease;
         }
         .message-box button:hover {
-            background-color: #45a049;
+            background: rgba(16,185,129,0.28);
             transform: translateY(-2px);
         }
         .message-box button:active {
             transform: translateY(0);
-            box-shadow: 2px 4px rgba(0, 0, 0, 0.2);
         }
         .adaptive-controls {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(8,18,28,0.92);
+            border: 1px solid rgba(16,185,129,0.22);
+            padding: 18px 16px;
+            border-radius: 14px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 14px;
             min-width: 200px;
-            max-width: 90vw; /* Ensure it fits on small screens */
+            max-width: 90vw;
+            font-family: 'Exo 2', system-ui, sans-serif;
         }
         .adaptive-controls h2 {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #333;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #10b981;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
+            letter-spacing: 0.04em;
         }
         .control-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            position: relative; /* For tooltips */
+            gap: 4px;
+            position: relative;
         }
         .control-group label {
             font-weight: 600;
-            color: #555;
-            cursor: help; /* Indicate hoverable for tooltip */
+            color: #94a3b8;
+            font-size: 0.78rem;
+            cursor: help;
+            letter-spacing: 0.02em;
         }
         .control-group .tooltip {
             position: absolute;
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.85);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.8rem;
+            background: rgba(8,18,28,0.97);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #cbd5e1;
+            padding: 7px 11px;
+            border-radius: 8px;
+            font-size: 0.75rem;
             white-space: nowrap;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.25s ease;
             z-index: 10;
         }
-        .control-group label:hover + .tooltip {
-            opacity: 1;
-        }
+        .control-group label:hover + .tooltip { opacity: 1; }
         .control-group input[type="range"] {
             width: 100%;
-            -webkit-appearance: none; /* Override default slider styles */
-            height: 8px;
-            background: #ddd;
-            border-radius: 5px;
+            -webkit-appearance: none;
+            height: 6px;
+            background: rgba(16,185,129,0.2);
+            border-radius: 3px;
             outline: none;
-            opacity: 0.7;
-            transition: opacity .2s;
+            transition: background 0.2s;
         }
+        .control-group input[type="range"]:hover { background: rgba(16,185,129,0.35); }
         .control-group input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 17px;
+            height: 17px;
             border-radius: 50%;
-            background: #4CAF50;
+            background: #10b981;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 6px rgba(16,185,129,0.5);
         }
         .control-group input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+            width: 17px;
+            height: 17px;
             border-radius: 50%;
-            background: #4CAF50;
+            background: #10b981;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            border: none;
         }
         .control-value {
-            text-align: center;
-            font-weight: bold;
-            color: #333;
+            text-align: right;
+            font-weight: 700;
+            color: #10b981;
+            font-size: 0.78rem;
         }
+        /* Environment status banner */
+        #env-status {
+            background: rgba(16,185,129,0.08);
+            border: 1px solid rgba(16,185,129,0.25);
+            border-radius: 10px;
+            padding: 9px 14px;
+            font-family: 'Exo 2', system-ui, sans-serif;
+            font-size: 0.78rem;
+            color: #a7f3d0;
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 4px;
+        }
+        #env-status strong { color: #10b981; }
         /* New CSS for score feedback animation */
         #scoreText.score-animate {
             animation: scorePop 0.5s ease-out forwards;
         }
         @keyframes scorePop {
-            0% { transform: scale(1); color: #333; }
-            50% { transform: scale(1.2); color: #4CAF50; }
-            100% { transform: scale(1); color: #333; }
+            0% { transform: scale(1); color: #e2e8f0; }
+            50% { transform: scale(1.2); color: #10b981; }
+            100% { transform: scale(1); color: #e2e8f0; }
         }
         .pause-button {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 1rem;
+            background: rgba(16,185,129,0.12);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.45);
+            border-radius: 9999px;
+            padding: 7px 18px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            font-family: 'Exo 2', system-ui, sans-serif;
             cursor: pointer;
-            z-index: 100;
-            transition: background-color 0.3s ease;
+            transition: background 0.2s ease;
+            align-self: flex-start;
         }
-        .pause-button:hover {
-            background-color: rgba(0, 0, 0, 0.7);
-        }
+        .pause-button:hover { background: rgba(16,185,129,0.24); }
 
     </style>
 </head>
+<script>function sbToggleResearch(){document.getElementById('sb-panel').classList.toggle('open');}document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('sb-panel').classList.remove('open');});</script>
+<header class="sb-header">
+  <a href="../index.html#outreach" class="sb-brand">SMARTBio</a>
+  <span class="sb-title">Flappy Cell</span>
+  <div class="sb-tags"><span class="sb-tag">Adaptive</span><span class="sb-tag">Modulating</span></div>
+  <button class="sb-research-btn" onclick="sbToggleResearch()">🔬 Research</button>
+</header>
+<div class="sb-panel" id="sb-panel" role="complementary" aria-label="Research connection">
+  <button class="sb-panel-close" onclick="sbToggleResearch()" aria-label="Close">×</button>
+  <h3>How this connects to our research</h3>
+  <p>In our lab, materials must adapt to their biological surroundings. A gel implanted near a wound site needs mechanical properties that match the surrounding tissue — too stiff and it damages cells; too soft and it falls apart.</p>
+  <p>Flappy Blob exaggerates this challenge: can you adapt your control strategy as the environment changes? The sliders represent real parameters — stiffness, elasticity, viscosity — that our materials scientists tune in the lab to get just the right behaviour.</p>
+  <a href="../index.html#research" class="sb-more">Explore our research →</a>
+</div>
 <div class="game-shell">
     <div class="main-content-wrapper">
-        <canvas id="gameCanvas"></canvas>
+        <canvas id="gameCanvas" role="img" aria-label="Flappy Blob game area — guide the cell through the membrane gaps"></canvas>
         <button id="pauseButton" class="pause-button" style="display: none;">Pause</button>
         <div class="adaptive-controls">
             <h2>Adaptive Control</h2>
+            <div id="env-status">Adjust the sliders to change the gel environment</div>
             <div class="control-group">
-                <label for="gravitySlider">Gravity:</label>
+                <label for="gravitySlider">Gel Viscosity (Gravity):</label>
                 <span class="tooltip">Controls the speed at which the blob falls. Higher value = faster fall.</span>
                 <input type="range" id="gravitySlider" min="0.1" max="1.0" value="0.2" step="0.05">
                 <span id="gravityValue" class="control-value">0.20</span>
             </div>
             <div class="control-group">
-                <label for="bounceStrengthSlider">Bounce Strength:</label>
-                <span class="tooltip">Adjusts the initial power of the blob's jump. More negative value = stronger jump.</span>
+                <label for="bounceStrengthSlider">Gel Elasticity (Bounce):</label>
+                <span class="tooltip">Stiffer gels push the blob back harder. More negative = more elastic gel.</span>
                 <input type="range" id="bounceStrengthSlider" min="-15" max="-5" value="-12" step="0.5">
                 <span id="bounceStrengthValue" class="control-value">-12.0</span>
             </div>
             <div class="control-group">
-                <label for="degradationSlider">Degradation (Jump Decay Rate):</label>
-                <span class="tooltip">The rate at which your jump strength weakens over time. Higher value = faster decay.</span>
+                <label for="degradationSlider">Polymer Degradation Rate:</label>
+                <span class="tooltip">How quickly the gel breaks down over time. Higher = elasticity fades faster.</span>
                 <input type="range" id="degradationSlider" min="0.000" max="0.010" value="0.001" step="0.001">
                 <span id="degradationValue" class="control-value">0.001</span>
             </div>
@@ -495,54 +532,57 @@
             }
 
             draw(ctx) {
-                const thatchColor = 'rgba(255, 255, 255, 0.7)'; // Whitish for thatch, semi-transparent
-                const thatchStroke = 'rgba(139, 69, 19, 1)'; // Light brown for outline (SaddleBrown)
-                const thatchLineLength = 8;
-                const thatchLineSpacing = 4;
-                const cornerRadius = 10;
+                const cornerRadius = 8;
+                const fillColor = 'rgba(16,60,48,0.88)';    // dark teal fill
+                const borderColor = 'rgba(16,185,129,0.75)'; // teal border
+                const fiberColor = 'rgba(16,185,129,0.18)';  // faint fiber lines
 
-                function drawThatchPattern(context, rectX, rectY, rectWidth, rectHeight) {
+                function drawMembranePattern(context, rectX, rectY, rectWidth, rectHeight) {
                     context.save();
                     context.beginPath();
                     context.rect(rectX, rectY, rectWidth, rectHeight);
                     context.clip();
-
-                    context.strokeStyle = thatchStroke;
+                    context.strokeStyle = fiberColor;
                     context.lineWidth = 1;
-
-                    for (let i = -rectWidth; i < rectWidth + rectHeight; i += thatchLineSpacing) {
+                    for (let i = -rectHeight; i < rectWidth + rectHeight; i += 7) {
                         context.beginPath();
                         context.moveTo(rectX + i, rectY);
-                        context.lineTo(rectX + i + thatchLineLength, rectY + rectHeight);
+                        context.lineTo(rectX + i + rectHeight, rectY + rectHeight);
                         context.stroke();
                     }
                     context.restore();
                 }
 
-                // Draw Top Pipe
-                ctx.fillStyle = thatchColor;
-                ctx.beginPath();
-                ctx.roundRect(this.x, 0, this.width, this.currentY, cornerRadius); // Use this.width
-                ctx.fill();
-                drawThatchPattern(ctx, this.x, 0, this.width, this.currentY); // Use this.width
-
-                // Draw Bottom Pipe
                 const bottomPipeY = this.currentY + this.poreSize;
                 const bottomPipeHeight = this.canvasHeight - bottomPipeY;
-                ctx.fillStyle = thatchColor;
-                ctx.beginPath();
-                ctx.roundRect(this.x, bottomPipeY, this.width, bottomPipeHeight, cornerRadius); // Use this.width
-                ctx.fill();
-                drawThatchPattern(ctx, this.x, bottomPipeY, this.width, bottomPipeHeight); // Use this.width
 
-                // Add a darker border to the pipes for definition
-                ctx.strokeStyle = thatchStroke;
-                ctx.lineWidth = 3;
+                // Fill
+                ctx.fillStyle = fillColor;
+                ctx.beginPath(); ctx.roundRect(this.x, 0, this.width, this.currentY, [0,0,cornerRadius,cornerRadius]); ctx.fill();
+                ctx.beginPath(); ctx.roundRect(this.x, bottomPipeY, this.width, bottomPipeHeight, [cornerRadius,cornerRadius,0,0]); ctx.fill();
+
+                // Fiber texture inside
+                drawMembranePattern(ctx, this.x, 0, this.width, this.currentY);
+                drawMembranePattern(ctx, this.x, bottomPipeY, this.width, bottomPipeHeight);
+
+                // Border
+                ctx.strokeStyle = borderColor;
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 8; ctx.shadowColor = 'rgba(16,185,129,0.35)';
+                ctx.beginPath(); ctx.roundRect(this.x, 0, this.width, this.currentY, [0,0,cornerRadius,cornerRadius]); ctx.stroke();
+                ctx.beginPath(); ctx.roundRect(this.x, bottomPipeY, this.width, bottomPipeHeight, [cornerRadius,cornerRadius,0,0]); ctx.stroke();
+                ctx.shadowBlur = 0; ctx.shadowColor = 'transparent';
+
+                // Pore opening highlight — faint teal glow at the gap edges
+                ctx.strokeStyle = 'rgba(52,211,153,0.5)';
+                ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.roundRect(this.x, 0, this.width, this.currentY, cornerRadius); // Use this.width
+                ctx.moveTo(this.x, this.currentY);
+                ctx.lineTo(this.x + this.width, this.currentY);
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.roundRect(this.x, bottomPipeY, this.width, bottomPipeHeight, cornerRadius); // Use this.width
+                ctx.moveTo(this.x, bottomPipeY);
+                ctx.lineTo(this.x + this.width, bottomPipeY);
                 ctx.stroke();
             }
 
@@ -842,14 +882,12 @@
 
         function showWelcomeScreen() {
             showMessageBox(
-                "Welcome to Flappy Cell!", // Updated to Flappy Cell
-                `
-                    <p>Help the cell navigate through pipes!</p>
-                    <p>Click or press **Space** to make the cell jump.</p>
-                    <p>The **megaphone** below the cell will give it a boost!</p>
-                    <p>Adjust the game's difficulty using the "Adaptive Control" sliders, which tune your megaphone!</p>
-                    <p>Pore size, pipe movement, and pipe widths will change dynamically as you play!</p>
-                `,
+                "Flappy Cell",
+                `<p>Guide a cell through extracellular matrix barriers!</p>
+                 <p>Click or press <strong style="color:#10b981">Space</strong> to make the cell jump.</p>
+                 <p>The <strong style="color:#10b981">megaphone</strong> below boosts each jump.</p>
+                 <p>Use the <strong style="color:#10b981">Adaptive Control</strong> sliders to change gel viscosity, elasticity, and degradation rate — just like tuning a real biomaterial.</p>
+                 <p style="color:#64748b;font-size:0.82rem">Pore size, pipe speed, and movement increase as you score.</p>`,
                 "Start Game"
             );
         }
@@ -934,9 +972,9 @@
                 ctx.save();
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.font = '18px "Inter", sans-serif'; // Slightly smaller font for hints
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-                ctx.fillText(game.hintMessage, canvas.width / 2, canvas.height - 30); // Adjusted position
+                ctx.font = "14px 'Exo 2', system-ui, sans-serif";
+                ctx.fillStyle = 'rgba(167,243,208,0.85)';
+                ctx.fillText(game.hintMessage, canvas.width / 2, canvas.height - 24);
                 ctx.restore();
             }
         }
@@ -944,36 +982,73 @@
         function drawSliderFeedback(ctx) {
             const currentTime = Date.now();
             ctx.save();
-            ctx.textAlign = 'center';
-            ctx.font = '20px "Inter", sans-serif';
+            ctx.textAlign = 'right';
+            ctx.font = "13px 'Exo 2', system-ui, sans-serif";
 
-            // Gravity feedback
             if (game.gravityFeedbackText && currentTime - game.gravityFeedbackTimer < SLIDER_FEEDBACK_DURATION) {
                 const alpha = 1 - (currentTime - game.gravityFeedbackTimer) / SLIDER_FEEDBACK_DURATION;
-                ctx.fillStyle = `rgba(50, 50, 50, ${alpha})`;
-                ctx.fillText(game.gravityFeedbackText, canvas.width - 100, 100); // Position below score
+                ctx.fillStyle = `rgba(167,243,208,${alpha})`;
+                ctx.fillText(game.gravityFeedbackText, canvas.width - 14, 94);
             }
-
-            // Bounce feedback
             if (game.bounceFeedbackText && currentTime - game.bounceFeedbackTimer < SLIDER_FEEDBACK_DURATION) {
                 const alpha = 1 - (currentTime - game.bounceFeedbackTimer) / SLIDER_FEEDBACK_DURATION;
-                ctx.fillStyle = `rgba(50, 50, 50, ${alpha})`;
-                ctx.fillText(game.bounceFeedbackText, game.trampoline.x + game.trampoline.width / 2, game.trampoline.y - 20); // Position above megaphone
+                ctx.fillStyle = `rgba(167,243,208,${alpha})`;
+                ctx.fillText(game.bounceFeedbackText, canvas.width - 14, 112);
             }
-
-            // Degradation feedback (new)
             if (game.degradationFeedbackText && currentTime - game.degradationFeedbackTimer < SLIDER_FEEDBACK_DURATION) {
                 const alpha = 1 - (currentTime - game.degradationFeedbackTimer) / SLIDER_FEEDBACK_DURATION;
-                ctx.fillStyle = `rgba(50, 50, 50, ${alpha})`;
-                ctx.fillText(game.degradationFeedbackText, canvas.width - 100, 130); // Position below gravity feedback
+                ctx.fillStyle = `rgba(167,243,208,${alpha})`;
+                ctx.fillText(game.degradationFeedbackText, canvas.width - 14, 130);
             }
             ctx.restore();
         }
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function drawBackground() {
+            // Dark base
+            ctx.fillStyle = 'rgba(8,18,28,1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // No background particle system now
+            // Subtle hexagonal cell-like grid
+            const hexR = 38;
+            const hexH = hexR * Math.sqrt(3);
+            ctx.strokeStyle = 'rgba(16,185,129,0.07)';
+            ctx.lineWidth = 1;
+            for (let row = -1; row < Math.ceil(canvas.height / hexH) + 1; row++) {
+                for (let col = -1; col < Math.ceil(canvas.width / (hexR * 1.5)) + 1; col++) {
+                    const x = col * hexR * 3 + (row % 2 === 0 ? 0 : hexR * 1.5);
+                    const y = row * hexH;
+                    ctx.beginPath();
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (Math.PI / 3) * i - Math.PI / 6;
+                        const px = x + hexR * Math.cos(angle);
+                        const py = y + hexR * Math.sin(angle);
+                        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+            }
+
+            // Faint floating background cells
+            const t = Date.now() * 0.0003;
+            for (let i = 0; i < 6; i++) {
+                const bx = ((Math.sin(t * 0.7 + i * 2.1) * 0.5 + 0.5) * canvas.width);
+                const by = ((Math.cos(t * 0.5 + i * 1.7) * 0.5 + 0.5) * canvas.height);
+                const br = 18 + i * 5;
+                ctx.beginPath();
+                ctx.arc(bx, by, br, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(16,185,129,0.06)`;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(bx, by, br * 0.38, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(16,185,129,0.05)`;
+                ctx.stroke();
+            }
+        }
+
+        function draw() {
+            drawBackground();
 
             if (game.blob) {
                 game.pipes.forEach(pipe => pipe.draw(ctx));
@@ -983,11 +1058,10 @@
             // Draw trampoline
             if (game.trampoline) {
                 game.trampoline.draw(ctx);
-                game.trampoline.drawJumpParticles(ctx); // Draw trampoline's emitted particles
+                game.trampoline.drawJumpParticles(ctx);
             }
 
-            ctx.font = '24px "Inter", sans-serif';
-            ctx.fillStyle = '#333';
+            ctx.font = "bold 22px 'Exo 2', system-ui, sans-serif";
             ctx.textAlign = 'right';
             const rightMargin = 20;
 
@@ -998,31 +1072,33 @@
                 ctx.save();
                 ctx.translate(canvas.width - rightMargin, 40);
                 ctx.scale(scale, scale);
-                ctx.fillStyle = `rgba(76, 175, 80, ${1 - progress})`;
+                ctx.fillStyle = `rgba(16,185,129,${1 - progress * 0.4})`;
                 ctx.fillText('Score: ' + game.score, 0, 0);
                 ctx.restore();
             } else {
-                 ctx.fillStyle = '#333';
-                 ctx.fillText('Score: ' + game.score, canvas.width - rightMargin, 40);
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillText('Score: ' + game.score, canvas.width - rightMargin, 40);
             }
 
-            ctx.fillStyle = '#333';
-            ctx.fillText('High Score: ' + game.highScore, canvas.width - rightMargin, 70);
+            ctx.fillStyle = '#64748b';
+            ctx.font = "16px 'Exo 2', system-ui, sans-serif";
+            ctx.fillText('Best: ' + game.highScore, canvas.width - rightMargin, 64);
             ctx.textAlign = 'left';
 
             if (game.paused) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillStyle = 'rgba(8,18,28,0.65)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.textAlign = 'center';
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 48px "Inter", sans-serif';
-                ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
-                ctx.font = '24px "Inter", sans-serif';
-                ctx.fillText('Press P or click Pause to resume', canvas.width / 2, canvas.height / 2 + 50);
+                ctx.fillStyle = '#10b981';
+                ctx.font = "bold 44px 'Exo 2', system-ui, sans-serif";
+                ctx.fillText('⏸ Paused', canvas.width / 2, canvas.height / 2 - 14);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = "16px 'Exo 2', system-ui, sans-serif";
+                ctx.fillText('Press P or click Resume to continue', canvas.width / 2, canvas.height / 2 + 22);
             }
 
             drawHintMessage(ctx);
-            drawSliderFeedback(ctx); // Draw slider feedback messages
+            drawSliderFeedback(ctx);
         }
 
         function updateGame() {
@@ -1169,12 +1245,28 @@
             game.degradationFeedbackTimer = Date.now();
         });
 
+        // --- Environment Status Banner ---
+        function updateEnvStatus() {
+            const grav = parseFloat(gravitySlider.value);
+            const bounce = parseFloat(bounceStrengthSlider.value);
+            const degrad = parseFloat(degradationSlider.value);
+            const viscosity = grav > 0.6 ? 'High' : grav > 0.3 ? 'Medium' : 'Low';
+            const elasticity = bounce < -12 ? 'Highly elastic' : bounce < -8 ? 'Moderately elastic' : 'Stiff';
+            const degradLabel = degrad > 0.006 ? 'Fast-degrading' : degrad > 0.002 ? 'Moderate' : 'Stable';
+            const el = document.getElementById('env-status');
+            if (el) el.innerHTML = `<strong>Current gel environment:</strong> ${viscosity} viscosity · ${elasticity} · ${degradLabel} polymer`;
+        }
+        gravitySlider.addEventListener('input', updateEnvStatus);
+        bounceStrengthSlider.addEventListener('input', updateEnvStatus);
+        degradationSlider.addEventListener('input', updateEnvStatus);
+
         // --- Initial Setup ---
         window.onload = function() {
             loadHighScore();
             initGame();
             resizeCanvas(); // Initialize trampoline here
             showWelcomeScreen();
+            updateEnvStatus();
         };
 
         window.addEventListener('resize', resizeCanvas);

@@ -1,4 +1,16 @@
 [{
+        "id": "pres-10",
+        "title": "TERMIS European Chapter Meeting 2026",
+        "date": { "day": "21", "month": "Apr", "year": "2026" },
+        "description": "Samantha Baker-Jones delivered an oral presentation (11:35–11:45) at TERMIS-EU 2026 in the United Kingdom on 'Engineering Functionally Graded Musculoskeletal Constructs Using Subzero Multi-Material Additive Manufacturing'. Sam's DPhil is co-supervised by Prof. Patrick Grant.",
+        "speakerIds": ["sam-baker-jones"],
+        "link": "",
+        "videoLink": "",
+        "image": "./assets/img/termiseu26.jpg",
+        "type": "academic-presentation",
+        "themes": ["Regenerative"]
+    },
+    {
         "id": "pres-9",
         "title": "The Podium Institute Annual Conference on Sports Medicine & Technology 2025",
         "date": { "day": "26", "month": "Sep", "year": "2025" },

@@ -86,20 +86,20 @@
             margin-right: auto; /* Explicitly center */
         }
         .button-style {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: bold;
-            transition: all 0.2s ease-in-out;
+            padding: 0.55rem 1.3rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            font-family: 'Exo 2', system-ui, sans-serif;
+            transition: background 0.2s ease, transform 0.1s ease;
             cursor: pointer;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            background-image: linear-gradient(to right, #6366f1, #8b5cf6); /* Purple gradient */
-            color: white;
-            border: none;
+            background: rgba(139,92,246,0.18);
+            color: #c4b5fd;
+            border: 1px solid rgba(139,92,246,0.45);
         }
         .button-style:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.15), 0 3px 6px -1px rgba(0, 0, 0, 0.08);
-            background-image: linear-gradient(to right, #4f46e5, #7c3aed); /* Darker gradient on hover */
+            background: rgba(139,92,246,0.32);
+            transform: translateY(-1px);
         }
         .button-style:active {
             transform: translateY(0);
@@ -179,21 +179,22 @@
             box-sizing: border-box; /* Include padding in the modal's total size */
         }
         .welcome-content, .level-complete-content, .pre-level-content, .game-status-content {
-            background-color: #2d3748; /* Added background color to make content visible */
-            border-radius: 0.75rem;
-            padding: 2rem 3rem; /* Consistent padding with game-status-message */
+            background: rgba(8,18,28,0.97);
+            border: 1px solid rgba(167,139,250,0.3);
+            border-radius: 16px;
+            padding: 2rem 2.5rem;
             max-width: 600px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Added shadow back */
-            overflow-y: auto; /* Enable scrolling if content is too tall */
-            max-height: 90vh; /* Limit height to viewport height */
-            color: #e2e8f0; /* Ensure text is light */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            overflow-y: auto;
+            max-height: 90vh;
+            color: #e2e8f0;
+            font-family: 'Exo 2', system-ui, sans-serif;
         }
         .welcome-content h2, .level-complete-content h2, .pre-level-content h2, .game-status-content h2 {
-            font-size: 2.5rem; /* Larger font for title */
-            font-weight: bold;
-            color: #a78bfa; /* Purple-400 equivalent */
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #a78bfa;
             margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Text shadow for title */
         }
         .welcome-content p, .level-complete-content p, .pre-level-content p, .game-status-content p {
             margin-bottom: 1rem;
@@ -272,17 +273,18 @@
         /* New styles for temporary game messages (toast-like) */
         #temporaryGameMessage {
             position: absolute;
-            background-color: rgba(255, 255, 255, 0.9); /* Light background for contrast */
-            color: #1a202c; /* Dark text */
+            background: rgba(8,18,28,0.95);
+            border: 1px solid rgba(16,185,129,0.4);
+            color: #10b981;
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             font-size: 0.85rem;
             font-weight: bold;
             white-space: nowrap;
-            opacity: 0; /* Start hidden */
+            opacity: 0;
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-            pointer-events: none; /* Allow clicks to pass through */
-            z-index: 201; /* Above tooltips */
+            pointer-events: none;
+            z-index: 201;
             transform: translateY(10px); /* Start slightly below */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
@@ -294,6 +296,20 @@
   <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
 </head>
 <body>
+<script>function sbToggleResearch(){document.getElementById('sb-panel').classList.toggle('open');}document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('sb-panel').classList.remove('open');});</script>
+<header class="sb-header">
+  <a href="../index.html#outreach" class="sb-brand">SMARTBio</a>
+  <span class="sb-title">Biological Network Sense</span>
+  <div class="sb-tags"><span class="sb-tag">Sensing</span><span class="sb-tag">Adaptive</span></div>
+  <button class="sb-research-btn" onclick="sbToggleResearch()">🔬 Research</button>
+</header>
+<div class="sb-panel" id="sb-panel" role="complementary" aria-label="Research connection">
+  <button class="sb-panel-close" onclick="sbToggleResearch()" aria-label="Close">×</button>
+  <h3>How this connects to our research</h3>
+  <p>Smart biomaterials need to sense their environment to respond appropriately — a wound dressing that detects infection and releases antibiotics only when needed requires accurate sensing of chemical signals like pH, glucose, or bacterial toxins.</p>
+  <p>This game captures a core engineering challenge: how do you get complete environmental coverage with minimal sensor resources? The accuracy vs. cost tradeoff is real — implanted biosensors must be small, biocompatible, and power-efficient, making optimal placement critical.</p>
+  <a href="../index.html#research" class="sb-more">Explore our research →</a>
+</div>
 
     <div id="welcomeScreen" class="welcome-screen">
         <div class="welcome-content">
@@ -323,8 +339,8 @@
             <h2 id="levelCompleteTitle" class="text-purple-400">Level Complete!</h2>
             <p id="levelCompleteMessage"></p>
             <div class="flex flex-wrap justify-center gap-4 mt-4">
-                <button id="nextLevelBtn" class="button-style bg-green-600 hover:bg-green-700">Next Level</button>
-                <button id="restartCurrentLevelBtn" class="button-style bg-blue-500 hover:bg-blue-600">Restart Level</button>
+                <button id="nextLevelBtn" class="button-style" style="background:rgba(16,185,129,0.2);color:#34d399;border-color:rgba(16,185,129,0.5);">Next Level</button>
+                <button id="restartCurrentLevelBtn" class="button-style">Restart Level</button>
             </div>
         </div>
     </div>
@@ -334,7 +350,7 @@
         <div class="pre-level-content">
             <h2 id="preLevelTitle" class="text-purple-400">Level Objective</h2>
             <p id="preLevelMessage"></p>
-            <button id="startLevelBtn" class="button-style bg-green-500 hover:bg-green-600 mt-4">Start Level</button>
+            <button id="startLevelBtn" class="button-style" style="margin-top:1rem;background:rgba(16,185,129,0.2);color:#34d399;border-color:rgba(16,185,129,0.5);">Start Level</button>
         </div>
     </div>
 
@@ -343,7 +359,7 @@
         <div class="game-status-content">
             <h2 id="gameStatusTitle" class="text-purple-400">Game Over!</h2>
             <p id="gameStatusText"></p>
-            <button id="restartGameFromStatusBtn" class="button-style bg-blue-500 hover:bg-blue-600 mt-4">Restart Game</button>
+            <button id="restartGameFromStatusBtn" class="button-style" style="margin-top:1rem;">Restart Game</button>
         </div>
     </div>
 
@@ -359,7 +375,7 @@
             <!-- Dynamic content will go here -->
         </div>
 
-        <canvas id="gameCanvas" class="w-full max-w-4xl h-[400px] md:h-[500px] lg:h-[600px] mt-4"></canvas>
+        <canvas id="gameCanvas" class="w-full max-w-4xl h-[400px] md:h-[500px] lg:h-[600px] mt-4" role="img" aria-label="Biological Network Sense game area — a grid for placing and connecting biosensors"></canvas>
 
         <!-- Tooltip element -->
         <div id="gameTooltip" class="absolute hidden"></div>
@@ -384,21 +400,21 @@
 
             <div class="flex flex-wrap justify-center gap-4">
                 <button id="addSensorBtn" class="button-style">Add Sensor</button>
-                <button id="removeSensorBtn" class="button-style bg-red-500 hover:bg-red-600">Remove Sensor</button>
-                <button id="toggleInsulationBtn" class="button-style bg-teal-500 hover:bg-teal-600">Toggle Insulation</button>
-                <button id="undoBtn" class="button-style bg-gray-500 hover:bg-gray-600">Undo</button>
-                <button id="redoBtn" class="button-style bg-gray-500 hover:bg-gray-600">Redo</button>
-                <button id="resetGameBtn" class="button-style bg-blue-500 hover:bg-blue-600">Reset Game</button>
+                <button id="removeSensorBtn" class="button-style" style="background:rgba(239,68,68,0.12);color:#f87171;border-color:rgba(239,68,68,0.4);">Remove Sensor</button>
+                <button id="toggleInsulationBtn" class="button-style" style="background:rgba(20,184,166,0.12);color:#5eead4;border-color:rgba(20,184,166,0.4);">Toggle Insulation</button>
+                <button id="undoBtn" class="button-style">Undo</button>
+                <button id="redoBtn" class="button-style">Redo</button>
+                <button id="resetGameBtn" class="button-style">Reset Game</button>
             </div>
 
             <div class="mt-6 text-center text-sm text-gray-400">
-                <p>Score: <span id="scoreDisplay" class="font-bold text-blue-300">0</span></p>
-                <p>Network Average Reading: <span id="networkAvgReading" class="font-bold text-green-300">N/A</span></p>
-                <p>Network Accuracy: <span id="networkAccuracy" class="font-bold text-yellow-300">N/A</span>%</p>
-                <p>Recent Avg Accuracy: <span id="recentAvgAccuracy" class="font-bold text-purple-300">N/A</span>%</p>
-                <p>Network Redundancy: <span id="networkRedundancy" class="font-bold text-orange-300">N/A</span></p>
-                <p class="mt-2">Total Cost: <span id="costDisplay" class="font-bold text-red-400">0</span></p>
-                <button id="resetCostBtn" class="button-style bg-gray-700 hover:bg-gray-800 text-xs px-3 py-1 mt-2">Reset Cost</button>
+                <p>Score: <span id="scoreDisplay" style="font-weight:700;color:#a78bfa;">0</span></p>
+                <p>Network Average Reading: <span id="networkAvgReading" style="font-weight:700;color:#6ee7b7;">N/A</span></p>
+                <p>Network Accuracy: <span id="networkAccuracy" style="font-weight:700;color:#fcd34d;">N/A</span>%</p>
+                <p>Recent Avg Accuracy: <span id="recentAvgAccuracy" style="font-weight:700;color:#c4b5fd;">N/A</span>%</p>
+                <p>Network Redundancy: <span id="networkRedundancy" style="font-weight:700;color:#fb923c;">N/A</span></p>
+                <p class="mt-2">Total Cost: <span id="costDisplay" style="font-weight:700;color:#f87171;">0</span></p>
+                <button id="resetCostBtn" class="button-style" style="font-size:0.75rem;padding:0.3rem 0.8rem;margin-top:0.5rem;">Reset Cost</button>
             </div>
         </div>
     </div>

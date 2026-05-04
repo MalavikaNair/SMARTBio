@@ -1,5 +1,13 @@
  [
     {
+        "id": "news9",
+        "title": "Malavika Nair featured in Oxford University Research Profile",
+        "description": "Malavika Nair's work on SMART Biomaterials is featured in a research profile on the University of Oxford's main website, highlighting the group's mission to develop materials with Sensing, Modulating, Adaptive, Regenerative, and Therapeutic functions for healthcare applications.",
+        "date": { "month": "APR", "day": "14", "year": "2026" },
+        "image": "./assets/img/oxpulse.jpg",
+        "themes": ["Sensing", "Modulating", "Adaptive", "Regenerative", "Therapeutic"]
+    },
+    {
         "id": "news8",
         "title": "Malavika Nair becomes a Fellow of the Institute of Materials, Minerals and Mining",
         "description": "Malavika Nair awarded fellowship of the Institute of Materials, Minerals and Mining, the most prestigious IOM3 membership grade recognising those who have made a significant contribution or established a record of achievement in the materials, minerals or mining fields, or other disciplines within the technical outreach of IOM3.",

@@ -1,9 +1,28 @@
-[  {
+[
+    {
+        "id": "outreach-news-4",
+        "title": "BBC Oxfordshire Interview",
+        "date": { "day": "15", "month": "APR", "year": "2026" },
+        "description": "Malavika Nair was interviewed by BBC Oxfordshire on the group's SMART Biomaterials research, following the University of Oxford profile of her work on materials with sensing, adaptive, regenerative, modulating, and therapeutic functions for healthcare. The interview begins at 3:17:39.",
+        "image": "",
+        "link": "https://www.bbc.co.uk/sounds/play/m002tr6b",
+        "associatedTeamMembers": ["malavika-nair"]
+    },
+    {
+        "id": "outreach-news-3",
+        "title": "Oxford University Research Profile: Malavika Nair",
+        "date": { "day": "14", "month": "APR", "year": "2026" },
+        "description": "The University of Oxford's main website published a research profile on Malavika Nair and the SMART Biomaterials Group, showcasing the team's work developing next-generation biomaterials for sensing, modulating, adaptive, regenerative, and therapeutic applications in healthcare.",
+        "image": "",
+        "link": "https://www.ox.ac.uk/news/pulse/health-medicine-disease/malavika-nair",
+        "associatedTeamMembers": ["malavika-nair"]
+    },
+    {
         "id": "outreach-news-2",
         "title": "Feature Article on Electroactive Polymers in Materials World",
         "date": { "day": "19", "month": "MAY", "year": "2025" },
         "description": "A recent feature article on electroactive polymers written by Matthew Burgess, Ryan Murray and Malavika Nair for Materials World, the professional magazine for the Institute for Materials Minerals and Mining makes the cover.",
-        "image": "https://www.iom3.org/static/b1388c2f-b32c-491e-999665ab904cea99/800x800_highestperformance__4a7c7e45a350/muscle-CMYK.jpg",
+        "image": "./assets/img/muscle.jpg",
         "link": "https://www.iom3.org/resource/the-push-and-pull-of-life.html",
         "associatedTeamMembers": ["malavika-nair","matthew-burgess","ryan-murray"]
     },
@@ -12,7 +31,7 @@
         "title": "IBME Open Day!",
         "date": { "day": "13", "month": "MAR", "year": "2025" },
         "description": "Our team was part of the annual Open Day run by the Institute of Biomedical Engineering at the University of Oxford. Malavika, Matthew and Ryan presented talks and demonstration on Tissue Engineering Scaffolds and Dynamic Bioreactors",
-        "image": "https://eng.ox.ac.uk/media/1d3gknmp/ibme-open-day-cover-image-low-res.jpg?width=850&amp;height=450&amp;format=webp&amp;quality=75&amp;v=1dbef4ee4520670",
+        "image": "https://eng.ox.ac.uk/media/1d3gknmp/ibme-open-day-cover-image-low-res.jpg?width=850&height=450&format=webp&quality=75&v=1dbef4ee4520670",
         "link": "https://eng.ox.ac.uk/news/2025-ibme-open-day/",
         "associatedTeamMembers": ["malavika-nair","matthew-burgess","ryan-murray"]
     }

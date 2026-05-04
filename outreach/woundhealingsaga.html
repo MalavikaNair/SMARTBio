@@ -4,6 +4,7 @@
   <link rel="stylesheet" href="../assets/css/tailwind.css">
   <link rel="stylesheet" href="../assets/css/fonts.css">
   <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/outreach-style.min.css">
   <script src="../assets/js/Tone.min.js"></script>
   <style>body{font-family: var(--font-sans-exo);}</style>
 
@@ -15,7 +16,7 @@
 <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Light blue-grey background */
+            background-color: #0d1117;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -25,16 +26,16 @@
             box-sizing: border-box;
         }
         .game-container {
-            background-color: #ffffff;
-            border-radius: 1.5rem; /* More rounded corners */
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            padding: 2rem; /* Increased padding */
+            background: rgba(8,18,28,0.96);
+            border: 1px solid rgba(16,185,129,0.22);
+            border-radius: 1.5rem;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+            padding: 2rem;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            max-width: 1200px; /* Increased max-width to accommodate new panel */
+            max-width: 1200px;
             width: 100%;
-            border: 1px solid #e2e8f0; /* Subtle border */
         }
         .game-content-area {
             display: flex;
@@ -63,47 +64,45 @@
             justify-content: center;
         }
         .info-card, .control-button, .patient-button {
-            background-color: #f8fafc; /* Lighter background for info/buttons */
+            background: rgba(255,255,255,0.05);
             border-radius: 0.75rem;
             padding: 0.75rem 1.25rem;
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.08); /* Slightly more pronounced shadow */
-            border: 1px solid #cbd5e1;
+            border: 1px solid rgba(255,255,255,0.1);
             font-weight: 600;
-            color: #334155;
+            color: #cbd5e1;
             text-align: center;
-            flex: 1 1 auto; /* Allow items to grow and shrink */
-            min-width: 120px; /* Minimum width for cards */
+            flex: 1 1 auto;
+            min-width: 120px;
+            font-family: 'Exo 2', system-ui, sans-serif;
         }
         .control-button, .patient-button {
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            background-color: #4f46e5; /* Primary button colour */
-            color: white;
-            border: none;
-            font-size: 1rem;
-            padding: 0.85rem 1.5rem; /* Slightly more vertical padding */
-            font-weight: 700; /* Bolder text */
-            position: relative; /* For potential icon positioning */
-            overflow: hidden; /* For ripple effect */
+            transition: background 0.2s ease, transform 0.1s ease;
+            background: rgba(16,185,129,0.12);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.4);
+            font-size: 0.88rem;
+            padding: 0.75rem 1.25rem;
+            font-weight: 700;
         }
         .control-button:hover:not(:disabled), .patient-button:hover:not(.selected) {
-            background-color: #4338ca;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15); /* Stronger hover shadow */
+            background: rgba(16,185,129,0.22);
+            transform: translateY(-1px);
         }
         .control-button:active:not(:disabled), .patient-button:active:not(.selected) {
             transform: translateY(0);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .control-button:disabled {
-            background-color: #94a3b8;
+            background: rgba(100,116,139,0.12);
+            border-color: rgba(100,116,139,0.2);
+            color: #475569;
             cursor: not-allowed;
             opacity: 0.7;
         }
         .patient-button.selected {
-            background-color: #22c55e; /* Green for selected patient */
-            color: white;
-            border-color: #16a34a;
+            background: rgba(16,185,129,0.25);
+            border-color: rgba(16,185,129,0.7);
+            color: #34d399;
             cursor: default;
         }
         .message-box-overlay { /* Removed .encyclopaedia-modal-overlay from this selector */
@@ -126,19 +125,20 @@
             visibility: visible;
         }
         .message-box { /* Removed .encyclopaedia-modal-content from this selector */
-            background-color: #fff;
+            background: rgba(8,18,28,0.97);
+            border: 1px solid rgba(16,185,129,0.3);
             border-radius: 0.75rem;
             padding: 2rem;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
             text-align: center;
             font-weight: 500;
-            color: #1e293b;
+            color: #e2e8f0;
             max-width: 600px;
             width: 90%;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            transform: scale(0.95); /* Start slightly smaller */
+            transform: scale(0.95);
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
         }
         .message-box-overlay.visible .message-box { /* Removed .encyclopaedia-modal-overlay.visible .encyclopaedia-modal-content from this selector */
@@ -161,20 +161,21 @@
             margin-bottom: 0.5rem;
             text-align: center; /* Ensure titles are centered */
         }
-        .message-box .play-again-button, .phase-modal-content .dismiss-button { /* Removed .encyclopaedia-modal-content .close-button from this selector */
-            background-color: #22c55e; /* Green for success */
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 0.5rem;
-            font-size: 1.1rem;
-            font-weight: 600;
+        .message-box .play-again-button, .phase-modal-content .dismiss-button {
+            background: rgba(16,185,129,0.15);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.5);
+            padding: 0.75rem 1.75rem;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: background-color 0.2s ease-in-out;
-            border: none;
-            align-self: center; /* Center the button */
+            transition: background 0.2s ease-in-out, transform 0.1s ease;
+            align-self: center;
         }
-        .message-box .play-again-button:hover, .phase-modal-content .dismiss-button:hover { /* Removed .encyclopaedia-modal-content .close-button:hover from this selector */
-            background-color: #16a34a;
+        .message-box .play-again-button:hover, .phase-modal-content .dismiss-button:hover {
+            background: rgba(16,185,129,0.28);
+            transform: translateY(-1px);
         }
         /* Specific styles for success/error messages */
         .message-box.success {
@@ -240,38 +241,38 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #f0f4f8; /* Match body background */
+            background: rgba(8,18,28,0.92);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 1002; /* Above everything else */
+            z-index: 1002;
             padding: 20px;
             box-sizing: border-box;
             text-align: center;
         }
         .welcome-content {
-            background-color: #ffffff;
+            background: rgba(8,18,28,0.97);
+            border: 1px solid rgba(16,185,129,0.3);
             border-radius: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            padding: 2.5rem; /* Increased padding */
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            padding: 2.5rem;
             max-width: 700px;
             width: 100%;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            border: 1px solid #e2e8f0;
         }
         .welcome-content h2 {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 700;
-            color: #1e293b;
+            color: #10b981;
             margin-bottom: 1rem;
         }
         .welcome-content p {
-            font-size: 1.1rem;
-            color: #475569;
-            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
         }
         .welcome-buttons { /* New class for the button container */
             display: flex;
@@ -288,25 +289,24 @@
             }
         }
 
-        .welcome-content .start-game-button { /* Removed .encyclopaedia-button from this selector */
-            flex: 1; /* Allow buttons to grow */
-            max-width: 200px; /* Limit max width for individual buttons */
-            padding: 0.8rem 1.5rem;
-            border-radius: 0.5rem;
-            font-size: 1.2rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s ease-in-out;
-            border: none;
-        }
         .welcome-content .start-game-button {
-            background-color: #22c55e;
-            color: white;
+            flex: 1;
+            max-width: 220px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out, transform 0.1s ease;
+            background: rgba(16,185,129,0.15);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.5);
+            font-family: 'Inter', sans-serif;
         }
         .welcome-content .start-game-button:hover {
-            background-color: #16a34a;
+            background: rgba(16,185,129,0.28);
+            transform: translateY(-1px);
         }
-        /* Removed .welcome-content .encyclopaedia-button styles */
 
         /* Styles for the temporary message box at the bottom */
         .temp-message-overlay {
@@ -367,16 +367,18 @@
             visibility: visible;
         }
         .phase-modal-content {
-            background-color: #fff;
+            background: rgba(8,18,28,0.97);
+            border: 1px solid rgba(16,185,129,0.3);
             border-radius: 1rem;
             padding: 2.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
             text-align: center;
             max-width: 600px;
             width: 90%;
             transform: translateY(-20px);
             opacity: 0;
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            color: #e2e8f0;
         }
         .phase-modal-overlay.visible .phase-modal-content {
             transform: translateY(0);
@@ -404,18 +406,87 @@
         .slider-fill.bad {
             background-color: #ef4444; /* Red */
         }
+        /* ── Dark-theme fixes for Tailwind-dependent elements ── */
+        #gameMainContainer h1 { color: #10b981; font-family: 'Exo 2', system-ui, sans-serif; }
+        .patient-info-display { color: #94a3b8; font-family: 'Exo 2', system-ui, sans-serif; font-weight: 600; }
+        #chosenPatientDisplay { color: #34d399; font-weight: 700; }
+        .metrics-panel label, .metric-label { color: #94a3b8; font-family: 'Exo 2', system-ui, sans-serif; font-size: 0.82rem; font-weight: 600; display: block; margin-bottom: 4px; }
+        #welcomeScreen .patient-selection > span { color: #94a3b8; font-weight: 600; font-family: 'Exo 2', system-ui, sans-serif; }
+        .slider-track { background-color: rgba(255,255,255,0.08); }
+
+        /* Phase change highlight — on-brand teal instead of purple */
+        .phase-change-highlight {
+            background: rgba(16,185,129,0.9);
+            color: #0d1117;
+        }
+
+        /* ── Phase progress checklist ── */
+        .phase-checklist {
+            background: rgba(16,185,129,0.06);
+            border: 1px solid rgba(16,185,129,0.18);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            margin-top: 0.5rem;
+            font-family: 'Exo 2', system-ui, sans-serif;
+        }
+        .phase-checklist h4 {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #10b981;
+            margin: 0 0 8px 0;
+        }
+        .phase-checklist ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+        .phase-checklist li { font-size: 0.78rem; display: flex; align-items: center; gap: 6px; color: #cbd5e1; }
+        .phase-checklist li.met { color: #34d399; }
+        .phase-checklist li.met::before { content: '✓'; color: #10b981; font-weight: 700; }
+        .phase-checklist li.unmet::before { content: '✗'; color: #f87171; font-weight: 700; }
+
+        /* ── Pause button ── */
+        #pauseGameBtn {
+            background: rgba(16,185,129,0.12);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.45);
+            border-radius: 9999px;
+            padding: 0.75rem 1.25rem;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.1s ease;
+            font-family: 'Exo 2', system-ui, sans-serif;
+        }
+        #pauseGameBtn:hover { background: rgba(16,185,129,0.22); transform: translateY(-1px); }
+
         /* Removed encyclopaedia-specific styles */
     </style>
 <style>.hidden{display:none!important}</style>
 </head>
 <body>
+<script>
+function sbToggleResearch(){document.getElementById('sb-panel').classList.toggle('open');}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('sb-panel').classList.remove('open');});
+</script>
+<header class="sb-header">
+  <a href="../index.html#outreach" class="sb-brand">SMARTBio</a>
+  <span class="sb-title">Wound Healing Saga</span>
+  <div class="sb-tags"><span class="sb-tag">Therapeutic</span><span class="sb-tag">Regenerative</span></div>
+  <button class="sb-research-btn" onclick="sbToggleResearch()">🔬 Research</button>
+</header>
+<div class="sb-panel" id="sb-panel" role="complementary" aria-label="Research connection">
+  <button class="sb-panel-close" onclick="sbToggleResearch()" aria-label="Close">×</button>
+  <h3>How this connects to our research</h3>
+  <p>Wound healing is one of our group's core research areas. We design materials that actively guide each phase — reducing inflammation with anti-inflammatory drug release, supporting cell growth with scaffolds, and minimising scarring.</p>
+  <p>Our projects on cell-free scaffolds for wound repair and ultrasound-enhanced drug delivery into tissue are directly represented in this game's mechanics. Even the patient types (healthy, diabetic, elderly) reflect real clinical challenges our materials must address.</p>
+  <a href="../index.html#research" class="sb-more">Explore our research →</a>
+</div>
     <!-- Welcome Screen -->
     <div id="welcomeScreen" class="welcome-screen">
         <div class="welcome-content">
             <h2>Welcome to Wound Healing Saga!</h2>
             <p>Become the Cellular Commander and guide a patient's wound through healing. Manage cells, fight threats, and ensure minimal scarring. Choose your patient and start the game!</p>
             <div class="patient-selection mb-4">
-                <span class="text-gray-700 font-semibold mr-2">Choose Patient:</span>
+                <span style="color:#94a3b8;font-weight:600;font-family:'Exo 2',system-ui,sans-serif;margin-right:0.5rem;">Choose Patient:</span>
                 <button id="patient-healthy" class="patient-button selected" data-type="healthy">Healthy</button>
                 <button id="patient-elderly" class="patient-button" data-type="elderly">Elderly</button>
                 <button id="patient-diabetic" class="patient-button" data-type="diabetic">Diabetic</button>
@@ -429,10 +500,10 @@
 
     <!-- Main Game Container (initially hidden) -->
     <div id="gameMainContainer" class="game-container hidden">
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Wound Healing Saga</h1>
+        <h1 class="text-3xl font-bold text-center mb-4">Wound Healing Saga</h1>
 
-        <div class="patient-info-display mb-4"> <!-- New div to display chosen patient -->
-            <span class="text-gray-700 font-semibold mr-2">Chosen Patient: <span id="chosenPatientDisplay" class="font-bold text-blue-700">Healthy</span></span>
+        <div class="patient-info-display mb-4">
+            <span>Chosen Patient: <span id="chosenPatientDisplay">Healthy</span></span>
         </div>
 
         <div class="game-info">
@@ -441,41 +512,41 @@
         </div>
 
         <div class="game-content-area">
-            <canvas id="gameCanvas" width="850" height="400"></canvas>
+            <canvas id="gameCanvas" width="850" height="400" role="img" aria-label="Wound Healing Saga game area — a wound canvas showing cells, infection and healing progress"></canvas>
 
             <div class="metrics-panel flex flex-col gap-4">
                 <div class="metric-slider" id="wound-health-metric">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Wound Health: <span id="wound-health-val"></span></label>
+                    <label class="metric-label">Wound Health: <span id="wound-health-val"></span></label>
                     <div class="slider-track">
                         <div id="wound-health-fill" class="slider-fill"></div>
                     </div>
                 </div>
                 <div class="metric-slider" id="wound-coverage-metric">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Wound Coverage: <span id="wound-coverage-val"></span></label>
+                    <label class="metric-label">Wound Coverage: <span id="wound-coverage-val"></span></label>
                     <div class="slider-track">
                         <div id="wound-coverage-fill" class="slider-fill"></div>
                     </div>
                 </div>
                 <div class="metric-slider" id="scar-level-metric">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Scarring: <span id="scar-level-val"></span></label>
+                    <label class="metric-label">Scarring: <span id="scar-level-val"></span></label>
                     <div class="slider-track">
                         <div id="scar-level-fill" class="slider-fill"></div>
                     </div>
                 </div>
                 <div class="metric-slider" id="infection-level-metric">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Infection: <span id="infection-level-val"></span></label>
+                    <label class="metric-label">Infection: <span id="infection-level-val"></span></label>
                     <div class="slider-track">
                         <div id="infection-level-fill" class="slider-fill"></div>
                     </div>
                 </div>
                 <div class="metric-slider" id="inflammation-level-metric">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Inflammation: <span id="inflammation-level-val"></span></label>
+                    <label class="metric-label">Inflammation: <span id="inflammation-level-val"></span></label>
                     <div class="slider-track">
                         <div id="inflammation-level-fill" class="slider-fill"></div>
                     </div>
                 </div>
                 <div class="metric-slider" id="cellular-energy-metric">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Cellular Energy: <span id="cellular-energy-val"></span></label>
+                    <label class="metric-label">Cellular Energy: <span id="cellular-energy-val"></span></label>
                     <div class="slider-track">
                         <div id="cellular-energy-fill" class="slider-fill"></div>
                     </div>
@@ -489,7 +560,14 @@
             <button id="releaseGrowthFactor" class="control-button" disabled="">Release Growth Factor (20)</button>
             <button id="applyAntimicrobial" class="control-button" disabled="">Apply Antimicrobial (15)</button>
             <button id="mechanicalStimulation" class="control-button hidden" disabled="">Mechanical Stimulation (25)</button>
-            <button id="restartGame" class="control-button bg-red-500 hover:bg-red-600">Restart Game</button>
+            <button id="pauseGameBtn" disabled="">⏸ Pause</button>
+            <button id="restartGame" class="control-button" style="background:rgba(239,68,68,0.12);color:#f87171;border-color:rgba(239,68,68,0.4);">Restart Game</button>
+        </div>
+
+        <!-- Phase progression checklist -->
+        <div class="phase-checklist" id="phaseChecklist">
+            <h4>Next phase requirements</h4>
+            <ul id="phaseChecklistItems"></ul>
         </div>
 
         <!-- Game Over Message Box Overlay -->
@@ -497,7 +575,7 @@
             <div id="messageBox" class="message-box error">
                 <h3 class="message-title" id="messageTitle">Healing Failed!</h3>
                 <p id="messageText">The wound became too severe and failed to heal. Final Wound Health: 0.0%, Final Scar Level: 0.0%. Time Elapsed: 0.0s</p>
-                <button id="playAgainButton" class="play-again-button" style="background-color: rgb(239, 68, 68);">Play Again?</button>
+                <button id="playAgainButton" class="play-again-button">Play Again?</button>
             </div>
         </div>
 
@@ -513,7 +591,8 @@
             <div id="phaseModalContent" class="phase-modal-content">
                 <h3 id="phaseModalTitle"></h3>
                 <p id="phaseModalText"></p>
-                <button id="dismissPhaseModalButton" class="dismiss-button">Dismiss</button>
+                <p id="phaseModalResearch" style="display:none;margin-top:12px;padding:10px 12px;background:rgba(16,185,129,0.08);border-left:3px solid #10b981;border-radius:4px;font-size:0.85em;color:#a7f3d0;line-height:1.5;"></p>
+                <button id="dismissPhaseModalButton" class="dismiss-button">Got it — let's heal!</button>
             </div>
         </div>
 
@@ -536,6 +615,7 @@
         let inflammationLevel = 50; // 0-100, ideal is low but necessary initially
         let gameTime = 0; // In-game time units (frames)
         let gameRunning = false; // Game starts as false, waiting for user to click 'Start Game'
+        let gamePaused = false; // Pause flag
         let currentPatientType = 'healthy'; // Default patient type
         let proliferationActivity = 0; // New: Tracks proliferation intensity
         let currentSkinColour = '#fce2c4'; // Initial default skin colour
@@ -699,8 +779,13 @@
         const activateMacrophagesBtn = document.getElementById('activateMacrophages');
         const releaseGrowthFactorBtn = document.getElementById('releaseGrowthFactor');
         const applyAntimicrobialBtn = document.getElementById('applyAntimicrobial');
-        const mechanicalStimulationBtn = document.getElementById('mechanicalStimulation'); // Renamed from reorganizeBtn
+        const mechanicalStimulationBtn = document.getElementById('mechanicalStimulation');
+        const pauseGameBtn = document.getElementById('pauseGameBtn');
         const restartGameBtn = document.getElementById('restartGame');
+
+        // Phase checklist
+        const phaseChecklistEl = document.getElementById('phaseChecklist');
+        const phaseChecklistItems = document.getElementById('phaseChecklistItems');
 
         // Patient selection buttons (now directly within the welcome screen HTML)
         const patientButtons = document.querySelectorAll('#welcomeScreen .patient-button'); // Select only buttons within welcomeScreen
@@ -729,19 +814,23 @@
         const phaseInfo = {
             'Inflammation': {
                 title: "Phase 1: Inflammation",
-                text: "The initial response to injury! Your goal is to clear debris, fight infection, and reduce excessive inflammation. Macrophages are your key allies here. High inflammation can hinder healing and increase scarring."
+                text: "The immune system's first response to injury. Macrophages flood the wound to clear bacteria and dead tissue — essential, but too much inflammation damages healthy cells and increases scarring.",
+                research: "🔬 In our lab: anti-inflammatory drug-releasing hydrogels are designed to dampen this phase at exactly the right time, preventing chronic inflammation from setting in."
             },
             'Proliferation': {
                 title: "Phase 2: Proliferation",
-                text: "New tissue is forming! Focus on generating new cells, blood vessels, and collagen to close the wound. Growth Factor is essential, but be careful: too much can lead to excessive scarring. Ensure infection is gone before this phase."
+                text: "New tissue starts to form! Fibroblasts lay down collagen, endothelial cells build blood vessels, and the wound begins to close. Growth factors are essential — but an excess causes excessive scarring.",
+                research: "🔬 In our lab: scaffold materials loaded with controlled-release growth factors guide this phase, supporting cell migration into the wound without triggering over-scarring."
             },
             'Remodelling': {
                 title: "Phase 3: Remodelling",
-                text: "Maturation and optimisation! The wound is largely closed, and now the focus is on strengthening the new tissue and minimising scar formation. Mechanical Stimulation can help reorganise collagen and reduce scarring. You have a limited time in this phase!"
+                text: "The final phase — collagen fibres are reorganised and strengthened, excess cells are cleared, and the wound matures into functional tissue. Good remodelling means minimal scarring and restored strength.",
+                research: "🔬 In our lab: electroactive scaffolds apply mechanical stimulation to help collagen align correctly — part of our research into conducting polymers for tissue regeneration."
             },
             'Complete Healing': {
-                title: "Complete Healing",
-                text: "Congratulations! The wound has achieved optimal healing with minimal scarring."
+                title: "Complete Healing!",
+                text: "Congratulations — the wound has healed optimally with minimal scarring! In reality this takes days to weeks. Our biomaterials aim to speed up each phase and improve outcomes.",
+                research: ""
             }
         };
 
@@ -793,16 +882,20 @@
             generateInitialWoundShape();
 
             // Disable action buttons initially
+            gamePaused = false;
             activateMacrophagesBtn.disabled = true;
             releaseGrowthFactorBtn.disabled = true;
             applyAntimicrobialBtn.disabled = true;
-            mechanicalStimulationBtn.classList.add('hidden'); // Hide mechanicalStimulation button
+            mechanicalStimulationBtn.classList.add('hidden');
             mechanicalStimulationBtn.disabled = true;
-            restartGameBtn.disabled = false; // Restart button should always be enabled
+            pauseGameBtn.disabled = true;
+            pauseGameBtn.textContent = '⏸ Pause';
+            restartGameBtn.disabled = false;
 
             // Hide game UI and show welcome screen
             gameMainContainer.classList.add('hidden');
             welcomeScreen.classList.remove('hidden');
+            if (phaseChecklistEl) phaseChecklistEl.style.display = 'none';
             gameOverOverlay.classList.remove('visible'); // Ensure game over is hidden
             // Removed encyclopaediaModalOverlay.classList.remove('visible');
 
@@ -826,6 +919,7 @@
 
         // --- Start Game Function ---
         function startGame() {
+          gamePaused = false;
           gameRunning = true;
           welcomeScreen.classList.add('hidden');
           gameMainContainer.classList.remove('hidden');
@@ -833,22 +927,16 @@
           // Recalculate canvas AFTER it becomes visible (also draws once)
           resizeCanvas();
 
-          // Show the initial phase modal (normally the loop is started when the modal hides)
+          // Show the initial phase modal — game loop starts ONLY when player dismisses it.
+          // hidePhaseModal() handles restarting the loop on dismiss.
           showPhaseModal(gamePhase);
-
-          // SAFEGUARD: if the modal isn’t dismissed (or something blocks), start the loop anyway.
-          setTimeout(() => {
-            if (gameRunning && animationFrameId === null) {
-              isModalActive = false;           // ensure loop can run
-              animationFrameId = requestAnimationFrame(gameLoop);
-            }
-          }, 1000);
         }
 
 
         // --- End Game Function ---
         function endGame(outcome, message) {
             gameRunning = false;
+            gamePaused = false;
             cancelAnimationFrame(animationFrameId);
             animationFrameId = null; // Clear animation frame ID
 
@@ -973,18 +1061,22 @@
 
         // Function to show phase modal
         function showPhaseModal(phaseKey){
-          // pick data or fallbacks
           const info = (phaseInfo && phaseInfo[phaseKey]) ? phaseInfo[phaseKey] : {
             title: String(phaseKey || 'Phase'),
-            text: 'Progress the wound by using the controls.'
+            text: 'Progress the wound by using the controls.',
+            research: ''
           };
-          // write content
-          phaseModalTitle.textContent = info.title;   // <h3 id="phaseModalTitle">
-          phaseModalText.textContent  = info.text;    // <p  id="phaseModalText">
-          phaseModalTitle.style.color = '#1e293b';
-          phaseModalText.style.color  = '#1e293b';
-          // reveal
-          phaseModalOverlay.classList.add('visible'); // overlay with .visible toggles opacity/visibility
+          phaseModalTitle.textContent = info.title;
+          phaseModalText.textContent  = info.text;
+          phaseModalTitle.style.color = '#10b981';
+          phaseModalText.style.color  = '#e2e8f0';
+          // Research note
+          const researchEl = document.getElementById('phaseModalResearch');
+          if (researchEl) {
+            researchEl.textContent = info.research || '';
+            researchEl.style.display = info.research ? 'block' : 'none';
+          }
+          phaseModalOverlay.classList.add('visible');
           isModalActive = true;
         }
 
@@ -1108,10 +1200,15 @@
 
             // Update button states based on energy and phase
             // Buttons are disabled if game is not running or a modal is active
-            activateMacrophagesBtn.disabled = cellularEnergy < 10 || !gameRunning || isModalActive;
-            releaseGrowthFactorBtn.disabled = cellularEnergy < (currentPatientType === 'elderly' ? 30 : 20) || !gameRunning || isModalActive;
-            applyAntimicrobialBtn.disabled = cellularEnergy < 15 || !gameRunning || isModalActive;
-            mechanicalStimulationBtn.disabled = cellularEnergy < 25 || !gameRunning || isModalActive; // Only enable if in Remodelling phase and enough energy
+            activateMacrophagesBtn.disabled = cellularEnergy < 10 || !gameRunning || isModalActive || gamePaused;
+            releaseGrowthFactorBtn.disabled = cellularEnergy < (currentPatientType === 'elderly' ? 30 : 20) || !gameRunning || isModalActive || gamePaused;
+            applyAntimicrobialBtn.disabled = cellularEnergy < 15 || !gameRunning || isModalActive || gamePaused;
+            mechanicalStimulationBtn.disabled = cellularEnergy < 25 || !gameRunning || isModalActive || gamePaused;
+            pauseGameBtn.disabled = !gameRunning || isModalActive;
+            pauseGameBtn.textContent = gamePaused ? '▶ Resume' : '⏸ Pause';
+
+            // Update phase progression checklist
+            updatePhaseChecklist();
 
             // Mechanical Stimulation button visibility and state
             if (gamePhase === 'Remodelling') {
@@ -1356,8 +1453,10 @@
 
 
             // Draw wound edges (more defined outline)
-            ctx.strokeStyle = '#c0392b';
-            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#8b1a1a';
+            ctx.lineWidth = 6;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = 'rgba(180,30,30,0.5)';
             ctx.beginPath();
             // Redraw the irregular wound edge
             for(let i = 0; i < woundShapePoints.length; i++) {
@@ -1374,6 +1473,8 @@
             }
             ctx.closePath();
             ctx.stroke();
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
 
             // Simulate scar tissue (paler, translucent overlay on the irregular wound)
             if (scarLevel > 0) {
@@ -1749,8 +1850,8 @@
         const messageBox = document.getElementById('messageBox');
         // --- Game Loop ---
         function gameLoop() {
-            // Only continue the loop if the game is running and no modal is active
-            if (gameRunning && !isModalActive) {
+            // Only continue the loop if the game is running, not paused, and no modal is active
+            if (gameRunning && !isModalActive && !gamePaused) {
                 updateGameLogic();
                 drawGame();
                 animationFrameId = requestAnimationFrame(gameLoop);
@@ -1760,7 +1861,84 @@
                     cancelAnimationFrame(animationFrameId);
                     animationFrameId = null;
                 }
+                // Draw pause overlay if paused
+                if (gamePaused && gameRunning) drawPauseOverlay();
             }
+        }
+
+        // --- Pause overlay drawn on canvas ---
+        function drawPauseOverlay() {
+            ctx.save();
+            ctx.fillStyle = 'rgba(8,18,28,0.65)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = `bold 38px 'Exo 2', system-ui, sans-serif`;
+            ctx.fillStyle = '#10b981';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('⏸ Paused', canvas.width / 2, canvas.height / 2 - 16);
+            ctx.font = `500 14px 'Exo 2', system-ui, sans-serif`;
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('Press P or click Resume to continue', canvas.width / 2, canvas.height / 2 + 20);
+            ctx.restore();
+        }
+
+        // --- Pause toggle ---
+        function togglePause() {
+            if (!gameRunning || isModalActive) return;
+            gamePaused = !gamePaused;
+            if (gamePaused) {
+                // Stop the loop
+                if (animationFrameId !== null) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                drawPauseOverlay();
+            } else {
+                // Resume the loop
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+            updateUI();
+        }
+
+        // --- Phase progression checklist ---
+        function updatePhaseChecklist() {
+            if (!phaseChecklistEl || !phaseChecklistItems) return;
+            phaseChecklistItems.innerHTML = '';
+
+            let requirements = [];
+            if (gamePhase === 'Inflammation') {
+                requirements = [
+                    { label: `Inflammation < 40% (now ${inflammationLevel.toFixed(0)}%)`, met: inflammationLevel < 40 },
+                    { label: `No infection (now ${infectionLevel.toFixed(0)}%)`, met: infectionLevel === 0 },
+                    { label: `Wound health ≥ 90% (now ${woundHealth.toFixed(0)}%)`, met: woundHealth >= 90 },
+                    { label: `Proliferation activity ≥ 10 (now ${proliferationActivity.toFixed(0)})`, met: proliferationActivity >= 10 },
+                ];
+            } else if (gamePhase === 'Proliferation') {
+                requirements = [
+                    { label: `Wound health ≥ 90% (now ${woundHealth.toFixed(0)}%)`, met: woundHealth >= 90 },
+                    { label: `No infection (now ${infectionLevel.toFixed(0)}%)`, met: infectionLevel === 0 },
+                    { label: `Wound coverage = 100% (now ${woundCoverage.toFixed(0)}%)`, met: woundCoverage >= 100 },
+                    { label: `Proliferation activity ≥ 30 (now ${proliferationActivity.toFixed(0)})`, met: proliferationActivity >= 30 },
+                ];
+            } else if (gamePhase === 'Remodelling') {
+                const timeLeft = (remodelingTimer / 60).toFixed(1);
+                requirements = [
+                    { label: `Timer: ${timeLeft}s remaining`, met: remodelingTimer > 0 },
+                    { label: `Wound health ≥ 99% for perfect heal (now ${woundHealth.toFixed(0)}%)`, met: woundHealth >= 99 },
+                    { label: `Scar < 10% for minimal scarring (now ${scarLevel.toFixed(0)}%)`, met: scarLevel < 10 },
+                    { label: `No infection (now ${infectionLevel.toFixed(0)}%)`, met: infectionLevel === 0 },
+                ];
+            } else {
+                phaseChecklistEl.style.display = 'none';
+                return;
+            }
+            phaseChecklistEl.style.display = '';
+            requirements.forEach(req => {
+                const li = document.createElement('li');
+                li.className = req.met ? 'met' : 'unmet';
+                li.textContent = req.label;
+                phaseChecklistItems.appendChild(li);
+            });
         }
 
         // Removed Encyclopaedia Functions
@@ -1951,6 +2129,8 @@
         });
 
         // --- Event Listeners ---
+        pauseGameBtn.addEventListener('click', () => { playSound('click'); togglePause(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'p' || e.key === 'P') togglePause(); });
         startGameButton.addEventListener('click', startGame);
         // Removed encyclopaediaButton.addEventListener('click', showEncyclopaediaModal);
         // Removed closeEncyclopaediaButton.addEventListener('click', hideEncyclopaediaModal);
