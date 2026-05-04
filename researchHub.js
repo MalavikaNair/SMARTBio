@@ -372,39 +372,11 @@ window.onCanvasClick = function(event) {
 // TWO-COLUMN TAB SYSTEM (SAFE)
 // ===============================
 function createTwoColumnTabs(tabs, defaultKey) {
-  const wrapper = makeDiv('grid grid-cols-1 md:grid-cols-4 gap-4');
-
-  const nav = makeDiv('flex md:flex-col gap-2');
-  const right = makeDiv('md:col-span-3 flex flex-col gap-3');
-
-  const controls = makeDiv('flex flex-wrap items-center gap-2');
-  const content = makeDiv('');
+  const wrapper = makeDiv('hub-tabs-wrapper');
+  const nav     = makeDiv('hub-tabs-nav');
+  const content = makeDiv('hub-tabs-content');
 
   let activeKey = defaultKey || Object.keys(tabs)[0];
-  let searchTerm = '';
-  let sortMode = 'default';
-
-  const searchInput = document.createElement('input');
-  searchInput.type = 'text';
-  searchInput.placeholder = 'Search...';
-  searchInput.className = 'px-3 py-1.5 text-sm rounded-md bg-white text-black border border-slate-400 placeholder-gray-500';
-
-  searchInput.addEventListener('input', () => {
-    searchTerm = searchInput.value.toLowerCase();
-    render();
-  });
-
-  const sortBtn = document.createElement('button');
-  sortBtn.type = 'button';
-  sortBtn.className = 'px-3 py-1.5 text-xs rounded-md bg-slate-700 text-white border border-slate-500 hover:bg-slate-600';
-
-  sortBtn.addEventListener('click', () => {
-    sortMode =
-      sortMode === 'default' ? 'az' :
-      sortMode === 'az' ? 'newest' :
-      'default';
-    render();
-  });
 
   function render() {
     clearChildren(nav);
@@ -413,15 +385,13 @@ function createTwoColumnTabs(tabs, defaultKey) {
     Object.entries(tabs).forEach(([key, tab]) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-
-      btn.className = `text-left px-3 py-1.5 rounded-md text-sm border flex items-center gap-2 ${
-        key === activeKey
-          ? 'bg-primary text-white border-primary'
-          : 'border-primary text-primary hover:bg-primary/20'
-      }`;
+      btn.className = key === activeKey
+        ? 'hub-tab-btn hub-tab-btn--active'
+        : 'hub-tab-btn';
 
       const icon = document.createElement('span');
       icon.textContent = tab.icon || '•';
+      icon.setAttribute('aria-hidden', 'true');
 
       const label = document.createElement('span');
       label.textContent = tab.label;
@@ -437,40 +407,13 @@ function createTwoColumnTabs(tabs, defaultKey) {
       nav.appendChild(btn);
     });
 
-    clearChildren(controls);
-    sortBtn.textContent =
-      sortMode === 'az' ? 'Sort: A–Z' :
-      sortMode === 'newest' ? 'Sort: Newest' :
-      'Sort: Default';
-    controls.appendChild(searchInput);
-    controls.appendChild(sortBtn);
-
-    const raw = tabs[activeKey].items || [];
-
-    let filtered = raw.filter(item =>
-      (item.title || item.name || '').toLowerCase().includes(searchTerm)
-    );
-
-    if (sortMode === 'az') {
-      filtered.sort((a, b) =>
-        (a.title || a.name || '').localeCompare(b.title || b.name || '')
-      );
-    }
-
-    if (sortMode === 'newest') {
-      filtered.sort((a, b) => (b.year || 0) - (a.year || 0));
-    }
-
-    content.appendChild(tabs[activeKey].render(filtered));
+    content.appendChild(tabs[activeKey].render(tabs[activeKey].items || []));
   }
 
   render();
 
-  right.appendChild(controls);
-  right.appendChild(content);
-
   wrapper.appendChild(nav);
-  wrapper.appendChild(right);
+  wrapper.appendChild(content);
 
   return wrapper;
 }
@@ -480,7 +423,7 @@ function createTwoColumnTabs(tabs, defaultKey) {
 // SAFE CLICKABLE CARDS
 // ===============================
 function createClickableCard(text, modalTarget, id) {
-  const c = makeDiv('card p-3 text-sm cursor-pointer hover:bg-slate-700/30');
+  const c = makeDiv('hub-list-item');
   c.textContent = text || '';
 
   if (modalTarget && id !== -1 && id !== undefined) {
@@ -492,16 +435,17 @@ function createClickableCard(text, modalTarget, id) {
 }
 
 function createTeamCard(item) {
-  const c = makeDiv('card p-2 flex items-center gap-2 cursor-pointer hover:bg-slate-700/30');
+  const c = makeDiv('hub-team-item');
 
-  const img = document.createElement('img');
-  img.className = 'w-8 h-8 rounded-full';
-  safeSetImgSrc(img, item.image);
+  if (item.image) {
+    const img = document.createElement('img');
+    img.className = 'hub-team-avatar';
+    safeSetImgSrc(img, item.image);
+    c.appendChild(img);
+  }
 
   const name = document.createElement('span');
   name.textContent = item.name || '';
-
-  c.appendChild(img);
   c.appendChild(name);
 
   if (item.id) {
@@ -561,31 +505,31 @@ window.updateDynamicContent = function(
       icon: '🧪',
       items: relatedResearch,
       render: (items) => {
-        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
+        const grid = makeDiv('hub-projects-grid');
 
         items.forEach(item => {
-          const idx = researchData.findIndex(r => String(r.id) === String(item.id));
-          const card = makeDiv('card p-3 cursor-pointer hover:bg-slate-700/30 flex flex-col gap-2');
+          const card = makeDiv('hub-project-card cursor-pointer rounded-lg overflow-hidden');
 
-if (item.image) {
-  const img = document.createElement('img');
-  img.className = 'w-full h-28 object-cover rounded-md';
-  safeSetImgSrc(img, item.image);
-  card.appendChild(img);
-}
+          if (item.image) {
+            const img = document.createElement('img');
+            img.className = 'hub-project-thumb';
+            safeSetImgSrc(img, item.image);
+            card.appendChild(img);
+          }
 
-const title = document.createElement('p');
-title.className = 'text-sm font-semibold leading-tight';
-title.textContent = item.title || '';
+          const body = makeDiv('hub-project-body');
+          const title = document.createElement('p');
+          title.className = 'hub-project-title';
+          title.textContent = item.title || '';
+          body.appendChild(title);
+          card.appendChild(body);
 
-card.appendChild(title);
+          if (item.id) {
+            card.dataset.modalTarget = 'open-research-modal';
+            card.dataset.id = String(item.id);
+          }
 
-if (idx !== -1) {
-  card.dataset.modalTarget = 'open-research-modal';
-  card.dataset.id = String(idx);
-}
-
-grid.appendChild(card);
+          grid.appendChild(card);
         });
 
         return grid;
@@ -599,9 +543,9 @@ grid.appendChild(card);
       icon: '📄',
       items: relatedPubs,
       render: (items) => {
-        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
-        items.forEach(p => grid.appendChild(createClickableCard(p.title)));
-        return grid;
+        const list = makeDiv('hub-tabs-list');
+        items.forEach(p => list.appendChild(createClickableCard(p.title)));
+        return list;
       }
     };
   }
@@ -612,9 +556,9 @@ grid.appendChild(card);
       icon: '👥',
       items: relatedTeam,
       render: (items) => {
-        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
-        items.forEach(t => grid.appendChild(createTeamCard(t)));
-        return grid;
+        const list = makeDiv('hub-tabs-list');
+        items.forEach(t => list.appendChild(createTeamCard(t)));
+        return list;
       }
     };
   }
@@ -625,12 +569,12 @@ grid.appendChild(card);
       icon: '📰',
       items: relatedNews,
       render: (items) => {
-        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
+        const list = makeDiv('hub-tabs-list');
         items.forEach(n => {
           const idx = newsData.findIndex(x => String(x.id) === String(n.id));
-          grid.appendChild(createClickableCard(n.title, 'open-news-modal', idx));
+          list.appendChild(createClickableCard(n.title, 'open-news-modal', idx));
         });
-        return grid;
+        return list;
       }
     };
   }
@@ -641,12 +585,12 @@ grid.appendChild(card);
       icon: '🎤',
       items: relatedTalks,
       render: (items) => {
-        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
+        const list = makeDiv('hub-tabs-list');
         items.forEach(t => {
           const idx = outreachTalksData.findIndex(x => String(x.id) === String(t.id));
-          grid.appendChild(createClickableCard(t.title, 'open-outreach-talk-modal', idx));
+          list.appendChild(createClickableCard(t.title, 'open-outreach-talk-modal', idx));
         });
-        return grid;
+        return list;
       }
     };
   }
@@ -657,12 +601,12 @@ grid.appendChild(card);
       icon: '📊',
       items: relatedPres,
       render: (items) => {
-        const grid = makeDiv('grid grid-cols-1 sm:grid-cols-2 gap-3');
+        const list = makeDiv('hub-tabs-list');
         items.forEach(p => {
           const idx = academicPresentationsData.findIndex(x => String(x.id) === String(p.id));
-          grid.appendChild(createClickableCard(p.title, 'open-academic-presentation-modal', idx));
+          list.appendChild(createClickableCard(p.title, 'open-academic-presentation-modal', idx));
         });
-        return grid;
+        return list;
       }
     };
   }

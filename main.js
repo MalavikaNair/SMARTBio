@@ -97,7 +97,8 @@ const Utils = (() => {
     iframe.src = embed;
     iframe.loading = 'lazy';
     iframe.allowFullscreen = true;
-    iframe.setAttribute('allow','accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+    iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-popups');
     iframe.className = 'absolute top-0 left-0 w-full h-full rounded-md border border-primary-dark';
     return iframe;
   }
@@ -220,6 +221,7 @@ const DOMElements = (() => {
   const publicationsList = document.getElementById('publications-list');
   const gamesGrid = document.getElementById('games-grid');
   const gameFilters = document.getElementById('game-filters');
+  const gameAgeFilters = document.getElementById('game-age-filters');
 
   const modalContainer = document.getElementById('modal-container');
 
@@ -248,7 +250,7 @@ const DOMElements = (() => {
     researchContentGrid, teamGrid, alumniGrid, newsList,
     newsCarouselTrack, carouselDotsContainer, carouselPrevBtn, carouselNextBtn,
     outreachTalksGrid, academicPresentationsGrid, outreachNewsList, publicationsList,
-    gamesGrid, gameFilters,
+    gamesGrid, gameFilters, gameAgeFilters,
     modalContainer,
     researchDescriptionModal, researchModalMedia, researchModalCaption, researchModalCredit,
     researchModalTitle, researchModalDescription, researchModalTeamMembers,
@@ -395,19 +397,41 @@ const Renderer = (() => {
     if (!items.length) { list.textContent = 'No news at the moment.'; return; }
 
     items.forEach((n, i) => {
-      const li = Utils.createEl('li', { className: 'mb-6' });
-      const heading = Utils.createEl('div', { className: 'flex items-center gap-3 mb-2' }, [
-        Utils.createEl('h3', { className: 'text-lg font-semibold', text: n?.title || '' }),
-        n?.date ? Utils.createEl('span', { className: 'date-badge', text: Utils.formatDate(n.date) }) : null
-      ].filter(Boolean));
-      const desc = Utils.createEl('p', { className: 'text-medium-text', text: n?.description || '' });
-      const btn = Utils.createEl('button', {
-        className: 'mt-2 text-primary font-semibold hover:underline',
-        dataset: { modalTarget: 'open-news-modal', id: i },
-        text: 'Read More →'
+      const card = Utils.createEl('div', {
+        className: 'news-card card rounded-xl overflow-hidden cursor-pointer',
+        dataset: { modalTarget: 'open-news-modal', id: i }
       });
-      li.append(heading, desc, btn);
-      list.appendChild(li);
+
+      // Image
+      if (n?.image) {
+        const img = Utils.createEl('img', {
+          src: Utils.sanitizeUrl(n.image),
+          alt: Utils.escapeHTML(n?.title || 'News image'),
+          className: 'news-card-img',
+          loading: 'lazy'
+        });
+        img.addEventListener('error', () => img.remove());
+        card.appendChild(img);
+      }
+
+      const body = Utils.createEl('div', { className: 'news-card-body' });
+
+      // Date + themes row
+      const meta = Utils.createEl('div', { className: 'news-card-meta' });
+      if (n?.date) meta.appendChild(Utils.createEl('span', { className: 'date-badge', text: Utils.formatDate(n.date) }));
+      if (Array.isArray(n?.themes) && n.themes.length) {
+        n.themes.slice(0, 2).forEach(t => {
+          meta.appendChild(Utils.createEl('span', { className: 'pub-tag', text: t }));
+        });
+      }
+      body.appendChild(meta);
+
+      body.appendChild(Utils.createEl('h3', { className: 'news-card-title', text: n?.title || '' }));
+      body.appendChild(Utils.createEl('p', { className: 'news-card-desc', text: n?.description || '' }));
+      body.appendChild(Utils.createEl('span', { className: 'news-card-cta', text: 'Read more →' }));
+
+      card.appendChild(body);
+      list.appendChild(card);
     });
 
     const track = DOMElements.newsCarouselTrack;
@@ -479,11 +503,12 @@ const Renderer = (() => {
     : (window.publicationsData?.items || []);
 
   // --- FILTER LOGIC ---
+  // Preprints use type="preprint" with category="research", so type takes priority for the preprint filter.
   if (activePublicationFilter !== 'all') {
     items = items.filter(p => {
-      if (p.category) return p.category === activePublicationFilter;
       if (activePublicationFilter === 'preprint') return p.type === 'preprint';
-      if (activePublicationFilter === 'research') return p.type === 'journal';
+      if (activePublicationFilter === 'research') return p.category === 'research' && p.type !== 'preprint';
+      if (p.category) return p.category === activePublicationFilter;
       return false;
     });
   }
@@ -505,46 +530,106 @@ const Renderer = (() => {
     const yearBlock = document.createElement('div');
 
     const heading = document.createElement('h3');
-    heading.className = 'text-2xl font-bold mb-4';
+    heading.className = 'pub-year-heading';
     heading.textContent = year;
 
-    const list = document.createElement('ul');
+    const list = document.createElement('div');
+    list.className = 'pub-list';
 
     grouped[year].forEach(p => {
-      const li = document.createElement('li');
-      li.className = 'mb-4';
+      const card = document.createElement('div');
+      card.className = 'pub-card';
+      if (p.doi) {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', (e) => {
+          // Don't double-fire if an inner link was clicked
+          if (e.target.closest('a')) return;
+          window.open(`https://doi.org/${encodeURIComponent(p.doi)}`, '_blank', 'noopener');
+        });
+      }
 
-      const strong = document.createElement('strong');
-strong.textContent = p.title || '';
+      // Title
+      const title = document.createElement('p');
+      title.className = 'pub-card-title';
+      title.textContent = p.title || '';
+      card.appendChild(title);
 
-const br1 = document.createElement('br');
+      // Authors
+      if (p.authors) {
+        const authors = document.createElement('p');
+        authors.className = 'pub-card-authors';
+        authors.textContent = p.authors;
+        card.appendChild(authors);
+      }
 
-const authors = document.createTextNode(p.authors || '');
+      // Journal / venue line
+      const metaParts = [p.journal, p.volume, p.pages].filter(Boolean);
+      if (metaParts.length) {
+        const meta = document.createElement('p');
+        meta.className = 'pub-card-meta';
+        const em = document.createElement('em');
+        em.textContent = metaParts.join(' · ');
+        meta.appendChild(em);
+        card.appendChild(meta);
+      }
 
-const br2 = document.createElement('br');
+      // Bottom row: theme tags + links
+      const bottom = document.createElement('div');
+      bottom.className = 'pub-card-bottom';
 
-const journal = document.createElement('em');
-journal.textContent = p.journal || '';
+      // Theme tags
+      const tagsWrap = document.createElement('div');
+      tagsWrap.className = 'pub-card-tags';
+      if (Array.isArray(p.themes)) {
+        p.themes.forEach(theme => {
+          const tag = document.createElement('span');
+          tag.className = 'pub-tag';
+          tag.textContent = theme;
+          tagsWrap.appendChild(tag);
+        });
+      }
+      if (p.openAccess) {
+        const oa = document.createElement('span');
+        oa.className = 'pub-tag pub-tag--oa';
+        oa.textContent = 'Open Access';
+        tagsWrap.appendChild(oa);
+      }
+      bottom.appendChild(tagsWrap);
 
-li.appendChild(strong);
-li.appendChild(br1);
-li.appendChild(authors);
-li.appendChild(br2);
-li.appendChild(journal);
+      // Links
+      const linksWrap = document.createElement('div');
+      linksWrap.className = 'pub-card-links';
+      if (p.doi) {
+        const doiLink = document.createElement('a');
+        doiLink.href = `https://doi.org/${encodeURIComponent(p.doi)}`;
+        doiLink.target = '_blank';
+        doiLink.rel = 'noopener';
+        doiLink.className = 'pub-link pub-link--doi';
+        doiLink.textContent = 'DOI ↗';
+        linksWrap.appendChild(doiLink);
+      }
+      if (p.dataset && Utils.isSafeUrl(p.dataset)) {
+        const dsLink = document.createElement('a');
+        dsLink.href = Utils.sanitizeUrl(p.dataset);
+        dsLink.target = '_blank';
+        dsLink.rel = 'noopener noreferrer';
+        dsLink.className = 'pub-link';
+        dsLink.textContent = 'Dataset ↗';
+        linksWrap.appendChild(dsLink);
+      }
+      if (p.interactive && Utils.isSafeUrl(p.interactive)) {
+        const intLink = document.createElement('a');
+        intLink.href = Utils.sanitizeUrl(p.interactive);
+        intLink.target = '_blank';
+        intLink.rel = 'noopener noreferrer';
+        intLink.className = 'pub-link pub-link--interactive';
+        intLink.textContent = 'Interactive ↗';
+        linksWrap.appendChild(intLink);
+      }
+      bottom.appendChild(linksWrap);
 
-if (p.doi) {
-  const br3 = document.createElement('br');
-  const link = document.createElement('a');
-  link.href = `https://doi.org/${encodeURIComponent(p.doi)}`;
-  link.target = '_blank';
-  link.rel = 'noopener';
-  link.textContent = 'DOI';
-
-  li.appendChild(br3);
-  li.appendChild(link);
-}
-
-      list.appendChild(li);
+      card.appendChild(bottom);
+      list.appendChild(card);
     });
 
     yearBlock.appendChild(heading);
@@ -561,18 +646,45 @@ if (p.doi) {
     const items = resolve(window.gamesData);
     if (!items.length) { grid.textContent = 'No games yet.'; return; }
 
-    const active = (window.GameFilter && GameFilter.getActiveThemes)
+    // --- Theme filter ---
+    const activeThemes = (window.GameFilter && GameFilter.getActiveThemes)
       ? GameFilter.getActiveThemes()
-      : new Set(Array.from((DOMElements.gameFilters || document).querySelectorAll('[data-theme].active')).map(b => b.dataset.theme));
+      : new Set();
 
     const matchesTheme = (game) => {
-      if (!active || active.size === 0) return true;
+      if (!activeThemes || activeThemes.size === 0) return true;
       const raw = game?.themes ?? game?.theme;
       const themes = Array.isArray(raw) ? raw.map(String) : raw ? [String(raw)] : [];
-      return themes.some(t => active.has(t));
+      return themes.some(t => activeThemes.has(t));
     };
 
-    const filtered = items.filter(matchesTheme);
+    // --- Age filter ---
+    const activeAge = (window.GameFilter && GameFilter.getActiveAge)
+      ? GameFilter.getActiveAge()
+      : 'all';
+
+    function ageGroup(ageRange) {
+      const n = parseInt(ageRange);
+      if (isNaN(n)) return null;
+      if (n <= 8)  return 'young';
+      if (n <= 11) return 'tween';
+      return 'senior';
+    }
+
+    const matchesAge = (game) => {
+      if (activeAge === 'all') return true;
+      return ageGroup(game?.ageRange) === activeAge;
+    };
+
+    const filtered = items.filter(g => matchesTheme(g) && matchesAge(g));
+
+    if (!filtered.length) {
+      grid.appendChild(Utils.createEl('p', {
+        className: 'text-medium-text text-center col-span-3 py-8',
+        text: 'No games match the selected filters.'
+      }));
+      return;
+    }
 
     filtered.forEach(game => {
       const img = game?.thumbnail ? Utils.createEl('img', {
@@ -582,18 +694,29 @@ if (p.doi) {
         loading: 'lazy'
       }) : null;
 
+      // Age badge
+      const ageBadge = game?.ageRange
+        ? Utils.createEl('span', { className: 'game-age-badge', text: 'Ages ' + Utils.escapeHTML(game.ageRange) })
+        : null;
+
+      // Title row: title + age badge
+      const titleRow = Utils.createEl('div', { className: 'game-title-row' }, [
+        Utils.createEl('h3', { className: 'text-lg font-semibold', text: game?.title || '' }),
+        ageBadge
+      ].filter(Boolean));
+
       const play = game?.file ? Utils.createEl('a', {
         href: Utils.sanitizeUrl(game.file),
         target: '_blank',
-        rel: 'noopener',
-        className: 'bg-primary text-white px-4 py-2 rounded-full font-semibold inline-block mt-2',
+        rel: 'noopener noreferrer',
+        className: 'bg-primary text-white px-4 py-2 rounded-full font-semibold inline-block mt-auto pt-3',
         text: 'Play Game'
       }) : null;
 
       const card = Utils.createEl('div', { className: 'card rounded-lg p-6 flex flex-col' }, [
         img,
-        Utils.createEl('h3', { className: 'text-lg font-semibold', text: game?.title || '' }),
-        Utils.createEl('p', { className: 'text-medium-text', text: game?.description || '' }),
+        titleRow,
+        Utils.createEl('p', { className: 'text-medium-text text-sm mt-1 mb-2', text: game?.description || '' }),
         play
       ].filter(Boolean));
 
@@ -713,19 +836,56 @@ if (p.doi) {
     if (!items.length) { list.textContent = 'No dissemination news right now.'; return; }
 
     items.forEach((n, i) => {
-      const li = Utils.createEl('li', { className: 'mb-6' });
-      const heading = Utils.createEl('div', { className: 'flex items-center gap-3 mb-2' }, [
-        Utils.createEl('h3', { className: 'text-lg font-semibold', text: n?.title || '' }),
-        n?.date ? Utils.createEl('span', { className: 'date-badge', text: Utils.formatDate(n.date) }) : null
-      ].filter(Boolean));
-      const desc = Utils.createEl('p', { className: 'text-medium-text', text: n?.description || '' });
-      const btn = Utils.createEl('button', {
-        className: 'text-primary font-semibold hover:underline mt-2',
-        dataset: { modalTarget: 'open-outreach-news-modal', id: i },
-        text: 'Read More →'
+      const card = Utils.createEl('div', {
+        className: 'news-card card rounded-xl overflow-hidden',
+        dataset: { modalTarget: 'open-outreach-news-modal', id: i }
       });
-      li.append(heading, desc, btn);
-      list.appendChild(li);
+      card.style.cursor = 'pointer';
+
+      // Image
+      if (n?.image) {
+        const img = Utils.createEl('img', {
+          src: Utils.sanitizeUrl(n.image),
+          alt: Utils.escapeHTML(n?.title || 'Outreach news image'),
+          className: 'news-card-img',
+          loading: 'lazy'
+        });
+        img.addEventListener('error', () => img.remove());
+        card.appendChild(img);
+      }
+
+      const body = Utils.createEl('div', { className: 'news-card-body' });
+
+      // Date row
+      const meta = Utils.createEl('div', { className: 'news-card-meta' });
+      if (n?.date) meta.appendChild(Utils.createEl('span', { className: 'date-badge', text: Utils.formatDate(n.date) }));
+      body.appendChild(meta);
+
+      body.appendChild(Utils.createEl('h3', { className: 'news-card-title', text: n?.title || '' }));
+      body.appendChild(Utils.createEl('p', { className: 'news-card-desc', text: n?.description || '' }));
+
+      // External link button (if present); otherwise modal "Read more" CTA
+      if (n?.link && Utils.isSafeUrl(n.link)) {
+        const extBtn = Utils.createEl('a', {
+          href: Utils.sanitizeUrl(n.link),
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          className: 'news-card-ext-btn',
+          text: 'Read article ↗'
+        });
+        // Stop card click from also triggering modal
+        extBtn.addEventListener('click', e => e.stopPropagation());
+        body.appendChild(extBtn);
+      } else {
+        body.appendChild(Utils.createEl('span', { className: 'news-card-cta', text: 'Read more →' }));
+      }
+
+      card.appendChild(body);
+
+      // Card click → open modal (unless link button was clicked)
+      card.addEventListener('click', () => ModalManager.openOutreachNewsModal(i));
+
+      list.appendChild(card);
     });
   }
 
@@ -1483,8 +1643,12 @@ const NavigationManager = (() => {
         })
         .then(markdown => {
           if (typeof marked !== 'undefined') {
-            DOMElements.privacyNoticeContent.innerHTML = marked.parse(markdown);
-            alog('Privacy markdown rendered with marked');
+            const rawHtml = marked.parse(markdown);
+            const safeHtml = (typeof DOMPurify !== 'undefined')
+              ? DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } })
+              : rawHtml;
+            DOMElements.privacyNoticeContent.innerHTML = safeHtml;
+            alog('Privacy markdown rendered with marked + DOMPurify');
           } else {
             err('marked.js is not loaded; showing fallback');
             DOMElements.privacyNoticeContent.innerHTML = '<p class="text-red-500">Markdown parser not loaded.</p>';
@@ -1642,6 +1806,7 @@ const CollapsibleManager = (() => {
 /* ======================= Game Filter ======================= */
 const GameFilter = (() => {
   let active = new Set();
+  let activeAge = 'all';
 
   function allThemes() {
     const items = Array.isArray(window.gamesData) ? window.gamesData : (window.gamesData?.items || []);
@@ -1660,7 +1825,7 @@ const GameFilter = (() => {
     wrap.querySelectorAll('[data-theme]').forEach(el => el.remove());
     GameFilter.allThemes().forEach(th => {
       wrap.appendChild(Utils.createEl('button', {
-        className: 'filter-btn bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-full text-sm transition duration-300',
+        className: 'game-theme-chip',
         text: th,
         dataset: { theme: th }
       }));
@@ -1670,9 +1835,25 @@ const GameFilter = (() => {
   function toggle(theme) {
     if (active.has(theme)) active.delete(theme); else active.add(theme);
     const wrap = DOMElements.gameFilters;
-    if (wrap) wrap.querySelectorAll('[data-theme]').forEach(b => {
-      b.classList.toggle('active', active.has(b.dataset.theme));
-      b.setAttribute('aria-pressed', String(active.has(b.dataset.theme)));
+    if (wrap) {
+      wrap.querySelectorAll('[data-theme]').forEach(b => {
+        b.classList.toggle('active', active.has(b.dataset.theme));
+        b.setAttribute('aria-pressed', String(active.has(b.dataset.theme)));
+      });
+      // If nothing selected, re-activate "All Themes"
+      const allBtn = wrap.querySelector('[data-filter="all"]');
+      if (allBtn) allBtn.classList.toggle('active', active.size === 0);
+    }
+    if (Renderer && typeof Renderer.renderGames === 'function') Renderer.renderGames();
+  }
+
+  function setAge(age) {
+    activeAge = age;
+    const ageWrap = DOMElements.gameAgeFilters;
+    if (ageWrap) ageWrap.querySelectorAll('[data-age]').forEach(b => {
+      const isActive = b.dataset.age === activeAge;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-pressed', String(isActive));
     });
     if (Renderer && typeof Renderer.renderGames === 'function') Renderer.renderGames();
   }
@@ -1682,16 +1863,48 @@ const GameFilter = (() => {
     if (!wrap) return;
     renderChips();
     wrap.addEventListener('click', (e) => {
+      // "All Themes" clear button
+      const allBtn = e.target.closest('[data-filter="all"]');
+      if (allBtn) {
+        e.preventDefault();
+        active.clear();
+        wrap.querySelectorAll('[data-theme]').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        allBtn.classList.add('active');
+        if (Renderer && typeof Renderer.renderGames === 'function') Renderer.renderGames();
+        return;
+      }
       const btn = e.target.closest('[data-theme]');
       if (!btn) return;
       e.preventDefault();
+      // Deactivate "All Themes" button when a specific theme is chosen
+      const allThemeBtn = wrap.querySelector('[data-filter="all"]');
+      if (allThemeBtn) allThemeBtn.classList.remove('active');
       toggle(btn.dataset.theme);
     });
+
+    const ageWrap = DOMElements.gameAgeFilters;
+    if (ageWrap) {
+      // Mark the "All Ages" button active by default
+      ageWrap.querySelectorAll('[data-age]').forEach(b => {
+        b.classList.toggle('active', b.dataset.age === activeAge);
+        b.setAttribute('aria-pressed', String(b.dataset.age === activeAge));
+      });
+      ageWrap.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-age]');
+        if (!btn) return;
+        e.preventDefault();
+        setAge(btn.dataset.age);
+      });
+    }
   }
 
   function getActiveThemes() { return new Set(active); }
+  function getActiveAge() { return activeAge; }
 
-  return { allThemes, setup, getActiveThemes };
+  return { allThemes, setup, getActiveThemes, getActiveAge };
 })();
 
 /* ======================= App ======================= */
@@ -1730,6 +1943,8 @@ const App = (() => {
   function init() {
     if (DOMElements.yearSpan) DOMElements.yearSpan.textContent = new Date().getFullYear();
 
+    ThemeManager.init();
+
     // Set up back/forward button support before any navigation occurs
     NavigationManager.setupPopState();
 
@@ -1744,6 +1959,98 @@ const App = (() => {
       NavigationManager.showPage(initial, { pushState: false });
       CarouselManager.setupCarousel();
       setupEventListeners();
+    });
+  }
+
+  return { init };
+})();
+
+/* ======================= ParticlesManager ======================= */
+const ParticlesManager = (() => {
+  // Dark config is loaded from particles.json; light config is inlined here
+  // with darker, higher-opacity colours that read well on a light background.
+  const LIGHT_CONFIG = {
+    particles: {
+      number: { value: 80, density: { enable: true, value_area: 900 } },
+      color: { value: ['#059669', '#b91c1c', '#1d4ed8', '#b45309', '#6d28d9'] },
+      shape: { type: 'circle', stroke: { width: 0, color: '#000000' } },
+      opacity: { value: 0.45, random: false },
+      size: { value: 2.2, random: true },
+      line_linked: { enable: true, distance: 160, color: '#94a3b8', opacity: 0.3, width: 1 },
+      move: { enable: true, speed: 0.6, direction: 'none', random: false, straight: false, out_mode: 'out', bounce: false }
+    },
+    interactivity: {
+      detect_on: 'canvas',
+      events: { onhover: { enable: true, mode: 'bubble' }, onclick: { enable: true, mode: 'repulse' }, resize: true },
+      modes: { bubble: { distance: 130, size: 3.2, duration: 0.3, opacity: 0.6, speed: 3 }, repulse: { distance: 100, duration: 0.25 } }
+    },
+    retina_detect: true
+  };
+
+  let started = false;
+
+  function destroy() {
+    if (window.pJSDom && window.pJSDom.length > 0) {
+      try { window.pJSDom[0].pJS.fn.vendors.destroypJS(); } catch (_) {}
+      window.pJSDom = [];
+    }
+  }
+
+  function start(theme) {
+    if (!window.particlesJS) return;
+    destroy();
+    if (theme === 'light') {
+      particlesJS('particles-js', LIGHT_CONFIG);
+    } else {
+      particlesJS.load('particles-js', './assets/js/particles.json', () => {});
+    }
+    started = true;
+    alog('Particles started for theme:', theme);
+  }
+
+  // Called by ThemeManager on every toggle — only reinits if already running
+  function applyTheme(theme) {
+    if (started) start(theme);
+  }
+
+  return { start, applyTheme };
+})();
+
+/* ======================= ThemeManager ======================= */
+const ThemeManager = (() => {
+  const STORAGE_KEY = 'smartbio_theme';
+  const html = document.documentElement;
+
+  function getPreferred() {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === 'light' || stored === 'dark') return stored;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+
+  function apply(theme) {
+    if (theme === 'light') {
+      html.setAttribute('data-theme', 'light');
+    } else {
+      html.removeAttribute('data-theme');
+    }
+    ParticlesManager.applyTheme(theme);
+    alog('Theme applied:', theme);
+  }
+
+  function toggle() {
+    const current = html.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const next = current === 'light' ? 'dark' : 'light';
+    localStorage.setItem(STORAGE_KEY, next);
+    apply(next);
+  }
+
+  function init() {
+    apply(getPreferred());
+    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', toggle);
+    });
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
+      if (!localStorage.getItem(STORAGE_KEY)) apply(e.matches ? 'light' : 'dark');
     });
   }
 
@@ -1765,7 +2072,8 @@ Object.assign(window, {
 
 document.addEventListener('DOMContentLoaded', () => {
   if (window.particlesJS) {
-    particlesJS.load('particles-js', './assets/js/particles.json', function() {});
+    const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    ParticlesManager.start(theme);
   } else {
     console.warn('particlesJS not found');
   }
