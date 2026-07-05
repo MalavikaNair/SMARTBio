@@ -608,6 +608,15 @@ const Renderer = (() => {
         doiLink.textContent = 'DOI ↗';
         linksWrap.appendChild(doiLink);
       }
+      if (p.manuscriptUrl && Utils.isSafeUrl(p.manuscriptUrl)) {
+        const aamLink = document.createElement('a');
+        aamLink.href = Utils.sanitizeUrl(p.manuscriptUrl);
+        aamLink.target = '_blank';
+        aamLink.rel = 'noopener noreferrer';
+        aamLink.className = 'pub-link pub-link--aam';
+        aamLink.textContent = 'AAM ↗';
+        linksWrap.appendChild(aamLink);
+      }
       if (p.dataset && Utils.isSafeUrl(p.dataset)) {
         const dsLink = document.createElement('a');
         dsLink.href = Utils.sanitizeUrl(p.dataset);
@@ -647,9 +656,8 @@ const Renderer = (() => {
     if (!items.length) { grid.textContent = 'No games yet.'; return; }
 
     // --- Theme filter ---
-    const activeThemes = (window.GameFilter && GameFilter.getActiveThemes)
-      ? GameFilter.getActiveThemes()
-      : new Set();
+    // GameFilter is a module-level const (not on window), so reference it directly.
+    const activeThemes = GameFilter.getActiveThemes();
 
     const matchesTheme = (game) => {
       if (!activeThemes || activeThemes.size === 0) return true;
@@ -659,9 +667,7 @@ const Renderer = (() => {
     };
 
     // --- Age filter ---
-    const activeAge = (window.GameFilter && GameFilter.getActiveAge)
-      ? GameFilter.getActiveAge()
-      : 'all';
+    const activeAge = GameFilter.getActiveAge();
 
     function ageGroup(ageRange) {
       const n = parseInt(ageRange);
