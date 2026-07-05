@@ -29,7 +29,7 @@
     {
         "id": "game4",
         "title": "Bloody Snake in a Sponge!",
-        "description": "Keep your blood vessel (snake) alive by eating growth food, avoiding shrink food, and providing some stimulation from time to time, as it navigates through a porous sponge!",
+        "description": "Guide a growing blood vessel (tip cell) through a porous tissue scaffold. Collect VEGF growth factors to keep sprouting, avoid anti-angiogenic signals, and activate the electroactive scaffold with SPACE to trigger PI3K/Akt-driven growth.",
         "thumbnail": "./assets/img/sponge-snake.png",
         "file": "./outreach/spongesnake.html",
         "themes": ["Therapeutic","Regenerative"],
@@ -47,10 +47,10 @@
     {
 	    "id": "hydrogel-quest",
         "title": "Hydrogel Quest",
-        "description": "Navigate the lab, collect ingredients, and synthesise a hydrogel in this fun educational game!",
+        "description": "Navigate the lab across 3 levels to synthesise photocrosslinkable hydrogels — from basic drug-loaded PEGDA, to cell-laden scaffolds, to MMP-responsive smart gels. Watch out for light patches that ruin your photoinitiator!",
         "thumbnail": "./assets/img/hydrogel-quest.png",
         "file": "./outreach/hydrogel-quest.html",
         "themes": ["Regenerative", "Therapeutic"],
-		"ageRange": "6+"
+		"ageRange": "9+"
     }
    ]

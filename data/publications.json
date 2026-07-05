@@ -1,5 +1,23 @@
 [
   {
+    "id": "murray2026estim",
+    "type": "journal",
+    "category": "perspective",
+    "year": 2026,
+    "title": "Electrical Stimulation in Cell Culture: Why It Is Still Not Easy or Accessible—and How We Fix It",
+    "authors": "Murray RT, Nair M",
+    "journal": "Bioelectricity",
+    "volume": null,
+    "issue": null,
+    "pages": null,
+    "doi": "10.1177/25763113261459372",
+    "openAccess": false,
+    "manuscriptUrl": "https://ora.ox.ac.uk/objects/uuid:7cc135d4-3e54-40f9-a1e4-9a7da2cb3faf",
+    "themes": ["Modulating", "Adaptive"],
+    "dataset": null,
+    "interactive": null
+  },
+  {
     "id": "burgess2026",
     "type": "journal",
     "category": "review",
@@ -233,6 +251,7 @@
     "pages": "150-163",
     "doi": "10.1016/j.actbio.2021.08.027",
     "openAccess": false,
+    "manuscriptUrl": "https://doi.org/10.17863/CAM.74729",
     "themes": ["Regenerative"],
     "dataset": "https://doi.org/10.17863/CAM.74561",
     "interactive": null

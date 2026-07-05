@@ -1,4 +1,40 @@
 [{
+        "id": "pres-13",
+        "title": "ATiO Conference 2026 — Keynote",
+        "date": { "day": "25", "month": "Jun", "year": "2026" },
+        "description": "Malavika Nair delivered a keynote at the ATiO (Alliance for Advanced Therapies in Orthopaedics) Conference 2026 in Berlin, Germany. The conference brings together researchers, clinicians, and industry leaders advancing regenerative medicine and biomaterials for musculoskeletal conditions.",
+        "speakerIds": ["malavika-nair"],
+        "link": "https://atioalliance.org/conference-2026",
+        "videoLink": "",
+        "image": "./assets/img/ATIO.svg",
+        "type": "academic-presentation",
+        "themes": ["Regenerative", "Therapeutic", "Modulating"]
+    },
+    {
+        "id": "pres-11",
+        "title": "MRS Spring 2026 — Invited Talk, Symposium SB05",
+        "date": { "day": "26", "month": "Apr", "year": "2026" },
+        "description": "Malavika Nair delivered an invited talk at the Materials Research Society Spring Meeting 2026 in Honolulu, Hawaiʻi, in Symposium SB05: Smart Materials and Devices at the Interface with Biology—A Focus on Bioelectricity and Mechanobiology.",
+        "speakerIds": ["malavika-nair"],
+        "link": "",
+        "videoLink": "",
+        "image": "./assets/img/mrs-spring26.jpg",
+        "type": "academic-presentation",
+        "themes": ["Modulating", "Adaptive", "Sensing"]
+    },
+    {
+        "id": "pres-12",
+        "title": "MRS Spring 2026 — Co-organised Symposium SB07",
+        "date": { "day": "26", "month": "Apr", "year": "2026" },
+        "description": "Malavika Nair co-organised Symposium SB07: Adaptive Hydrogels and Soft Matter for Bioelectronics, Robotics and Sustainability at the Materials Research Society Spring Meeting 2026 in Honolulu, Hawaiʻi.",
+        "speakerIds": ["malavika-nair"],
+        "link": "",
+        "videoLink": "",
+        "image": "./assets/img/mrs-spring26.jpg",
+        "type": "academic-presentation",
+        "themes": ["Adaptive", "Regenerative", "Modulating"]
+    },
+    {
         "id": "pres-10",
         "title": "TERMIS European Chapter Meeting 2026",
         "date": { "day": "21", "month": "Apr", "year": "2026" },
